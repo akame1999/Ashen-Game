@@ -44,6 +44,17 @@ class AshenVeilSmokeTests(unittest.TestCase):
         self.game.render()
         self.assertEqual(self.game.canvas.get_size(), (game_module.W, game_module.H))
 
+
+    def test_all_four_region_backgrounds_load(self):
+        self.assertEqual(
+            len(self.game.background_surfaces),
+            4,
+            "The illustrated SVG region backgrounds should load in pygame-ce",
+        )
+        for background in self.game.background_surfaces:
+            self.assertGreater(background.get_width(), game_module.W)
+            self.assertEqual(background.get_height(), game_module.H)
+
     def test_source_uses_player_soul_limit_for_rewards(self):
         self.assertTrue(hasattr(self.game.player, "soul_max"))
         self.assertFalse(hasattr(self.game, "soul_max"))
