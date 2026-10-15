@@ -407,7 +407,7 @@ class Enemy:
             else:
                 pygame.draw.line(surface, color, (sx, yline), (sx-lead, yline), 3)
         if self.boss:
-            cloak = [(sx + self.w*.10, sy+28),(sx+self.w*.40,sy+15),(sx+self.w*.70,sy+25),(sx+self.w*.98,sy+self.h-4),(sx+self.w*.06,sy+self.h-4)]
+            cloak = [(int(sx + self.w*.10), sy+28),(int(sx+self.w*.40),sy+15),(int(sx+self.w*.70),sy+25),(int(sx+self.w*.98),sy+self.h-4),(int(sx+self.w*.06),sy+self.h-4)]
             pygame.draw.polygon(surface, (44, 28, 31), cloak)
             pygame.draw.ellipse(surface, (96, 55, 47), (sx+12,sy+6,self.w-24,45))
             pygame.draw.ellipse(surface, (224, 141, 88), (sx+22,sy+22,8,5))
@@ -805,8 +805,10 @@ class Player:
                     end_x = base_x + self.attack_dir * arc_r * (.45 + .55*phase) 
                     end_y = base_y + math.sin((phase+f)*math.pi) * (36 + 8*k) - 10*k
                     col = tuple(max(0,int(c*(.40+.18*k))) for c in weapon["color"])
-                    pygame.draw.line(surface, col, (base_x,base_y), (int(end_x),int(end_y)), max(1,5-k))
-                    pygame.draw.line(surface, tuple(min(255,c+28) for c in col), (base_x,base_y), (int(end_x),int(end_y)), 1)
+                    start_point = (int(base_x), int(base_y))
+                    end_point = (int(end_x), int(end_y))
+                    pygame.draw.line(surface, col, start_point, end_point, max(1,5-k))
+                    pygame.draw.line(surface, tuple(min(255,c+28) for c in col), start_point, end_point, 1)
         else:
             hand = (sx + (self.w-2 if self.facing > 0 else 2), sy+32)
             reach = 34 if game.weapon != "Oathbreaker" else 41
@@ -1117,7 +1119,7 @@ class Game:
             if sx < -tw-20 or sx>W+20: continue
             rect=pygame.Rect(sx,ty,tw,th)
             pygame.draw.rect(surface,color,rect)
-            pygame.draw.polygon(surface,color,[(sx-10,ty+12),(sx+tw*.22,ty-14),(sx+tw*.52,ty+12),(sx+tw*.82,ty-21),(sx+tw+8,ty+12)])
+            pygame.draw.polygon(surface,color,[(sx-10,ty+12),(int(sx+tw*.22),ty-14),(int(sx+tw*.52),ty+12),(int(sx+tw*.82),ty-21),(sx+tw+8,ty+12)])
             for wx in range(sx+14,sx+tw-7,25):
                 if 0<=wx<W:
                     pygame.draw.rect(surface,(107,78,59),(wx,ty+45,5,15))
