@@ -1,8 +1,22 @@
 # Ashen Veil — Python Metroidvania Combat Sandbox
 
-A dark-fantasy side-scrolling action platformer prototype with connected ruins, platforming, weapon-specific attacks, enemy encounters, checkpoints and a boss.
+A dark-fantasy side-scrolling action platformer prototype built with Python and Pygame CE. The game uses procedural artwork; there are no external image assets to install.
 
-On Windows, install Python 3.10+ and double-click `launch_windows.bat`, or run:
+## Features
+
+- Side-scrolling camera and connected ruined-castle route with platforming, gaps and checkpoints.
+- Three weapon types: Rookfang Longsword, Gravetide Twinblades and Oathbreaker Greatblade.
+- Buffered light attacks and charged heavy attacks; attack timing is independent of movement.
+- Dodge with temporary invulnerability, stamina, weapon skills and Soul Burst.
+- Hollow enemies, ranged Ash Archers and a Grave Warden boss.
+- Layered parallax castles and mountains, a cratered moon, detailed masonry, moss, torchlight, fog and curved attack trails.
+- Health, stamina, Soul Burst meter, weapon cards, route progress, enemy telegraphs and a boss health bar.
+
+## Run on Windows
+
+1. Install Python 3.10 or later.
+2. Double-click `launch_windows.bat`.
+3. Or run from this folder:
 
 ```powershell
 py -3 -m pip install -r requirements.txt
@@ -11,18 +25,20 @@ py -3 main.py
 
 ## Controls
 
-- **A / D** or arrow keys: move
-- **Space / W / Up:** jump (double jump available)
-- **Left mouse button:** light attacks / combos
-- **Right mouse button:** heavy attack
-- **Shift:** dodge
-- **1 / 2 / 3:** change weapon
-- **E:** weapon skill
-- **Q:** Soul Burst
-- **Esc:** pause
+| Input | Action |
+|---|---|
+| A / D or arrow keys | Move |
+| Space / W / Up | Jump; jump again for double jump |
+| Left-click | Light combo attacks |
+| Right-click | Heavy attack |
+| Shift | Dodge |
+| 1 / 2 / 3 | Switch weapon |
+| E | Weapon skill |
+| Q | Soul Burst |
+| Esc | Pause / resume |
 
-## Project status
+## Status
 
-Early playable prototype. The aim is deliberate Soulslike combat and dark atmosphere in a side-view Metroidvania format. Combat feel and visuals should be tested on Windows hardware; further enemy, exploration, animation, ability-gate and level-polish work remains.
+This is an early playable prototype, not a finished commercial game. The graphics are procedurally drawn and have been enhanced with layered parallax scenery and more detailed silhouettes. Please test on Windows hardware; additional hand-authored sprite animations, boss movesets, hidden paths and progression systems remain future work.
 
-The game uses original procedural drawings and currently includes no third-party art assets. No open-source license has been assigned yet.
+No open-source license has been assigned yet.
