@@ -1,16 +1,23 @@
 # Ashen Veil — Python Metroidvania Combat Sandbox
 
-A dark-fantasy side-scrolling action platformer prototype built with Python and Pygame CE. The game uses procedural artwork; there are no external image assets to install.
+A dark-fantasy side-scrolling action-platformer prototype built with Python and Pygame CE.
 
-## Features
+## Visuals and world
 
-- Side-scrolling camera and connected ruined-castle route with platforming, gaps and checkpoints.
+The game includes four original vector environment illustrations in `assets/backgrounds/`:
+- **The Drowned March** — moonlit blue-grey ruins.
+- **The Ashen Chapel** — ember-lit, blood-red ruins.
+- **The Cinder Bastion** — volcanic fortress and molten falls.
+- **The Veiled Throne** — violet eclipse and shadowed citadel.
+
+The region art is rendered by Pygame CE from SVG, scaled for smooth parallax, and layered behind the playable geometry, characters, enemies, and HUD. Atmospheric fog and ember particles add subtle motion. If SVG rendering is unavailable, the game logs a message and uses the procedural background fallback.
+
+## Gameplay
+
+- Connected side-scrolling route with platforms, gaps, shrines/checkpoints and a Grave Warden boss.
 - Three weapon types: Rookfang Longsword, Gravetide Twinblades and Oathbreaker Greatblade.
-- Buffered light attacks and charged heavy attacks; attack timing is independent of movement.
-- Dodge with temporary invulnerability, stamina, weapon skills and Soul Burst.
-- Hollow enemies, ranged Ash Archers and a Grave Warden boss.
-- Layered parallax castles and mountains, a cratered moon, detailed masonry, moss, torchlight, fog and curved attack trails.
-- Health, stamina, Soul Burst meter, weapon cards, route progress, enemy telegraphs and a boss health bar.
+- Buffered light attacks and charged heavy attacks, dodge invulnerability, stamina, weapon skills and Soul Burst.
+- Hollow enemies, ranged Ash Archers, boss telegraphs, health bars, and a route-progress HUD.
 
 ## Run on Windows
 
@@ -39,6 +46,6 @@ py -3 main.py
 
 ## Status
 
-This is an early playable prototype, not a finished commercial game. The graphics are procedurally drawn and have been enhanced with layered parallax scenery and more detailed silhouettes. Please test on Windows hardware; additional hand-authored sprite animations, boss movesets, hidden paths and progression systems remain future work.
+This is an early playable prototype, not a finished commercial game. CI smoke tests verify source compilation, headless rendering, SVG background loading, and the Soul Burst reward path. Further hand-authored sprite animations, exploration puzzles, hidden paths and progression systems remain future work.
 
 No open-source license has been assigned yet.
