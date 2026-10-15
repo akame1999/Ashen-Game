@@ -248,7 +248,7 @@ class Enemy:
             game.kills += 1
             reward = 35 if self.boss else (12 if self.archer else 8)
             game.souls += reward
-            game.soul_charge = min(game.soul_max, game.soul_charge + (35 if self.boss else 18))
+            game.player.soul_charge = min(game.player.soul_max, game.player.soul_charge + (35 if self.boss else 18))
             game.screen_shake = max(game.screen_shake, 12 if self.boss else 4)
             game.burst(self.x + self.w / 2, self.y + self.h / 2, (232, 131, 78), 24 if self.boss else 12)
             if self.boss:
@@ -387,50 +387,89 @@ class Enemy:
                     break
 
     def draw(self, surface, camera_x, now):
-        sx = int(self.x - camera_x)
-        sy = int(self.y)
-        if sx < -150 or sx > W + 150:
+        sx=int(self.x-camera_x)
+        sy=int(self.y)
+        if sx < -170 or sx > W+170 or self.dead:
             return
-        if self.dead:
-            return
-        # Shadow, body silhouette and readable telegraphs.
-        shadow = pygame.Rect(sx + 2, sy + self.h - 5, self.w - 4, 10)
-        pygame.draw.ellipse(surface, (10, 12, 13), shadow)
-        if self.state == "windup":
-            pulse = 0.5 + 0.5 * math.sin(now * 22)
-            color = (190, 57, 48) if pulse > .2 else (112, 39, 37)
-            lead = 72 if not self.boss else 130
-            yline = sy + self.h - 12
-            if self.facing > 0:
-                pygame.draw.polygon(surface, (*color, 35), [(sx+self.w, yline-25), (sx+self.w+lead, yline-8), (sx+self.w+lead, yline+3), (sx+self.w, yline+7)])
-                pygame.draw.line(surface, color, (sx+self.w, yline), (sx+self.w+lead, yline), 3)
-            else:
-                pygame.draw.line(surface, color, (sx, yline), (sx-lead, yline), 3)
+        flick=math.sin(now*5+self.uid)*2
+        pygame.draw.ellipse(surface,(8,10,12),(sx-4,sy+self.h-4,self.w+8,10))
+        if self.state=="windup":
+            pulse=.5+.5*math.sin(now*24)
+            color=(226,67,54) if pulse>.25 else (123,42,39)
+            reach=88 if not self.boss else (142 if self.phase==1 else 178)
+            yline=sy+self.h-13
+            tip=sx+self.w+self.facing*reach
+            pygame.draw.polygon(surface,(55,18,20),[(sx+self.w*self.facing if self.facing>0 else sx,yline-24),(tip,yline-6),(tip,yline+5),(sx+self.w if self.facing>0 else sx,yline+8)])
+            pygame.draw.line(surface,color,(sx+self.w if self.facing>0 else sx,yline),(tip,yline),3)
+            pygame.draw.circle(surface,(255,145,92),(tip,yline),4,1)
         if self.boss:
-            cloak = [(int(sx + self.w*.10), sy+28),(int(sx+self.w*.40),sy+15),(int(sx+self.w*.70),sy+25),(int(sx+self.w*.98),sy+self.h-4),(int(sx+self.w*.06),sy+self.h-4)]
-            pygame.draw.polygon(surface, (44, 28, 31), cloak)
-            pygame.draw.ellipse(surface, (96, 55, 47), (sx+12,sy+6,self.w-24,45))
-            pygame.draw.ellipse(surface, (224, 141, 88), (sx+22,sy+22,8,5))
-            pygame.draw.ellipse(surface, (224, 141, 88), (sx+self.w-30,sy+22,8,5))
-            # Crown-like silhouette.
-            pygame.draw.lines(surface, (134, 107, 72), False, [(sx+13,sy+12),(sx+5,sy-2),(sx+22,sy+7),(sx+34,sy-8),(sx+43,sy+8),(sx+57,sy-3),(sx+58,sy+14)], 3)
+            # A towering cloak, layered plate and crown-like broken antlers.
+            cloak=[(int(sx+self.w*.12),sy+24),(int(sx+self.w*.34),sy+14),(int(sx+self.w*.72),sy+21),(int(sx+self.w*1.03),sy+self.h-4),(int(sx+self.w*.52),sy+self.h-12),(int(sx-self.w*.04),sy+self.h-4)]
+            pygame.draw.polygon(surface,(32,23,29),cloak)
+            pygame.draw.polygon(surface,(69,35,38),[(sx+10,sy+36),(sx+self.w-12,sy+33),(sx+self.w-6,sy+self.h-12),(sx+18,sy+self.h-12)])
+            pygame.draw.line(surface,(132,73,53),(sx+14,sy+42),(sx+8,sy+self.h-13),2)
+            pygame.draw.ellipse(surface,(71,66,59),(sx+10,sy+6,self.w-20,43))
+            pygame.draw.ellipse(surface,(141,106,75),(sx+18,sy+8,self.w-36,32),2)
+            pygame.draw.polygon(surface,(22,25,29),[(sx+18,sy+11),(sx+5,sy-8),(sx+25,sy+3),(sx+34,sy-15),(sx+45,sy+3),(sx+63,sy-12),(sx+59,sy+15)])
+            pygame.draw.line(surface,(168,133,85),(sx+10,sy+12),(sx+5,sy-8),2)
+            pygame.draw.line(surface,(168,133,85),(sx+32,sy+5),(sx+34,sy-15),2)
+            pygame.draw.line(surface,(168,133,85),(sx+52,sy+7),(sx+63,sy-12),2)
+            # Glowing eyes and chest rune.
+            for eye_x in (sx+25,sx+self.w-27):
+                glow(surface,(eye_x,sy+27),14,(238,65,49),24)
+                pygame.draw.line(surface,(255,125,74),(eye_x-4,sy+27),(eye_x+4,sy+27),3)
+            pygame.draw.polygon(surface,(171,62,47),[(sx+self.w//2,sy+39),(sx+self.w//2+7,sy+49),(sx+self.w//2,sy+59),(sx+self.w//2-7,sy+49)])
+            # Massive greataxe.
+            ax=sx+self.w+(self.facing*7)
+            pygame.draw.line(surface,(56,45,36),(ax,sy+36),(ax+self.facing*34,sy+68),5)
+            pygame.draw.polygon(surface,(102,91,75),[(ax+self.facing*24,sy+54),(ax+self.facing*44,sy+45),(ax+self.facing*49,sy+70),(ax+self.facing*32,sy+80)])
+            pygame.draw.line(surface,(174,134,82),(ax+self.facing*31,sy+55),(ax+self.facing*43,sy+48),2)
         elif self.archer:
-            pygame.draw.polygon(surface,(74,66,53),[(sx+4,sy+15),(sx+self.w-4,sy+12),(sx+self.w-2,sy+self.h-5),(sx+4,sy+self.h-5)])
-            pygame.draw.circle(surface,(143,119,87),(sx+self.w//2,sy+11),12)
-            pygame.draw.line(surface,(186,142,86),(sx+8,sy+18),(sx+self.w-3,sy+37),3)
-            pygame.draw.line(surface,(220,201,156),(sx+self.w//2,sy+17),(sx+self.w//2+self.facing*8,sy+27),2)
+            # Hood and narrow leather torso.
+            pygame.draw.polygon(surface,(40,38,37),[(sx+5,sy+15),(sx+self.w-4,sy+12),(sx+self.w,sy+self.h-4),(sx+1,sy+self.h-4)])
+            pygame.draw.polygon(surface,(94,72,50),[(sx+8,sy+23),(sx+self.w-8,sy+21),(sx+self.w-3,sy+self.h-8),(sx+4,sy+self.h-8)])
+            pygame.draw.ellipse(surface,(27,30,31),(sx+5,sy-1,self.w-10,25))
+            pygame.draw.ellipse(surface,(139,111,78),(sx+9,sy+4,self.w-18,15))
+            pygame.draw.line(surface,(233,71,56),(sx+12,sy+11),(sx+self.w-12,sy+11),3)
+            pygame.draw.line(surface,(172,129,74),(sx+9,sy+29),(sx+self.w-3,sy+42),4)
+            # Bow and drawn string.
+            bow_x=sx+self.w-4 if self.facing>0 else sx+4
+            pygame.draw.arc(surface,(141,101,60),(bow_x-10,sy+17,22,29),-1.5,1.5,2)
+            pygame.draw.line(surface,(211,193,153),(bow_x,sy+20),(bow_x,sy+43),1)
+            pygame.draw.line(surface,(214,187,134),(sx+self.w//2,sy+27),(sx+self.w//2+self.facing*21,sy+27),2)
+            pygame.draw.polygon(surface,(210,179,127),[(sx+self.w//2+self.facing*22,sy+27),(sx+self.w//2+self.facing*15,sy+24),(sx+self.w//2+self.facing*15,sy+30)])
         else:
-            pygame.draw.polygon(surface,(79,62,56),[(sx+4,sy+13),(sx+self.w-4,sy+13),(sx+self.w-1,sy+self.h-4),(sx+1,sy+self.h-4)])
-            pygame.draw.circle(surface,(151,112,80),(sx+self.w//2,sy+12),13)
-            pygame.draw.line(surface,(181,154,103),(sx+10,sy+31),(sx+self.w-8,sy+39),4)
-        if self.hit_flash > 0:
-            pygame.draw.rect(surface,(242,226,185),self.rect.move(-round(camera_x),0),2,border_radius=4)
-        hpw = self.w + (28 if self.boss else 0)
-        hp_x = sx + self.w/2 - hpw/2
-        hp_y = sy - (18 if self.boss else 12)
-        pygame.draw.rect(surface,(27,26,24),(int(hp_x),int(hp_y),hpw,6),border_radius=3)
-        if self.hp > 0:
-            pygame.draw.rect(surface,(194,65,56),(int(hp_x+1),int(hp_y+1),max(1,int((hpw-2)*self.hp/self.hp_max)),4),border_radius=2)
+            # Hollow: skull, rib cage, ragged tunic and articulated limbs.
+            pygame.draw.polygon(surface,(46,42,39),[(sx+4,sy+19),(sx+self.w-4,sy+17),(sx+self.w-1,sy+self.h-7),(sx+2,sy+self.h-7)])
+            pygame.draw.polygon(surface,(99,71,57),[(sx+8,sy+26),(sx+self.w-8,sy+25),(sx+self.w-4,sy+self.h-11),(sx+5,sy+self.h-11)])
+            pygame.draw.ellipse(surface,(150,119,87),(sx+8,sy+1,self.w-16,23))
+            pygame.draw.ellipse(surface,(54,45,39),(sx+10,sy+4,self.w-20,17))
+            pygame.draw.circle(surface,(233,75,48),(sx+13,sy+10),2)
+            pygame.draw.circle(surface,(233,75,48),(sx+self.w-13,sy+10),2)
+            pygame.draw.line(surface,(202,173,133),(sx+11,sy+20),(sx+self.w-10,sy+20),2)
+            pygame.draw.line(surface,(142,120,91),(sx+8,sy+30),(sx+self.w-7,sy+31),3)
+            pygame.draw.line(surface,(142,120,91),(sx+10,sy+36),(sx+self.w-9,sy+37),2)
+            pygame.draw.line(surface,(48,39,35),(sx+10,sy+39),(sx+3,sy+self.h-14),5)
+            pygame.draw.line(surface,(48,39,35),(sx+self.w-10,sy+39),(sx+self.w-2,sy+self.h-14),5)
+            pygame.draw.line(surface,(126,105,82),(sx+10,sy+39),(sx+3,sy+self.h-14),2)
+            pygame.draw.line(surface,(126,105,82),(sx+self.w-10,sy+39),(sx+self.w-2,sy+self.h-14),2)
+            # Rusted short blade.
+            hand=(sx+self.w//2+self.facing*8,sy+34)
+            tip=(hand[0]+self.facing*23,hand[1]+9)
+            pygame.draw.line(surface,(64,45,34),hand,tip,4)
+            pygame.draw.line(surface,(174,128,82),hand,tip,2)
+        if self.hit_flash>0:
+            pygame.draw.rect(surface,(255,236,194),self.rect.move(-round(camera_x),0),2,border_radius=4)
+            pygame.draw.line(surface,(255,238,206),(sx+4,sy+8),(sx+self.w-4,sy+self.h-10),2)
+        hpw=self.w+(40 if self.boss else 0)
+        hp_x=int(sx+self.w/2-hpw/2)
+        hp_y=sy-(22 if self.boss else 13)
+        pygame.draw.rect(surface,(17,17,18),(hp_x-2,hp_y-2,hpw+4,9),border_radius=3)
+        pygame.draw.rect(surface,(44,30,29),(hp_x,hp_y,hpw,6),border_radius=3)
+        if self.hp>0:
+            pct=self.hp/max(1,self.hp_max)
+            pygame.draw.rect(surface,(176,48,43),(hp_x+1,hp_y+1,max(1,int((hpw-2)*pct)),4),border_radius=2)
+            pygame.draw.line(surface,(235,105,79),(hp_x+2,hp_y+1),(hp_x+max(2,int((hpw-2)*pct)),hp_y+1),1)
 
 
 class Projectile:
@@ -772,52 +811,117 @@ class Player:
 
     def draw(self, surface, camera_x, game):
         sx, sy = int(self.x-camera_x), int(self.y)
-        if sx < -120 or sx > W + 120:
+        if sx < -150 or sx > W + 150:
             return
-        # Ground shadow.
-        pygame.draw.ellipse(surface, (10, 12, 13), (sx-4, sy+self.h-5, self.w+8, 10))
-        flicker = math.sin(self.anim_time * 8) * 1.1
-        # Cloak silhouette and torso.
-        cloak = [(sx+5, sy+15), (sx+self.w-4, sy+13), (sx+self.w+2, sy+self.h-3), (sx-2, sy+self.h-3)]
-        pygame.draw.polygon(surface, (26, 31, 34), cloak)
-        pygame.draw.polygon(surface, (61, 59, 50), [(sx+8,sy+18),(sx+self.w-5,sy+18),(sx+self.w-5,sy+43),(sx+7,sy+43)])
-        # Shoulder plates.
-        pygame.draw.circle(surface, (92, 83, 64), (sx+8, sy+23), 6)
-        pygame.draw.circle(surface, (92, 83, 64), (sx+self.w-7, sy+23), 6)
-        # Head and luminous visor.
-        pygame.draw.ellipse(surface, (128, 113, 83), (sx+7, sy+1, self.w-14, 26))
-        visor_y = sy + 12 + int(flicker)
-        pygame.draw.line(surface, (246, 199, 110), (sx+11, visor_y), (sx+self.w-9, visor_y), 4)
-        pygame.draw.line(surface, (255, 240, 188), (sx+13, visor_y), (sx+self.w-13, visor_y), 1)
-        # Weapon on idle and distinctive attack sweeps during active frames.
         weapon = WEAPONS[game.weapon]
+        moving = abs(self.vx) > 28 and self.grounded
+        stride = math.sin(self.anim_time * 13.5) * (6 if moving else 1.2)
+        cape_wave = math.sin(self.anim_time * 5.5) * (4 if moving else 2)
+        # Ground contact shadow and a faint warm rim light.
+        pygame.draw.ellipse(surface,(9,12,14),(sx-8,sy+self.h-4,self.w+18,11))
+        if moving:
+            pygame.draw.ellipse(surface,(67,73,72),(sx+5,sy+self.h-3,self.w-7,3))
+
+        # Back-swept torn cloak with animated hem and a contrasting inner lining.
+        cape_back = -self.facing
+        cape = [
+            (sx+self.w*.45,sy+19),
+            (sx+self.w*.25+cape_back*5,sy+29),
+            (sx+self.w*.10+cape_back*(18+cape_wave),sy+45),
+            (sx+self.w*.18+cape_back*(26+cape_wave),sy+self.h-4),
+            (sx+self.w*.54,sy+self.h-8),
+            (sx+self.w*.42,sy+43)
+        ]
+        cape=[(int(x),int(y)) for x,y in cape]
+        pygame.draw.polygon(surface,(21,25,31),cape)
+        pygame.draw.lines(surface,(98,43,42),False,cape[1:5],2)
+        pygame.draw.line(surface,(132,66,55),cape[2],cape[3],1)
+        # Split boots and moving legs give the body a readable locomotion pose.
+        hip=(sx+self.w*.48,sy+self.h*.69)
+        left_foot=(int(sx+self.w*.28-stride*.4),sy+self.h-2)
+        right_foot=(int(sx+self.w*.72+stride*.4),sy+self.h-2)
+        pygame.draw.line(surface,(17,20,23),(int(hip[0]-3),int(hip[1])),left_foot,7)
+        pygame.draw.line(surface,(17,20,23),(int(hip[0]+4),int(hip[1])),right_foot,7)
+        pygame.draw.line(surface,(92,82,66),(left_foot[0]-4,left_foot[1]-1),(left_foot[0]+5,left_foot[1]-1),3)
+        pygame.draw.line(surface,(92,82,66),(right_foot[0]-4,right_foot[1]-1),(right_foot[0]+5,right_foot[1]-1),3)
+
+        # Armored torso, layered pauldrons, waist sash and bright seam details.
+        torso=[(sx+7,sy+18),(sx+self.w-7,sy+18),(sx+self.w-3,sy+45),(sx+self.w*.62,sy+52),(sx+4,sy+43)]
+        torso=[(int(x),int(y)) for x,y in torso]
+        pygame.draw.polygon(surface,(43,48,51),torso)
+        pygame.draw.polygon(surface,(72,72,65),[(sx+10,sy+21),(sx+self.w-11,sy+21),(sx+self.w-12,sy+38),(sx+8,sy+39)])
+        pygame.draw.line(surface,(125,108,78),(sx+10,sy+21),(sx+self.w-11,sy+21),2)
+        pygame.draw.polygon(surface,(29,33,36),[(sx+8,sy+38),(sx+self.w-8,sy+38),(sx+self.w-12,sy+45),(sx+11,sy+46)])
+        pygame.draw.line(surface,(151,56,46),(sx+10,sy+42),(sx+self.w-11,sy+42),3)
+        pygame.draw.circle(surface,(206,172,104),(sx+self.w//2,sy+33),3)
+        # Paired shoulder plates and armoured bracer.
+        pygame.draw.ellipse(surface,(97,88,67),(sx+2,sy+18,15,13))
+        pygame.draw.ellipse(surface,(126,112,81),(sx+3,sy+17,13,7))
+        pygame.draw.ellipse(surface,(78,77,68),(sx+self.w-15,sy+18,15,13))
+        pygame.draw.line(surface,(29,34,38),(sx+self.w-7,sy+29),(sx+self.w+self.facing*7,sy+38),6)
+        pygame.draw.line(surface,(104,91,70),(sx+self.w-7,sy+29),(sx+self.w+self.facing*7,sy+38),2)
+
+        # Hood, shadowed faceplate, rim highlights and ember visor.
+        head_rect=(sx+8,sy+1,self.w-16,25)
+        pygame.draw.ellipse(surface,(18,22,27),(sx+5,sy-2,self.w-10,29))
+        pygame.draw.ellipse(surface,(104,99,84),head_rect)
+        pygame.draw.arc(surface,(166,147,109),head_rect,.1,2.9,2)
+        face_x=sx+self.w*.5+self.facing*3
+        pygame.draw.ellipse(surface,(28,31,34),(int(face_x-5),sy+5,11,14))
+        visor_y=sy+12+int(math.sin(self.anim_time*8)*1.1)
+        pygame.draw.line(surface,(230,99,70),(sx+12,visor_y),(sx+self.w-10,visor_y),4)
+        pygame.draw.line(surface,(255,214,147),(sx+13,visor_y),(sx+self.w-14,visor_y),1)
+        pygame.draw.polygon(surface,(141,101,70),[(sx+10,sy+18),(sx+4,sy+29),(sx+13,sy+25)])
+        pygame.draw.circle(surface,(236,163,94),(sx+self.w//2,sy+13),2)
+
+        # Weapon held when idle; active attacks draw a growing, curved blade arc.
+        hand=(int(sx+(self.w-1 if self.facing>0 else 1)),sy+34)
+        blade_len=37 if game.weapon!="Oathbreaker" else 47
         if self.attack_kind:
-            t = self.attack_time
-            active_start = weapon["windup"] if self.attack_kind == "light" else weapon["heavy_windup"] if self.attack_kind == "heavy" else .07
-            active_dur = weapon["active"] if self.attack_kind == "light" else weapon["heavy_active"] if self.attack_kind == "heavy" else .23
-            phase = clamp((t-active_start)/max(.01,active_dur),0,1)
-            if active_start <= t <= active_start + active_dur:
-                arc_r = weapon["reach"] * (1.15 if self.attack_kind == "heavy" else 1.0)
-                base_x = sx + self.w/2 + self.attack_dir * 8
-                base_y = sy + self.h*.52
-                for k in range(4):
-                    f = k/3
-                    end_x = base_x + self.attack_dir * arc_r * (.45 + .55*phase) 
-                    end_y = base_y + math.sin((phase+f)*math.pi) * (36 + 8*k) - 10*k
-                    col = tuple(max(0,int(c*(.40+.18*k))) for c in weapon["color"])
-                    start_point = (int(base_x), int(base_y))
-                    end_point = (int(end_x), int(end_y))
-                    pygame.draw.line(surface, col, start_point, end_point, max(1,5-k))
-                    pygame.draw.line(surface, tuple(min(255,c+28) for c in col), start_point, end_point, 1)
+            t=self.attack_time
+            active_start=weapon["windup"] if self.attack_kind=="light" else weapon["heavy_windup"] if self.attack_kind=="heavy" else .07
+            active_dur=weapon["active"] if self.attack_kind=="light" else weapon["heavy_active"] if self.attack_kind=="heavy" else .23
+            phase=clamp((t-active_start)/max(.01,active_dur),0,1)
+            if active_start <= t <= active_start+active_dur:
+                arc_r=weapon["reach"]*(1.18 if self.attack_kind=="heavy" else 1.0)
+                base_x=sx+self.w/2+self.attack_dir*8
+                base_y=sy+self.h*.51
+                current=-1.45+2.9*phase
+                first=-1.45
+                for trail_index,scale in enumerate((1.0,.91,.80)):
+                    points=[]
+                    for sample in range(19):
+                        u=sample/18
+                        ang=first+(current-first)*u
+                        px=base_x+self.attack_dir*math.cos(ang)*arc_r*scale
+                        py=base_y+math.sin(ang)*arc_r*.58*scale
+                        points.append((int(px),int(py)))
+                    if len(points)>1:
+                        outer=tuple(int(c*(.48+trail_index*.16)) for c in weapon["color"])
+                        pygame.draw.lines(surface,outer,False,points,max(1,5-trail_index*2))
+                        if trail_index==0:
+                            pygame.draw.lines(surface,tuple(min(255,c+24) for c in weapon["color"]),False,points,1)
+                if phase>.48:
+                    tip=points[-1]
+                    pygame.draw.circle(surface,tuple(min(255,c+45) for c in weapon["color"]),tip,3)
+                    pygame.draw.circle(surface,(255,235,184),tip,1)
         else:
-            hand = (sx + (self.w-2 if self.facing > 0 else 2), sy+32)
-            reach = 34 if game.weapon != "Oathbreaker" else 41
-            end = (hand[0] + self.facing*reach, hand[1] + 2)
-            pygame.draw.line(surface, (98,76,55), hand, end, 5 if game.weapon == "Oathbreaker" else 3)
-            pygame.draw.line(surface, weapon["color"], (hand[0],hand[1]-1), (end[0],end[1]-1), 3 if game.weapon != "Gravetide" else 2)
-            pygame.draw.circle(surface, (250,223,161), end, 2)
-        if self.invuln > .02 and int(self.invuln*22)%2 == 0:
-            pygame.draw.ellipse(surface, (235,225,186), (sx-4,sy-3,self.w+8,self.h+6),2)
+            # Grip, crossguard and a tapered blade with a bright cutting edge.
+            end=(int(hand[0]+self.facing*blade_len),hand[1]-4)
+            pygame.draw.line(surface,(47,37,29),hand,end,6 if game.weapon=="Oathbreaker" else 4)
+            pygame.draw.line(surface,(132,98,62),hand,end,2)
+            guard=(hand[0]+self.facing*7,hand[1]-1)
+            pygame.draw.line(surface,(180,145,83),(guard[0],guard[1]-7),(guard[0],guard[1]+6),3)
+            blade=[(hand[0]+self.facing*9,hand[1]-3),(end[0]-self.facing*6,end[1]-3),(end[0]+self.facing*3,end[1]-6),(end[0],end[1]),(hand[0]+self.facing*9,hand[1]+1)]
+            pygame.draw.polygon(surface,weapon["color"],blade)
+            pygame.draw.line(surface,(255,239,190),(hand[0]+self.facing*11,hand[1]-2),(end[0]-self.facing*2,end[1]-4),1)
+            if game.weapon=="Gravetide":
+                hand2=(hand[0],hand[1]+8)
+                end2=(hand2[0]+self.facing*26,hand2[1]+11)
+                pygame.draw.line(surface,(112,82,51),hand2,end2,3)
+                pygame.draw.line(surface,(117,222,194),(hand2[0]+self.facing*5,hand2[1]+1),end2,2)
+        if self.invuln>.02 and int(self.invuln*22)%2==0:
+            pygame.draw.ellipse(surface,(237,231,201),(sx-5,sy-3,self.w+10,self.h+7),2)
 
 
 class Game:
@@ -827,6 +931,10 @@ class Game:
         self.window = pygame.display.set_mode((W, H), pygame.RESIZABLE)
         self.canvas = pygame.Surface((W, H)).convert()
         self.world_layer = pygame.Surface((W, H), pygame.SRCALPHA)
+        self.fog_layer = pygame.Surface((W, 105), pygame.SRCALPHA)
+        for fog_i in range(8):
+            fog_alpha = max(2, 18 - fog_i * 2)
+            pygame.draw.ellipse(self.fog_layer, (127, 143, 151, fog_alpha), (-100 + fog_i * 110, 35 + fog_i * 5, W + 200 - fog_i * 90, 54 - fog_i * 3))
         self.clock = pygame.time.Clock()
         self.font_title = pygame.font.SysFont("georgia", 58, bold=True)
         self.font_h1 = pygame.font.SysFont("georgia", 27, bold=True)
@@ -1099,112 +1207,242 @@ class Game:
                 return left,right,name,top,bottom
         return AREAS[-1]
 
-    def draw_background(self,surface):
-        left,right,name,top,bottom=self.area_at(self.camera_x+W*.42)
-        # Vertical gradient keeps distant sky readable rather than crushing the palette to black.
-        for y in range(0,H,3):
-            f=y/H
-            c=tuple(int(top[i]*(1-f)+bottom[i]*f) for i in range(3))
-            pygame.draw.rect(surface,c,(0,y,W,3))
-        # Distant moon / veil sun.
-        moon_x=int(W*.74 - (self.camera_x*.08)%W*.3)
-        moon_y=145
-        glow(surface,(moon_x,moon_y),100,(196,137,87),28)
-        pygame.draw.circle(surface,(110,91,76),(moon_x,moon_y),48)
-        pygame.draw.circle(surface,(177,140,98),(moon_x-7,moon_y-6),42,2)
-        pygame.draw.circle(surface,(74,69,65),(moon_x+13,moon_y-10),36)
-        # Parallax castle silhouettes.
-        for tx, ty, tw, th, color in self.decor["towers"]:
-            sx=int(tx-self.camera_x*.28)
-            if sx < -tw-20 or sx>W+20: continue
-            rect=pygame.Rect(sx,ty,tw,th)
-            pygame.draw.rect(surface,color,rect)
-            pygame.draw.polygon(surface,color,[(sx-10,ty+12),(int(sx+tw*.22),ty-14),(int(sx+tw*.52),ty+12),(int(sx+tw*.82),ty-21),(sx+tw+8,ty+12)])
-            for wx in range(sx+14,sx+tw-7,25):
-                if 0<=wx<W:
-                    pygame.draw.rect(surface,(107,78,59),(wx,ty+45,5,15))
-        # Architecture ribs and hanging chains.
-        for cx,cy,length in self.decor["chains"]:
-            sx=int(cx-self.camera_x*.48)
-            if -10<sx<W+10:
-                pygame.draw.line(surface,(47,47,43),(sx,0),(sx,cy+length),2)
-                for k in range(12,cy+length,18):
-                    pygame.draw.line(surface,(59,54,47),(sx-3,k),(sx+3,k+5),1)
-        # Room boundary markers and titles.
-        for boundary in (1320,2850,4050):
-            sx=int(boundary-self.camera_x)
-            if -30<sx<W+30:
-                pygame.draw.line(surface,(103,78,51),(sx,105),(sx,610),2)
-                pygame.draw.circle(surface,GOLD,(sx,105),4)
-        for ember in self.decor["embers"]:
-            sx=int(ember[0]-self.camera_x*.82)
-            if 0<=sx<W and 100<ember[1]<H-65:
-                a=80+int((math.sin(ember[4]*3)+1)*50)
-                col=(min(255,124+a//3),min(220,78+a//3),min(150,52+a//6))
-                pygame.draw.circle(surface,col,(sx,int(ember[1])),1 if a<140 else 2)
+    def draw_background(self, surface):
+        left, right, name, top, bottom = self.area_at(self.camera_x + W * .42)
 
-    def draw_world(self,surface):
-        camera=self.camera_x
-        # Back haze behind architecture.
-        for i in range(6):
-            y=500+i*30
-            col=(42+i*2,43+i*1,41+i)
-            pygame.draw.line(surface,col,(0,y),(W,y),1)
-        # Ground and stone platforms with top highlights and distinct front faces.
+        # Layered sky gradient; area transitions subtly shift the palette.
+        for y in range(0, H, 3):
+            f = y / max(1, H - 1)
+            shade = 1.0 + .025 * math.sin(self.elapsed * .18 + f * 5.2)
+            color = tuple(int(clamp((top[i] * (1 - f) + bottom[i] * f) * shade, 0, 255)) for i in range(3))
+            pygame.draw.line(surface, color, (0, y), (W, y))
+
+        # Tiny stars and ash motes stay anchored in the far plane.
+        for i in range(100):
+            world_x = (i * 197 + 53) % (WORLD_W + W)
+            sx = int(world_x - self.camera_x * .095)
+            if -2 <= sx < W + 2:
+                sy = 24 + ((i * 73) % 280)
+                pulse = .5 + .5 * math.sin(self.elapsed * 1.3 + i * 2.1)
+                c = int(73 + pulse * 77)
+                pygame.draw.circle(surface, (c, c + 7, min(255, c + 17)), (sx, sy), 1 if i % 5 else 2)
+
+        # The veil moon and its etched craters create a clear focal point.
+        moon_x = int(W * .76 - self.camera_x * .065)
+        moon_y = 148
+        if -170 < moon_x < W + 170:
+            glow(surface, (moon_x, moon_y), 142, (121, 151, 176), 42)
+            pygame.draw.circle(surface, (99, 119, 135), (moon_x, moon_y), 62)
+            pygame.draw.circle(surface, (161, 177, 185), (moon_x - 7, moon_y - 6), 57, 2)
+            pygame.draw.circle(surface, (76, 94, 111), (moon_x + 15, moon_y - 13), 48)
+            pygame.draw.circle(surface, (126, 145, 154), (moon_x - 24, moon_y + 14), 8, 1)
+            pygame.draw.circle(surface, (126, 145, 154), (moon_x + 24, moon_y - 25), 5, 1)
+            pygame.draw.arc(surface, (126, 145, 154), (moon_x - 42, moon_y - 43, 78, 81), .25, 2.55, 1)
+
+        # Two mountain ridges use independent parallax ratios for real depth.
+        ridge_layers = (
+            (.105, 352, 31, 62, (35, 48, 60)),
+            (.205, 425, 48, 79, (27, 38, 48)),
+            (.335, 505, 52, 54, (21, 29, 35)),
+        )
+        for parallax, base_y, amplitude, step, color in ridge_layers:
+            offset_world = self.camera_x * parallax
+            offset = offset_world % step
+            ridge = []
+            for idx in range(-2, int(W / step) + 4):
+                sx = int(idx * step - offset)
+                world_sample = sx + offset_world
+                yy = base_y + math.sin(world_sample * .0044) * amplitude + math.cos(world_sample * .0107) * amplitude * .31
+                ridge.append((sx, int(yy)))
+            polygon = [(ridge[0][0], H)] + ridge + [(ridge[-1][0], H)]
+            pygame.draw.polygon(surface, color, polygon)
+            # Thin ridge highlights keep the silhouettes readable through fog.
+            pygame.draw.lines(surface, tuple(min(255, ch + 13) for ch in color), False, ridge, 1)
+
+        # Far bridge arches and broken causeways.
+        for wx in (-60, 710, 1510, 2290, 3100, 3930, 4700):
+            sx = int(wx - self.camera_x * .29)
+            if sx < -260 or sx > W + 260:
+                continue
+            bridge_y = 435 + int(math.sin(wx * .002) * 25)
+            span = 220
+            arch = []
+            for k in range(19):
+                theta = math.pi + math.pi * k / 18
+                arch.append((int(sx + span / 2 + math.cos(theta) * span / 2), int(bridge_y + 94 + math.sin(theta) * 94)))
+            pygame.draw.lines(surface, (37, 48, 56), False, arch, 8)
+            pygame.draw.line(surface, (58, 69, 74), (sx, bridge_y + 94), (sx + span, bridge_y + 94), 6)
+            pygame.draw.line(surface, (76, 82, 83), (sx, bridge_y + 89), (sx + span, bridge_y + 89), 1)
+            for post_x in (sx + 18, sx + span - 18):
+                pygame.draw.line(surface, (42, 48, 50), (post_x, bridge_y + 60), (post_x, bridge_y + 93), 3)
+
+        # Castle silhouettes: spires, buttresses, lit lancet windows.
+        for tx, ty, tw, th, color in self.decor["towers"]:
+            sx = int(tx - self.camera_x * .28)
+            if sx < -tw - 24 or sx > W + 24:
+                continue
+            rect = pygame.Rect(sx, ty, tw, th)
+            pygame.draw.rect(surface, color, rect)
+            pygame.draw.polygon(surface, color, [(sx-10, ty+12), (sx+int(tw*.22), ty-14), (sx+int(tw*.52), ty+12), (sx+int(tw*.82), ty-21), (sx+tw+8, ty+12)])
+            pygame.draw.line(surface, tuple(min(255, c+12) for c in color), (sx+2, ty+13), (sx+2, ty+th), 1)
+            pygame.draw.polygon(surface, tuple(max(0,c-3) for c in color), [(sx+int(tw*.38),ty+th),(sx+int(tw*.48),ty+th),(sx+int(tw*.48),ty+15)])
+            for wx in range(sx+14, sx+tw-7, 25):
+                if 0 <= wx < W:
+                    wy = ty + 40 + ((wx * 7) % max(20, int(th * .55)))
+                    if wy + 14 < ty + th:
+                        pygame.draw.rect(surface, (137, 100, 65), (wx, wy, 4, 12))
+                        pygame.draw.rect(surface, (207, 152, 87), (wx+1, wy+2, 2, 7))
+            # Small broken battlements along some roofs.
+            for bx in range(sx+10, sx+tw-8, 18):
+                if (bx // 18) % 3:
+                    pygame.draw.rect(surface, color, (bx, ty+4, 7, 12))
+
+        # Hanging chains and distant ironwork.
+        for cx, cy, length in self.decor["chains"]:
+            sx = int(cx - self.camera_x * .48)
+            if -10 < sx < W + 10:
+                pygame.draw.line(surface, (42, 47, 48), (sx, 0), (sx, cy+length), 3)
+                pygame.draw.line(surface, (82, 74, 61), (sx+1, 0), (sx+1, cy+length), 1)
+                for k in range(12, cy+length, 18):
+                    pygame.draw.line(surface, (77, 68, 58), (sx-3, k), (sx+3, k+5), 1)
+
+        # Region thresholds appear as old, rune-marked gate frames.
+        for boundary in (1320, 2850, 4050):
+            sx = int(boundary - self.camera_x)
+            if -30 < sx < W + 30:
+                pygame.draw.line(surface, (72, 65, 53), (sx, 105), (sx, 610), 3)
+                pygame.draw.line(surface, (118, 91, 57), (sx-12, 142), (sx-12, 610), 1)
+                pygame.draw.circle(surface, GOLD, (sx, 105), 5)
+                pygame.draw.polygon(surface, (118, 91, 57), [(sx, 119), (sx+8, 135), (sx, 151), (sx-8, 135)], 1)
+
+        # Persistent, softly animated embers on the far plane.
+        for ember in self.decor["embers"]:
+            sx = int(ember[0] - self.camera_x * .82)
+            if 0 <= sx < W and 100 < ember[1] < H - 65:
+                a = 70 + int((math.sin(ember[4] * 3) + 1) * 50)
+                col = (min(255, 124+a//3), min(220, 78+a//3), min(150, 52+a//6))
+                pygame.draw.circle(surface, col, (sx, int(ember[1])), 1 if a < 140 else 2)
+
+    def draw_world(self, surface):
+        camera = self.camera_x
+
+        # Floor haze, subtle horizontal strata, and drifting low fog.
+        for i in range(7):
+            y = 455 + i * 31
+            shade = 29 + i * 2
+            pygame.draw.line(surface, (shade, shade+3, shade+5), (0, y), (W, y), 1)
+        surface.blit(self.fog_layer, (0, H-150))
+
+        # Stone geometry is shaded as individual blocks, with chipped edges,
+        # cracks and moss. Tile positions are anchored to world coordinates.
         for plat in self.platforms:
-            sx=int(plat.x-camera)
-            if sx+plat.w < -10 or sx>W+10: continue
-            r=pygame.Rect(sx,int(plat.y),int(plat.w),int(plat.h))
-            if plat.kind=="floor":
-                pygame.draw.rect(surface,(40,43,41),r)
-                pygame.draw.rect(surface,(79,78,69),(r.x,r.y,r.w,5))
-                pygame.draw.line(surface,(99,91,75),(r.x,r.y+4),(r.right,r.y+4),1)
-                # Tile seams are spaced in world coordinates so they remain stable as camera scrolls.
-                start=(int(plat.x//56)*56)
-                for wx in range(start,int(plat.x+plat.w),56):
-                    px=int(wx-camera)
-                    if sx<=px<=sx+plat.w:
-                        pygame.draw.line(surface,(26,30,30),(px,r.y+7),(px,r.bottom),2)
-                        pygame.draw.line(surface,(51,53,49),(px+1,r.y+7),(px+1,r.bottom),1)
-                for row_y in range(int(plat.y+38),int(plat.y+plat.h),36):
-                    pygame.draw.line(surface,(30,33,32),(r.x,row_y),(r.right,row_y),1)
+            sx = int(plat.x-camera)
+            if sx + plat.w < -24 or sx > W + 24:
+                continue
+            r = pygame.Rect(sx, int(plat.y), int(plat.w), int(plat.h))
+            if plat.kind == "floor":
+                pygame.draw.rect(surface, (28, 32, 34), r)
+                pygame.draw.rect(surface, (67, 70, 67), (r.x, r.y+5, r.w, r.h-5))
+                pygame.draw.line(surface, (143, 132, 103), (r.x, r.y+2), (r.right, r.y+2), 2)
+                pygame.draw.line(surface, (93, 112, 89), (r.x, r.y+5), (r.right, r.y+5), 1)
+
+                block = 52
+                start = (int(plat.x // block) * block)
+                for wx in range(start, int(plat.x + plat.w) + block, block):
+                    px = int(wx-camera)
+                    col_id = (wx // block) % 4
+                    top_col = ((77,79,73),(70,75,73),(82,81,72),(65,72,70))[col_id]
+                    bw = min(block, int(plat.x+plat.w-wx))
+                    if bw <= 0:
+                        continue
+                    if sx-1 <= px <= sx+plat.w:
+                        pygame.draw.rect(surface, top_col, (px+1,r.y+8,max(1,bw-2),25))
+                        pygame.draw.line(surface, tuple(min(255,c+9) for c in top_col), (px+3,r.y+9), (px+bw-4,r.y+9), 1)
+                        pygame.draw.line(surface, (32,37,37), (px+1,r.y+32), (px+bw-1,r.y+32), 2)
+                        # Chipped corner and a deterministic crack for every few blocks.
+                        if col_id == 2:
+                            pygame.draw.lines(surface,(42,47,46),False,[(px+bw-13,r.y+13),(px+bw-19,r.y+20),(px+bw-15,r.y+26)],1)
+                        if (wx // block) % 3 == 0:
+                            moss = (65,90,66)
+                            pygame.draw.line(surface,moss,(px+5,r.y+3),(px+20,r.y+4),2)
+                            pygame.draw.line(surface,(84,105,69),(px+9,r.y+2),(px+15,r.y-2),1)
+                        if (wx // block) % 5 == 1:
+                            pygame.draw.polygon(surface,(37,42,42),[(px+bw-12,r.y+22),(px+bw-5,r.y+23),(px+bw-11,r.y+28)])
+
+                # Deep face courses and alternating masonry seams.
+                for row_index, row_y in enumerate(range(int(plat.y+37), int(plat.y+plat.h), 37)):
+                    pygame.draw.line(surface,(29,34,35),(r.x,row_y),(r.right,row_y),2)
+                    pygame.draw.line(surface,(46,50,49),(r.x,row_y+2),(r.right,row_y+2),1)
+                    shift = 26 if row_index % 2 else 0
+                    for wx in range(int(plat.x//78)*78+shift, int(plat.x+plat.w), 78):
+                        px = int(wx-camera)
+                        if sx-1 <= px <= sx+plat.w:
+                            pygame.draw.line(surface,(30,35,36),(px,row_y+3),(px,row_y+36),2)
+                            pygame.draw.line(surface,(47,50,48),(px+2,row_y+5),(px+2,row_y+28),1)
+                # Occasional chipped hanging stones.
+                if int(plat.x) % 3 == 0:
+                    pygame.draw.polygon(surface,(22,26,28),[(r.x+24,r.bottom-2),(r.x+35,r.bottom-2),(r.x+30,r.bottom+9)])
             else:
-                pygame.draw.rect(surface,(24,27,28),(r.x,r.y+6,r.w,r.h))
-                pygame.draw.rect(surface,(57,59,56),r)
-                pygame.draw.line(surface,(138,119,86),(r.x,r.y),(r.right,r.y),2)
-                pygame.draw.line(surface,(88,83,70),(r.x+3,r.y+5),(r.right-2,r.y+5),1)
-                for xx in range(r.x+22,r.right,38):
-                    pygame.draw.line(surface,(37,41,40),(xx,r.y+6),(xx,r.bottom),1)
-        # Decorative columns, roots, rubble.
-        for wx in (330, 760, 1030, 1475, 1960, 2260, 2550, 3010, 3280, 3690, 3940, 4170, 4650):
+                pygame.draw.rect(surface,(17,20,22),(r.x,r.y+8,r.w,r.h))
+                pygame.draw.rect(surface,(49,54,54),r)
+                pygame.draw.rect(surface,(72,76,70),(r.x,r.y,r.w,4))
+                pygame.draw.line(surface,(150,133,97),(r.x,r.y),(r.right,r.y),2)
+                pygame.draw.line(surface,(94,91,77),(r.x+3,r.y+5),(r.right-3,r.y+5),1)
+                for xx in range(r.x+18,r.right,38):
+                    pygame.draw.line(surface,(28,34,35),(xx,r.y+7),(xx,r.bottom),2)
+                    pygame.draw.line(surface,(75,76,69),(xx+2,r.y+8),(xx+2,r.bottom-2),1)
+                # Moss lips and hanging rootlets on platform edges.
+                if int(plat.x//100) % 2 == 0:
+                    for mx in range(r.x+8,r.right-10,31):
+                        pygame.draw.line(surface,(60,86,63),(mx,r.y+1),(mx+13,r.y+2),2)
+                        if (mx//31) % 2:
+                            pygame.draw.line(surface,(46,68,51),(mx+5,r.y+3),(mx+3,r.y+11),1)
+
+        # Pillars have capitals, grooves, broken tops and rubble at their feet.
+        for wx in (330,760,1030,1475,1960,2260,2550,3010,3280,3690,3940,4170,4650):
             sx=int(wx-camera)
-            if -60<sx<W+60:
-                floor_y=FLOOR_Y if wx<2660 or wx>=3770 else FLOOR_Y+4
-                pygame.draw.rect(surface,(26,29,30),(sx-20,floor_y-120,40,120))
-                pygame.draw.rect(surface,(62,60,53),(sx-27,floor_y-124,54,10))
-                pygame.draw.line(surface,(100,88,65),(sx-17,floor_y-118),(sx-17,floor_y-8),2)
-        # Torches and checkpoint shrines.
+            if -70<sx<W+70:
+                floor_y = FLOOR_Y if wx<2660 or wx>=3770 else FLOOR_Y+4
+                pygame.draw.rect(surface,(23,27,29),(sx-19,floor_y-120,38,120))
+                pygame.draw.rect(surface,(48,52,51),(sx-15,floor_y-119,30,115))
+                pygame.draw.line(surface,(97,89,72),(sx-11,floor_y-115),(sx-11,floor_y-12),2)
+                pygame.draw.line(surface,(31,36,37),(sx+9,floor_y-112),(sx+9,floor_y-10),2)
+                pygame.draw.rect(surface,(61,63,58),(sx-28,floor_y-126,56,9))
+                pygame.draw.line(surface,(132,113,82),(sx-26,floor_y-126),(sx+25,floor_y-126),2)
+                pygame.draw.polygon(surface,(35,39,39),[(sx-27,floor_y-126),(sx-15,floor_y-143),(sx-3,floor_y-126),(sx+7,floor_y-134),(sx+27,floor_y-126)])
+                for rx in (-22,-12,14,22):
+                    pygame.draw.polygon(surface,(27,31,32),[(sx+rx,floor_y),(sx+rx+7,floor_y),(sx+rx+3,floor_y-6)])
+
+        # Broken masonry, roots and discarded spears along the walking route.
+        for wx in (180,560,920,1155,1540,1810,2160,2480,2890,3245,3460,3730,4100,4420,4760):
+            sx=int(wx-camera)
+            if -40<sx<W+40:
+                by=FLOOR_Y-6
+                pygame.draw.polygon(surface,(37,41,40),[(sx-13,by),(sx-4,by-7),(sx+4,by-3),(sx+14,by),(sx+10,by+4),(sx-10,by+4)])
+                pygame.draw.line(surface,(90,88,73),(sx-8,by-2),(sx-3,by-5),1)
+                if wx%2:
+                    pygame.draw.line(surface,(56,72,49),(sx+13,by-1),(sx+20,by-13),2)
+                    pygame.draw.line(surface,(65,90,57),(sx+18,by-7),(sx+25,by-10),2)
+
+        # Torches and shrines are designed as small scene focal points.
         for wx,wy in self.decor["candles"]:
             sx=int(wx-camera)
-            if -25<sx<W+25:
-                glow(surface,(sx,wy-28),42,(236,142,66),53)
-                pygame.draw.rect(surface,(82,64,46),(sx-4,wy-21,8,20))
+            if -30<sx<W+30:
+                glow(surface,(sx,wy-28),38,(242,143,68),43)
+                pygame.draw.rect(surface,(67,52,39),(sx-5,wy-21,10,21))
+                pygame.draw.rect(surface,(117,88,56),(sx-2,wy-19,4,17))
                 flame_y=wy-28+math.sin(self.elapsed*12+wx)*2
-                pygame.draw.ellipse(surface,(255,161,72),(sx-4,int(flame_y-8),8,14))
-                pygame.draw.ellipse(surface,(255,229,164),(sx-2,int(flame_y-6),4,9))
+                pygame.draw.polygon(surface,(255,136,57),[(sx, int(flame_y-12)),(sx+5,int(flame_y-2)),(sx+2,int(flame_y+6)),(sx-4,int(flame_y+4)),(sx-5,int(flame_y-2))])
+                pygame.draw.ellipse(surface,(255,230,174),(sx-2,int(flame_y-7),4,9))
+
         for i,cp_x in enumerate((1280,2700,3820)):
             sx=int(cp_x-camera)
-            if -50<sx<W+50:
-                glow(surface,(sx,FLOOR_Y-28),66,GOLD,55 if self.checkpoints[i] else 23)
-                pygame.draw.polygon(surface,(95,83,62),[(sx,FLOOR_Y-83),(sx+25,FLOOR_Y-48),(sx,FLOOR_Y-12),(sx-25,FLOOR_Y-48)])
-                pygame.draw.polygon(surface,(48,54,52),[(sx,FLOOR_Y-72),(sx+15,FLOOR_Y-48),(sx,FLOOR_Y-24),(sx-15,FLOOR_Y-48)])
-                pygame.draw.circle(surface,PALE_GOLD if self.checkpoints[i] else (110,102,79),(sx,FLOOR_Y-49),6)
-        # Low floor fog bands.
-        fog=pygame.Surface((W,105),pygame.SRCALPHA)
-        for i in range(8):
-            alpha=max(2,18-i*2)
-            pygame.draw.ellipse(fog,(127,132,122,alpha),(-100+i*110,35+i*5,W+200-i*90,54-i*3))
-        surface.blit(fog,(0,H-150))
+            if -60<sx<W+60:
+                glow(surface,(sx,FLOOR_Y-35),62,GOLD,45 if self.checkpoints[i] else 18)
+                pygame.draw.polygon(surface,(71,66,55),[(sx,FLOOR_Y-102),(sx+29,FLOOR_Y-63),(sx,FLOOR_Y-22),(sx-29,FLOOR_Y-63)])
+                pygame.draw.polygon(surface,(32,40,41),[(sx,FLOOR_Y-88),(sx+19,FLOOR_Y-63),(sx,FLOOR_Y-36),(sx-19,FLOOR_Y-63)])
+                pygame.draw.polygon(surface,(123,100,65) if self.checkpoints[i] else (75,75,63),[(sx,FLOOR_Y-78),(sx+9,FLOOR_Y-63),(sx,FLOOR_Y-47),(sx-9,FLOOR_Y-63)])
+                pygame.draw.circle(surface,PALE_GOLD if self.checkpoints[i] else (103,99,81),(sx,FLOOR_Y-63),5)
 
     def draw_weapon_hint(self,surface):
         r=pygame.Rect(W-278,H-100,250,70)
@@ -1222,7 +1460,7 @@ class Game:
         # Vitality/stamina card.
         r=pygame.Rect(24,20,354,102)
         panel(surface,r)
-        text(surface,self.font_tiny,"ASHEN WANDERER   /   VEILBOUND",(r.x+15,r.y+12),GOLD)
+        text(surface,self.font_tiny,"ASHEN WANDERER   /   VEILBOUND",(r.x+15,r.y+12),PALE_GOLD)
         bar(surface,pygame.Rect(r.x+16,r.y+34,214,13),p.hp,p.hp_max,RED)
         text(surface,self.font_ui,f"{int(p.hp):03d} / {p.hp_max}",(r.x+245,r.y+30),PALE)
         text(surface,self.font_tiny,"VITALITY",(r.x+16,r.y+49),MUTED)
@@ -1272,7 +1510,8 @@ class Game:
         self.draw_weapon_hint(surface)
         # Area label fades at each transition.
         _,_,area_name,_,_=self.area_at(self.player.x)
-        text(surface,self.font_tiny,area_name,(W/2,H-67),GOLD,anchor="center")
+        panel(surface,pygame.Rect(W//2-146,H-83,292,25),(10,13,15,188),(68,67,57),5)
+        text(surface,self.font_tiny,area_name,(W/2,H-71),PALE_GOLD,anchor="center")
         if self.message_timer>0 and self.message:
             alpha=min(1,self.message_timer*1.6)
             color=tuple(int(c*alpha) for c in GOLD)
