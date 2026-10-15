@@ -414,87 +414,90 @@ class Enemy:
                     break
 
     def draw(self, surface, camera_x, now):
-        sx=int(self.x-camera_x)
-        sy=int(self.y)
-        if sx < -170 or sx > W+170 or self.dead:
+        scale = 1.28 if self.boss else (1.24 if self.archer else 1.30)
+        render_w = max(self.w+4, int(round(self.w*scale)))
+        render_h = max(self.h+6, int(round(self.h*scale)))
+        sx = int(self.x-camera_x-(render_w-self.w)*.5)
+        sy = int(self.y+self.h-render_h)
+        if sx < -190 or sx > W+190 or self.dead:
             return
         flick=math.sin(now*5+self.uid)*2
-        pygame.draw.ellipse(surface,(8,10,12),(sx-4,sy+self.h-4,self.w+8,10))
+        pygame.draw.ellipse(surface,(8,10,12),(sx-4,sy+render_h-4,render_w+8,10))
         if self.state=="windup":
             pulse=.5+.5*math.sin(now*24)
             color=(226,67,54) if pulse>.25 else (123,42,39)
             reach=88 if not self.boss else (142 if self.phase==1 else 178)
-            yline=sy+self.h-13
-            tip=sx+self.w+self.facing*reach
-            pygame.draw.polygon(surface,(55,18,20),[(sx+self.w*self.facing if self.facing>0 else sx,yline-24),(tip,yline-6),(tip,yline+5),(sx+self.w if self.facing>0 else sx,yline+8)])
-            pygame.draw.line(surface,color,(sx+self.w if self.facing>0 else sx,yline),(tip,yline),3)
+            yline=sy+render_h-13
+            tip=sx+render_w+self.facing*reach
+            pygame.draw.polygon(surface,(55,18,20),[(sx+render_w*self.facing if self.facing>0 else sx,yline-24),(tip,yline-6),(tip,yline+5),(sx+render_w if self.facing>0 else sx,yline+8)])
+            pygame.draw.line(surface,color,(sx+render_w if self.facing>0 else sx,yline),(tip,yline),3)
             pygame.draw.circle(surface,(255,145,92),(tip,yline),4,1)
         if self.boss:
             # A towering cloak, layered plate and crown-like broken antlers.
-            cloak=[(int(sx+self.w*.12),sy+24),(int(sx+self.w*.34),sy+14),(int(sx+self.w*.72),sy+21),(int(sx+self.w*1.03),sy+self.h-4),(int(sx+self.w*.52),sy+self.h-12),(int(sx-self.w*.04),sy+self.h-4)]
+            cloak=[(int(sx+render_w*.12),sy+24),(int(sx+render_w*.34),sy+14),(int(sx+render_w*.72),sy+21),(int(sx+render_w*1.03),sy+render_h-4),(int(sx+render_w*.52),sy+render_h-12),(int(sx-render_w*.04),sy+render_h-4)]
             pygame.draw.polygon(surface,(32,23,29),cloak)
-            pygame.draw.polygon(surface,(69,35,38),[(sx+10,sy+36),(sx+self.w-12,sy+33),(sx+self.w-6,sy+self.h-12),(sx+18,sy+self.h-12)])
-            pygame.draw.line(surface,(132,73,53),(sx+14,sy+42),(sx+8,sy+self.h-13),2)
-            pygame.draw.ellipse(surface,(71,66,59),(sx+10,sy+6,self.w-20,43))
-            pygame.draw.ellipse(surface,(141,106,75),(sx+18,sy+8,self.w-36,32),2)
+            pygame.draw.polygon(surface,(69,35,38),[(sx+10,sy+36),(sx+render_w-12,sy+33),(sx+render_w-6,sy+render_h-12),(sx+18,sy+render_h-12)])
+            pygame.draw.line(surface,(132,73,53),(sx+14,sy+42),(sx+8,sy+render_h-13),2)
+            pygame.draw.ellipse(surface,(71,66,59),(sx+10,sy+6,render_w-20,43))
+            pygame.draw.ellipse(surface,(141,106,75),(sx+18,sy+8,render_w-36,32),2)
             pygame.draw.polygon(surface,(22,25,29),[(sx+18,sy+11),(sx+5,sy-8),(sx+25,sy+3),(sx+34,sy-15),(sx+45,sy+3),(sx+63,sy-12),(sx+59,sy+15)])
             pygame.draw.line(surface,(168,133,85),(sx+10,sy+12),(sx+5,sy-8),2)
             pygame.draw.line(surface,(168,133,85),(sx+32,sy+5),(sx+34,sy-15),2)
             pygame.draw.line(surface,(168,133,85),(sx+52,sy+7),(sx+63,sy-12),2)
             # Glowing eyes and chest rune.
-            for eye_x in (sx+25,sx+self.w-27):
+            for eye_x in (sx+25,sx+render_w-27):
                 glow(surface,(eye_x,sy+27),14,(238,65,49),24)
                 pygame.draw.line(surface,(255,125,74),(eye_x-4,sy+27),(eye_x+4,sy+27),3)
-            pygame.draw.polygon(surface,(171,62,47),[(sx+self.w//2,sy+39),(sx+self.w//2+7,sy+49),(sx+self.w//2,sy+59),(sx+self.w//2-7,sy+49)])
+            pygame.draw.polygon(surface,(171,62,47),[(sx+render_w//2,sy+39),(sx+render_w//2+7,sy+49),(sx+render_w//2,sy+59),(sx+render_w//2-7,sy+49)])
             # Massive greataxe.
-            ax=sx+self.w+(self.facing*7)
+            ax=sx+render_w+(self.facing*7)
             pygame.draw.line(surface,(56,45,36),(ax,sy+36),(ax+self.facing*34,sy+68),5)
             pygame.draw.polygon(surface,(102,91,75),[(ax+self.facing*24,sy+54),(ax+self.facing*44,sy+45),(ax+self.facing*49,sy+70),(ax+self.facing*32,sy+80)])
             pygame.draw.line(surface,(174,134,82),(ax+self.facing*31,sy+55),(ax+self.facing*43,sy+48),2)
         elif self.archer:
             # Hood and narrow leather torso.
-            pygame.draw.polygon(surface,(40,38,37),[(sx+5,sy+15),(sx+self.w-4,sy+12),(sx+self.w,sy+self.h-4),(sx+1,sy+self.h-4)])
-            pygame.draw.polygon(surface,(94,72,50),[(sx+8,sy+23),(sx+self.w-8,sy+21),(sx+self.w-3,sy+self.h-8),(sx+4,sy+self.h-8)])
-            pygame.draw.ellipse(surface,(27,30,31),(sx+5,sy-1,self.w-10,25))
-            pygame.draw.ellipse(surface,(139,111,78),(sx+9,sy+4,self.w-18,15))
-            pygame.draw.line(surface,(233,71,56),(sx+12,sy+11),(sx+self.w-12,sy+11),3)
-            pygame.draw.line(surface,(172,129,74),(sx+9,sy+29),(sx+self.w-3,sy+42),4)
+            pygame.draw.polygon(surface,(40,38,37),[(sx+5,sy+15),(sx+render_w-4,sy+12),(sx+render_w,sy+render_h-4),(sx+1,sy+render_h-4)])
+            pygame.draw.polygon(surface,(94,72,50),[(sx+8,sy+23),(sx+render_w-8,sy+21),(sx+render_w-3,sy+render_h-8),(sx+4,sy+render_h-8)])
+            pygame.draw.ellipse(surface,(27,30,31),(sx+5,sy-1,render_w-10,25))
+            pygame.draw.ellipse(surface,(139,111,78),(sx+9,sy+4,render_w-18,15))
+            pygame.draw.line(surface,(233,71,56),(sx+12,sy+11),(sx+render_w-12,sy+11),3)
+            pygame.draw.line(surface,(172,129,74),(sx+9,sy+29),(sx+render_w-3,sy+42),4)
             # Bow and drawn string.
-            bow_x=sx+self.w-4 if self.facing>0 else sx+4
+            bow_x=sx+render_w-4 if self.facing>0 else sx+4
             pygame.draw.arc(surface,(141,101,60),(bow_x-10,sy+17,22,29),-1.5,1.5,2)
             pygame.draw.line(surface,(211,193,153),(bow_x,sy+20),(bow_x,sy+43),1)
-            pygame.draw.line(surface,(214,187,134),(sx+self.w//2,sy+27),(sx+self.w//2+self.facing*21,sy+27),2)
-            pygame.draw.polygon(surface,(210,179,127),[(sx+self.w//2+self.facing*22,sy+27),(sx+self.w//2+self.facing*15,sy+24),(sx+self.w//2+self.facing*15,sy+30)])
+            pygame.draw.line(surface,(214,187,134),(sx+render_w//2,sy+27),(sx+render_w//2+self.facing*21,sy+27),2)
+            pygame.draw.polygon(surface,(210,179,127),[(sx+render_w//2+self.facing*22,sy+27),(sx+render_w//2+self.facing*15,sy+24),(sx+render_w//2+self.facing*15,sy+30)])
         else:
             # Hollow: skull, rib cage, ragged tunic and articulated limbs.
-            pygame.draw.polygon(surface,(46,42,39),[(sx+4,sy+19),(sx+self.w-4,sy+17),(sx+self.w-1,sy+self.h-7),(sx+2,sy+self.h-7)])
-            pygame.draw.polygon(surface,(99,71,57),[(sx+8,sy+26),(sx+self.w-8,sy+25),(sx+self.w-4,sy+self.h-11),(sx+5,sy+self.h-11)])
-            pygame.draw.ellipse(surface,(150,119,87),(sx+8,sy+1,self.w-16,23))
-            pygame.draw.ellipse(surface,(54,45,39),(sx+10,sy+4,self.w-20,17))
+            pygame.draw.polygon(surface,(46,42,39),[(sx+4,sy+19),(sx+render_w-4,sy+17),(sx+render_w-1,sy+render_h-7),(sx+2,sy+render_h-7)])
+            pygame.draw.polygon(surface,(99,71,57),[(sx+8,sy+26),(sx+render_w-8,sy+25),(sx+render_w-4,sy+render_h-11),(sx+5,sy+render_h-11)])
+            pygame.draw.ellipse(surface,(150,119,87),(sx+8,sy+1,render_w-16,23))
+            pygame.draw.ellipse(surface,(54,45,39),(sx+10,sy+4,render_w-20,17))
             pygame.draw.circle(surface,(233,75,48),(sx+13,sy+10),2)
-            pygame.draw.circle(surface,(233,75,48),(sx+self.w-13,sy+10),2)
-            pygame.draw.line(surface,(202,173,133),(sx+11,sy+20),(sx+self.w-10,sy+20),2)
-            pygame.draw.line(surface,(142,120,91),(sx+8,sy+30),(sx+self.w-7,sy+31),3)
-            pygame.draw.line(surface,(142,120,91),(sx+10,sy+36),(sx+self.w-9,sy+37),2)
-            pygame.draw.line(surface,(48,39,35),(sx+10,sy+39),(sx+3,sy+self.h-14),5)
-            pygame.draw.line(surface,(48,39,35),(sx+self.w-10,sy+39),(sx+self.w-2,sy+self.h-14),5)
-            pygame.draw.line(surface,(126,105,82),(sx+10,sy+39),(sx+3,sy+self.h-14),2)
-            pygame.draw.line(surface,(126,105,82),(sx+self.w-10,sy+39),(sx+self.w-2,sy+self.h-14),2)
+            pygame.draw.circle(surface,(233,75,48),(sx+render_w-13,sy+10),2)
+            pygame.draw.line(surface,(202,173,133),(sx+11,sy+20),(sx+render_w-10,sy+20),2)
+            pygame.draw.line(surface,(142,120,91),(sx+8,sy+30),(sx+render_w-7,sy+31),3)
+            pygame.draw.line(surface,(142,120,91),(sx+10,sy+36),(sx+render_w-9,sy+37),2)
+            pygame.draw.line(surface,(48,39,35),(sx+10,sy+39),(sx+3,sy+render_h-14),5)
+            pygame.draw.line(surface,(48,39,35),(sx+render_w-10,sy+39),(sx+render_w-2,sy+render_h-14),5)
+            pygame.draw.line(surface,(126,105,82),(sx+10,sy+39),(sx+3,sy+render_h-14),2)
+            pygame.draw.line(surface,(126,105,82),(sx+render_w-10,sy+39),(sx+render_w-2,sy+render_h-14),2)
             # Rusted short blade.
-            hand=(sx+self.w//2+self.facing*8,sy+34)
+            hand=(sx+render_w//2+self.facing*8,sy+34)
             tip=(hand[0]+self.facing*23,hand[1]+9)
             pygame.draw.line(surface,(64,45,34),hand,tip,4)
             pygame.draw.line(surface,(174,128,82),hand,tip,2)
-        if self.hit_flash>0:
+        if render_hit_flash>0:
             pygame.draw.rect(surface,(255,236,194),self.rect.move(-round(camera_x),0),2,border_radius=4)
-            pygame.draw.line(surface,(255,238,206),(sx+4,sy+8),(sx+self.w-4,sy+self.h-10),2)
-        hpw=self.w+(40 if self.boss else 0)
-        hp_x=int(sx+self.w/2-hpw/2)
+            pygame.draw.line(surface,(255,238,206),(sx+4,sy+8),(sx+render_w-4,sy+render_h-10),2)
+        hpw=render_w+(40 if self.boss else 0)
+        hp_x=int(sx+render_w/2-hpw/2)
         hp_y=sy-(22 if self.boss else 13)
         pygame.draw.rect(surface,(17,17,18),(hp_x-2,hp_y-2,hpw+4,9),border_radius=3)
         pygame.draw.rect(surface,(44,30,29),(hp_x,hp_y,hpw,6),border_radius=3)
-        if self.hp>0:
-            pct=self.hp/max(1,self.hp_max)
+        if render_hp>0:
+            pct=render_hp/max(1,render_hp_max)
             pygame.draw.rect(surface,(176,48,43),(hp_x+1,hp_y+1,max(1,int((hpw-2)*pct)),4),border_radius=2)
             pygame.draw.line(surface,(235,105,79),(hp_x+2,hp_y+1),(hp_x+max(2,int((hpw-2)*pct)),hp_y+1),1)
 
@@ -837,7 +840,11 @@ class Player:
             game.shockwave = max(game.shockwave, .20)
 
     def draw(self, surface, camera_x, game):
-        sx, sy = int(self.x-camera_x), int(self.y)
+        scale = 1.22
+        render_w = max(self.w + 4, int(round(self.w * scale)))
+        render_h = max(self.h + 8, int(round(self.h * scale)))
+        sx = int(self.x-camera_x - (render_w-self.w)*.5)
+        sy = int(self.y+self.h-render_h)
         if sx < -150 or sx > W + 150:
             return
         weapon = WEAPONS[game.weapon]
@@ -845,64 +852,64 @@ class Player:
         stride = math.sin(self.anim_time * 13.5) * (6 if moving else 1.2)
         cape_wave = math.sin(self.anim_time * 5.5) * (4 if moving else 2)
         # Ground contact shadow and a faint warm rim light.
-        pygame.draw.ellipse(surface,(9,12,14),(sx-8,sy+self.h-4,self.w+18,11))
+        pygame.draw.ellipse(surface,(9,12,14),(sx-8,sy+render_h-4,render_w+18,11))
         if moving:
-            pygame.draw.ellipse(surface,(67,73,72),(sx+5,sy+self.h-3,self.w-7,3))
+            pygame.draw.ellipse(surface,(67,73,72),(sx+5,sy+render_h-3,render_w-7,3))
 
         # Back-swept torn cloak with animated hem and a contrasting inner lining.
         cape_back = -self.facing
         cape = [
-            (sx+self.w*.45,sy+19),
-            (sx+self.w*.25+cape_back*5,sy+29),
-            (sx+self.w*.10+cape_back*(18+cape_wave),sy+45),
-            (sx+self.w*.18+cape_back*(26+cape_wave),sy+self.h-4),
-            (sx+self.w*.54,sy+self.h-8),
-            (sx+self.w*.42,sy+43)
+            (sx+render_w*.45,sy+19),
+            (sx+render_w*.25+cape_back*5,sy+29),
+            (sx+render_w*.10+cape_back*(18+cape_wave),sy+45),
+            (sx+render_w*.18+cape_back*(26+cape_wave),sy+render_h-4),
+            (sx+render_w*.54,sy+render_h-8),
+            (sx+render_w*.42,sy+43)
         ]
         cape=[(int(x),int(y)) for x,y in cape]
         pygame.draw.polygon(surface,(21,25,31),cape)
         pygame.draw.lines(surface,(98,43,42),False,cape[1:5],2)
         pygame.draw.line(surface,(132,66,55),cape[2],cape[3],1)
         # Split boots and moving legs give the body a readable locomotion pose.
-        hip=(sx+self.w*.48,sy+self.h*.69)
-        left_foot=(int(sx+self.w*.28-stride*.4),sy+self.h-2)
-        right_foot=(int(sx+self.w*.72+stride*.4),sy+self.h-2)
+        hip=(sx+render_w*.48,sy+render_h*.69)
+        left_foot=(int(sx+render_w*.28-stride*.4),sy+render_h-2)
+        right_foot=(int(sx+render_w*.72+stride*.4),sy+render_h-2)
         pygame.draw.line(surface,(17,20,23),(int(hip[0]-3),int(hip[1])),left_foot,7)
         pygame.draw.line(surface,(17,20,23),(int(hip[0]+4),int(hip[1])),right_foot,7)
         pygame.draw.line(surface,(92,82,66),(left_foot[0]-4,left_foot[1]-1),(left_foot[0]+5,left_foot[1]-1),3)
         pygame.draw.line(surface,(92,82,66),(right_foot[0]-4,right_foot[1]-1),(right_foot[0]+5,right_foot[1]-1),3)
 
         # Armored torso, layered pauldrons, waist sash and bright seam details.
-        torso=[(sx+7,sy+18),(sx+self.w-7,sy+18),(sx+self.w-3,sy+45),(sx+self.w*.62,sy+52),(sx+4,sy+43)]
+        torso=[(sx+7,sy+18),(sx+render_w-7,sy+18),(sx+render_w-3,sy+45),(sx+render_w*.62,sy+52),(sx+4,sy+43)]
         torso=[(int(x),int(y)) for x,y in torso]
         pygame.draw.polygon(surface,(43,48,51),torso)
-        pygame.draw.polygon(surface,(72,72,65),[(sx+10,sy+21),(sx+self.w-11,sy+21),(sx+self.w-12,sy+38),(sx+8,sy+39)])
-        pygame.draw.line(surface,(125,108,78),(sx+10,sy+21),(sx+self.w-11,sy+21),2)
-        pygame.draw.polygon(surface,(29,33,36),[(sx+8,sy+38),(sx+self.w-8,sy+38),(sx+self.w-12,sy+45),(sx+11,sy+46)])
-        pygame.draw.line(surface,(151,56,46),(sx+10,sy+42),(sx+self.w-11,sy+42),3)
-        pygame.draw.circle(surface,(206,172,104),(sx+self.w//2,sy+33),3)
+        pygame.draw.polygon(surface,(72,72,65),[(sx+10,sy+21),(sx+render_w-11,sy+21),(sx+render_w-12,sy+38),(sx+8,sy+39)])
+        pygame.draw.line(surface,(125,108,78),(sx+10,sy+21),(sx+render_w-11,sy+21),2)
+        pygame.draw.polygon(surface,(29,33,36),[(sx+8,sy+38),(sx+render_w-8,sy+38),(sx+render_w-12,sy+45),(sx+11,sy+46)])
+        pygame.draw.line(surface,(151,56,46),(sx+10,sy+42),(sx+render_w-11,sy+42),3)
+        pygame.draw.circle(surface,(206,172,104),(sx+render_w//2,sy+33),3)
         # Paired shoulder plates and armoured bracer.
         pygame.draw.ellipse(surface,(97,88,67),(sx+2,sy+18,15,13))
         pygame.draw.ellipse(surface,(126,112,81),(sx+3,sy+17,13,7))
-        pygame.draw.ellipse(surface,(78,77,68),(sx+self.w-15,sy+18,15,13))
-        pygame.draw.line(surface,(29,34,38),(sx+self.w-7,sy+29),(sx+self.w+self.facing*7,sy+38),6)
-        pygame.draw.line(surface,(104,91,70),(sx+self.w-7,sy+29),(sx+self.w+self.facing*7,sy+38),2)
+        pygame.draw.ellipse(surface,(78,77,68),(sx+render_w-15,sy+18,15,13))
+        pygame.draw.line(surface,(29,34,38),(sx+render_w-7,sy+29),(sx+render_w+self.facing*7,sy+38),6)
+        pygame.draw.line(surface,(104,91,70),(sx+render_w-7,sy+29),(sx+render_w+self.facing*7,sy+38),2)
 
         # Hood, shadowed faceplate, rim highlights and ember visor.
-        head_rect=(sx+8,sy+1,self.w-16,25)
-        pygame.draw.ellipse(surface,(18,22,27),(sx+5,sy-2,self.w-10,29))
+        head_rect=(sx+8,sy+1,render_w-16,25)
+        pygame.draw.ellipse(surface,(18,22,27),(sx+5,sy-2,render_w-10,29))
         pygame.draw.ellipse(surface,(104,99,84),head_rect)
         pygame.draw.arc(surface,(166,147,109),head_rect,.1,2.9,2)
-        face_x=sx+self.w*.5+self.facing*3
+        face_x=sx+render_w*.5+self.facing*3
         pygame.draw.ellipse(surface,(28,31,34),(int(face_x-5),sy+5,11,14))
         visor_y=sy+12+int(math.sin(self.anim_time*8)*1.1)
-        pygame.draw.line(surface,(230,99,70),(sx+12,visor_y),(sx+self.w-10,visor_y),4)
-        pygame.draw.line(surface,(255,214,147),(sx+13,visor_y),(sx+self.w-14,visor_y),1)
+        pygame.draw.line(surface,(230,99,70),(sx+12,visor_y),(sx+render_w-10,visor_y),4)
+        pygame.draw.line(surface,(255,214,147),(sx+13,visor_y),(sx+render_w-14,visor_y),1)
         pygame.draw.polygon(surface,(141,101,70),[(sx+10,sy+18),(sx+4,sy+29),(sx+13,sy+25)])
-        pygame.draw.circle(surface,(236,163,94),(sx+self.w//2,sy+13),2)
+        pygame.draw.circle(surface,(236,163,94),(sx+render_w//2,sy+13),2)
 
         # Weapon held when idle; active attacks draw a growing, curved blade arc.
-        hand=(int(sx+(self.w-1 if self.facing>0 else 1)),sy+34)
+        hand=(int(sx+(render_w-1 if self.facing>0 else 1)),sy+34)
         blade_len=37 if game.weapon!="Oathbreaker" else 47
         if self.attack_kind:
             t=self.attack_time
@@ -911,8 +918,8 @@ class Player:
             phase=clamp((t-active_start)/max(.01,active_dur),0,1)
             if active_start <= t <= active_start+active_dur:
                 arc_r=weapon["reach"]*(1.18 if self.attack_kind=="heavy" else 1.0)
-                base_x=sx+self.w/2+self.attack_dir*8
-                base_y=sy+self.h*.51
+                base_x=sx+render_w/2+self.attack_dir*8
+                base_y=sy+render_h*.51
                 current=-1.45+2.9*phase
                 first=-1.45
                 for trail_index,scale in enumerate((1.0,.91,.80)):
@@ -948,7 +955,7 @@ class Player:
                 pygame.draw.line(surface,(112,82,51),hand2,end2,3)
                 pygame.draw.line(surface,(117,222,194),(hand2[0]+self.facing*5,hand2[1]+1),end2,2)
         if self.invuln>.02 and int(self.invuln*22)%2==0:
-            pygame.draw.ellipse(surface,(237,231,201),(sx-5,sy-3,self.w+10,self.h+7),2)
+            pygame.draw.ellipse(surface,(237,231,201),(sx-5,sy-3,render_w+10,render_h+7),2)
 
 
 class Game:
