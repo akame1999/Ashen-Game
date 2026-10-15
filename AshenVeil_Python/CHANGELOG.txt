@@ -1,25 +1,24 @@
 Ashen Veil — Changelog
 ======================
 
+Illustrated region art
+- Added four original SVG background illustrations for the Drowned March, Ashen Chapel, Cinder Bastion and Veiled Throne.
+- Integrated region backgrounds with slow parallax movement and region color grading.
+- Added a gradual transition blend near region boundaries.
+- Layered reusable fog and drifting ember particles over the illustrated scenery.
+- Added a robust fallback to the procedural backgrounds if SVG loading fails on a particular SDL_image build.
+- Added a CI assertion that all four region illustrations load under pygame-ce.
+
 Graphics polish and crash fix
-- Fixed the Soul Burst charge reward crash: enemy kills now update the player's soul charge and clamp to the player's own maximum.
-- Added layered parallax mountain ridges, a cratered veil moon, distant stone bridges, star glints and more detailed castle silhouettes with lit windows and broken battlements.
-- Reworked platform rendering with shaded masonry courses, chipped edges, deterministic cracks, moss, debris and root details.
-- Improved checkpoint shrine silhouettes, torchlight, flames, and low fog. Fog is cached instead of rebuilt in every frame.
-- Cached glow stamps and rounded HUD panel surfaces, and corrected alpha blending to reduce temporary allocations and bright edge artifacts.
-- Reworked player drawing with split boots, an animated tattered cloak, armor plates, visor highlights, and shaped weapons.
-- Reworked hollow, archer and Grave Warden silhouettes with clearer attack telegraphs, glowing eyes and stronger health-bar contrast.
-- Added layered curved weapon trails and more consistent warm highlights.
+- Fixed the Soul Burst charge reward crash: enemy kills update the player's soul charge and clamp to the player's maximum.
+- Improved layered parallax scenery, castle silhouettes, moon details, platform masonry, cracks, moss, pillars, torchlight, player/enemy silhouettes, curved attack trails, and rendering surface caching.
 
 Side-scrolling Metroidvania conversion
 - Replaced the top-down arena with a side-view, camera-following platformer.
-- Added horizontal acceleration, jump buffering, coyote-time jumping, double jump, gravity, and platform landing/ceiling collision.
-- Added a long connected route through four dark-fantasy regions, raised platforms, gaps, shrines/checkpoints, and a final Grave Warden encounter.
-- Reworked melee hit checks around side-view weapon reach and vertical range.
-- Added side-view enemies, attack telegraphs, ranged Ash Archers, a boss health display, updated HUD and route progress.
-- Buffered light/heavy actions through attack recovery and improved rendering layer reuse.
+- Added horizontal acceleration, jump buffering, coyote-time jumping, double jump, gravity and platform collision.
+- Added a connected route through four dark-fantasy regions, raised platforms, gaps, shrines/checkpoints and a Grave Warden boss.
+- Reworked melee hit checks for side-view reach and vertical range.
+- Added Hollow enemies, ranged Ash Archers, attack telegraphs and a boss health display.
+- Buffered light/heavy actions through attack recovery.
 
-Earlier prototype
-- Added three weapon archetypes, dodge invulnerability, weapon skills, Soul Burst, enemy waves, boss UI, and combat effects.
-
-Note: this is an early prototype. Runtime behavior should be tested on Windows hardware; it is not a finished commercial game.
+Note: this is an early prototype. Runtime behavior and visual quality should be tested on Windows hardware; it is not a finished commercial game.
