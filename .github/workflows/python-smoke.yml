@@ -1,0 +1,35 @@
+name: Ashen Veil Python Smoke Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "AshenVeil_Python/**"
+      - "tests/**"
+      - ".github/workflows/python-smoke.yml"
+  pull_request:
+    paths:
+      - "AshenVeil_Python/**"
+      - "tests/**"
+      - ".github/workflows/python-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Pygame CE
+        run: python -m pip install --disable-pip-version-check -r AshenVeil_Python/requirements.txt
+      - name: Compile game source
+        run: python -m py_compile AshenVeil_Python/main.py tests/test_game_smoke.py
+      - name: Run headless smoke tests
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m unittest discover -s tests -v
