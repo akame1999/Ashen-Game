@@ -1,0 +1,1 @@
+32x32 tiles, left to right: stone, stone_dark, stone_moss_top, stone_big, plank, pillar
