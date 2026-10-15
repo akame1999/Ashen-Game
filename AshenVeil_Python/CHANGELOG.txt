@@ -1,17 +1,17 @@
 Ashen Veil — Changelog
 ======================
 
-Enhanced combat sandbox
-- Improved attack input buffering so taps during recovery can trigger when the player is ready.
-- Checked melee contacts throughout the active swing instead of relying on a single frame.
-- Improved charged heavy attack queueing and movement/attack independence.
-- Adjusted cursor-to-world alignment for resized windows.
-- Improved arena brightness, weapon glow, impact effects and HUD contrast.
-- Reduced some repeated rendering allocations and cached UI text where applicable.
+Side-scrolling Metroidvania conversion
+- Replaced the top-down arena with a side-view, camera-following platformer.
+- Added horizontal acceleration, jump buffering, coyote-time jumping, double jump, gravity, and platform landing/ceiling collision.
+- Added a long connected route through four dark-fantasy regions, with raised platforms, gaps, shrines/checkpoints, and a final Grave Warden encounter.
+- Reworked melee hit checks around a side-view weapon reach and vertical range.
+- Added side-view enemy silhouettes, attack telegraphs, ranged Ash Archers, and a boss health display.
+- Updated HUD, route progress, controls, and title text for Metroidvania-style play.
+- Buffered light/heavy actions through attack recovery and improved rendering layer reuse.
+- Added edge-aware enemy movement to reduce enemies walking into pits.
 
-Initial Python sandbox
-- Added three weapon archetypes: Rookfang Longsword, Gravetide Twinblades and Oathbreaker Greatblade.
-- Added movement, light combos, heavy attacks, dodge invulnerability, weapon skills and Soul Burst.
-- Added enemy waves, ranged enemies, a Grave Warden boss, minimap, combat HUD, pause and death screens.
+Enhanced combat sandbox (previous top-down prototype)
+- Added three weapon archetypes, dodge invulnerability, skills, Soul Burst, enemy waves, boss UI, and combat effects.
 
-Note: this is an early prototype. Runtime behavior should be tested on Windows hardware; the project is not a finished commercial game.
+Note: this is an early prototype. Runtime behavior should be tested on Windows hardware; it is not a finished commercial game.
