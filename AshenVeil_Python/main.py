@@ -322,9 +322,14 @@ class Enemy:
         if dist < aggro and self.state in ("idle", "move"):
             if dist > attack_dist:
                 speed = 95 if not self.boss else (105 if self.phase == 1 else 155)
-                self.vx = self.facing * speed
-                self.x += self.vx * dt
-                self.state = "move"
+                if self.grounded and not self._ground_ahead(game.platforms, self.facing):
+                    # Enemies hold the edge rather than blindly walking into a pit.
+                    self.vx = 0
+                    self.state = "idle"
+                else:
+                    self.vx = self.facing * speed
+                    self.x += self.vx * dt
+                    self.state = "move"
             elif self.attack_cooldown <= 0:
                 self.state = "windup"
                 self.state_time = .56 if self.boss else .40
@@ -359,6 +364,15 @@ class Enemy:
             self.state = "idle"
         self.x = clamp(self.x, 0, WORLD_W - self.w)
         return True
+
+    def _ground_ahead(self, platforms, direction):
+        probe_x = self.x + self.w + 14 if direction > 0 else self.x - 14
+        feet = self.y + self.h
+        for plat in platforms:
+            if plat.x <= probe_x <= plat.x + plat.w:
+                if feet - 62 <= plat.y <= feet + 24:
+                    return True
+        return False
 
     def _land(self, platforms, old_y):
         self.grounded = False
@@ -593,8 +607,9 @@ class Player:
         self.dash_cd = max(0.0, self.dash_cd - dt)
         self.skill_cd = max(0.0, self.skill_cd - dt)
         self.attack_cd = max(0.0, self.attack_cd - dt)
-        self.attack_buffer = max(0.0, self.attack_buffer - dt)
-        self.heavy_buffer = max(0.0, self.heavy_buffer - dt)
+        if not self.attack_kind:
+            self.attack_buffer = max(0.0, self.attack_buffer - dt)
+            self.heavy_buffer = max(0.0, self.heavy_buffer - dt)
         self.combo_timer = max(0.0, self.combo_timer - dt)
         self.stamina_exhausted = max(0.0, self.stamina_exhausted - dt)
         if self.combo_timer <= 0 and not self.attack_kind:
@@ -678,13 +693,12 @@ class Player:
                 self.attack_kind = ""
                 self.attack_time = 0
         else:
-            # Buffered taps are retained through attack recovery. Holding LMB repeats combos.
+            # Heavy inputs have priority, and taps remain queued until recovery ends.
             mouse_held = game.mouse_buttons[0]
-            if self.attack_buffer > 0 or (mouse_held and self.attack_cd <= 0):
-                if self.attack_cd <= 0:
-                    self.begin_attack("light", game)
-            elif self.heavy_buffer > 0 and self.attack_cd <= 0:
+            if self.heavy_buffer > 0 and self.attack_cd <= 0:
                 self.begin_attack("heavy", game)
+            elif (self.attack_buffer > 0 or mouse_held) and self.attack_cd <= 0:
+                self.begin_attack("light", game)
 
         if self.grounded and not self.attack_kind:
             self.stamina = min(self.stamina_max, self.stamina + 31 * dt)
@@ -810,6 +824,7 @@ class Game:
         pygame.display.set_caption("ASHEN VEIL | 2D Dark-Fantasy Metroidvania")
         self.window = pygame.display.set_mode((W, H), pygame.RESIZABLE)
         self.canvas = pygame.Surface((W, H)).convert()
+        self.world_layer = pygame.Surface((W, H), pygame.SRCALPHA)
         self.clock = pygame.time.Clock()
         self.font_title = pygame.font.SysFont("georgia", 58, bold=True)
         self.font_h1 = pygame.font.SysFont("georgia", 27, bold=True)
@@ -1302,7 +1317,8 @@ class Game:
             self.draw_background(surface)
             shake_x=random.randint(-int(self.screen_shake),int(self.screen_shake)) if self.screen_shake>1 else 0
             # Camera translation is applied through an offset surface so every side-scroller entity aligns.
-            world_layer=pygame.Surface((W,H),pygame.SRCALPHA)
+            world_layer=self.world_layer
+            world_layer.fill((0,0,0,0))
             if shake_x:
                 old_camera=self.camera_x
                 self.camera_x=old_camera-shake_x
