@@ -1,17 +1,24 @@
 Ashen Veil — Changelog
 ======================
 
+Graphics polish and crash fix
+- Fixed the Soul Burst charge reward crash: enemy kills now update the player's soul charge and clamp to the player's own maximum.
+- Added layered parallax mountain ridges, a cratered veil moon, distant stone bridges, star glints and more detailed castle silhouettes with lit windows and broken battlements.
+- Reworked platform rendering with shaded masonry courses, chipped edges, deterministic cracks, moss, debris and root details.
+- Improved checkpoint shrine silhouettes, torchlight, flames, and low fog. Fog is cached instead of rebuilt in every frame.
+- Reworked player drawing with split boots, an animated tattered cloak, armor plates, visor highlights, and shaped weapons.
+- Reworked hollow, archer and Grave Warden silhouettes with clearer attack telegraphs, glowing eyes and stronger health-bar contrast.
+- Added layered curved weapon trails and more consistent warm highlights.
+
 Side-scrolling Metroidvania conversion
 - Replaced the top-down arena with a side-view, camera-following platformer.
 - Added horizontal acceleration, jump buffering, coyote-time jumping, double jump, gravity, and platform landing/ceiling collision.
-- Added a long connected route through four dark-fantasy regions, with raised platforms, gaps, shrines/checkpoints, and a final Grave Warden encounter.
-- Reworked melee hit checks around a side-view weapon reach and vertical range.
-- Added side-view enemy silhouettes, attack telegraphs, ranged Ash Archers, and a boss health display.
-- Updated HUD, route progress, controls, and title text for Metroidvania-style play.
+- Added a long connected route through four dark-fantasy regions, raised platforms, gaps, shrines/checkpoints, and a final Grave Warden encounter.
+- Reworked melee hit checks around side-view weapon reach and vertical range.
+- Added side-view enemies, attack telegraphs, ranged Ash Archers, a boss health display, updated HUD and route progress.
 - Buffered light/heavy actions through attack recovery and improved rendering layer reuse.
-- Added edge-aware enemy movement to reduce enemies walking into pits.
 
-Enhanced combat sandbox (previous top-down prototype)
-- Added three weapon archetypes, dodge invulnerability, skills, Soul Burst, enemy waves, boss UI, and combat effects.
+Earlier prototype
+- Added three weapon archetypes, dodge invulnerability, weapon skills, Soul Burst, enemy waves, boss UI, and combat effects.
 
 Note: this is an early prototype. Runtime behavior should be tested on Windows hardware; it is not a finished commercial game.
