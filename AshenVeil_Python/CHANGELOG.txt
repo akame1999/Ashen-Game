@@ -1,0 +1,17 @@
+Ashen Veil — Changelog
+======================
+
+Enhanced combat sandbox
+- Improved attack input buffering so taps during recovery can trigger when the player is ready.
+- Checked melee contacts throughout the active swing instead of relying on a single frame.
+- Improved charged heavy attack queueing and movement/attack independence.
+- Adjusted cursor-to-world alignment for resized windows.
+- Improved arena brightness, weapon glow, impact effects and HUD contrast.
+- Reduced some repeated rendering allocations and cached UI text where applicable.
+
+Initial Python sandbox
+- Added three weapon archetypes: Rookfang Longsword, Gravetide Twinblades and Oathbreaker Greatblade.
+- Added movement, light combos, heavy attacks, dodge invulnerability, weapon skills and Soul Burst.
+- Added enemy waves, ranged enemies, a Grave Warden boss, minimap, combat HUD, pause and death screens.
+
+Note: this is an early prototype. Runtime behavior should be tested on Windows hardware; the project is not a finished commercial game.
