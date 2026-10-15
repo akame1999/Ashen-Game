@@ -4,7 +4,7 @@ A dark-fantasy side-scrolling action-platformer prototype built with Python and 
 
 ## Visual target and reference art
 
-The owner-provided screenshots that define the intended visual direction are stored in [`assets/reference_art/`](assets/reference_art/). They show the current prototype and target qualities: cinematic painterly gothic environments, moonlit castles and bridges, atmospheric fog and torchlight, readable combat silhouettes, dramatic weapon trails, layered platforms, exploration, and a richer action-game HUD.
+The owner-provided screenshots that define the intended visual direction are stored in [`assets/reference_art/`](assets/reference_art/). The implementation priorities are documented in [`VISUAL_GOAL.md`](VISUAL_GOAL.md). They show the current prototype and target qualities: cinematic painterly gothic environments, moonlit castles and bridges, atmospheric fog and torchlight, readable combat silhouettes, dramatic weapon trails, layered platforms, exploration, and a richer action-game HUD.
 
 The repository copies are lightweight 128×72 preview thumbnails to keep the source repository small; they are visual references, **not in-game textures**. The actual game backgrounds are the four scalable SVG environment scenes in `assets/backgrounds/`, rendered behind the playable geometry with parallax.
 
