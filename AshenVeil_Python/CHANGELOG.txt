@@ -6,6 +6,7 @@ Graphics polish and crash fix
 - Added layered parallax mountain ridges, a cratered veil moon, distant stone bridges, star glints and more detailed castle silhouettes with lit windows and broken battlements.
 - Reworked platform rendering with shaded masonry courses, chipped edges, deterministic cracks, moss, debris and root details.
 - Improved checkpoint shrine silhouettes, torchlight, flames, and low fog. Fog is cached instead of rebuilt in every frame.
+- Cached glow stamps and rounded HUD panel surfaces, and corrected alpha blending to reduce temporary allocations and bright edge artifacts.
 - Reworked player drawing with split boots, an animated tattered cloak, armor plates, visor highlights, and shaped weapons.
 - Reworked hollow, archer and Grave Warden silhouettes with clearer attack telegraphs, glowing eyes and stronger health-bar contrast.
 - Added layered curved weapon trails and more consistent warm highlights.
