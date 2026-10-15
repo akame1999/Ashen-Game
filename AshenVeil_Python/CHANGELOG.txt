@@ -6,6 +6,7 @@ Illustrated region art
 - Integrated region backgrounds with slow parallax movement and region color grading.
 - Added a gradual transition blend near region boundaries.
 - Layered reusable fog and drifting ember particles over the illustrated scenery.
+- Enlarged rendered player and enemy silhouettes around their feet for better readability without changing physics or hitbox dimensions.
 - Added a robust fallback to the procedural backgrounds if SVG loading fails on a particular SDL_image build.
 - Added a CI assertion that all four region illustrations load under pygame-ce.
 
