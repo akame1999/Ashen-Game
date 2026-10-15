@@ -14,3 +14,13 @@ These JPEG thumbnails are the user's reference screenshots for the game's intend
 - `ashen_keep_reference_08.jpg` — target boss/arena mood and dark-fantasy palette.
 
 The checked-in copies are compact 128×72 preview thumbnails to limit repository size; they are not intended to be used as the game's in-level art. They preserve the owner-provided images as visual notes. The game backgrounds remain under `../backgrounds/`.
+
+## Full-resolution references (`full/`)
+
+Original-resolution screenshots supplied by the owner (duplicates removed). Use these, not the 128x72 thumbnails, when measuring HUD layout, colours and spacing. They are design references only, not runtime assets.
+
+- `hud_ruined_cathedral_3pct_ref_A.png` (1586x992) - windowed "ASHEN VEIL | 2D Metroidvania" capture: level badge, HP/FP bars, R/Q/E/Shift skill slots, area-name plate with minimap and completion %.
+- `hud_ruined_cathedral_12pct_ref_B.png` (1672x941) - Lv 1 badge, HP/stamina bars, orb row, Q/1/2/E hotbar, souls counter (1250), minimap below frame.
+- `hud_ruined_kingdom_ref_C.png` (1672x941) - named player plate, HP/mana bars, LMB/RMB/Shift/E/Q labelled ability bar, souls counter (0027).
+- `hud_ruined_outskirts_combat_ref_D.png` (1672x941) - title-logo HUD, HP/mana/stamina bars, R/Q/E/F hotbar, damage number (42), slash arc, flooded-water scene.
+- `hud_ashen_ruins_ref_E.png` (1672x940) - HP/PP/stamina bars, I/J/K/L bindings, top-right minimap with area %.
