@@ -1,5 +1,6 @@
 {
- "frame": 64,
+ "frame": 96,
+ "feet_row": 88,
  "rows": [
   {
    "name": "idle",

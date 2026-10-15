@@ -1,4 +1,4 @@
-"""Generate the placeholder player sprite sheet (64x64 frames, facing right, one animation per row).
+"""Generate the placeholder player sprite sheet (96x96 frames, facing right, one animation per row).
 
 Run from AshenVeil_Python/:  python tools/gen_player.py     Needs: numpy, pillow.
 Output: assets/characters/player.png and player.json (row order, frame counts).
@@ -9,12 +9,32 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 OUT = Path(__file__).resolve().parent.parent / "assets" / "characters"
-F = 64
-GROUND = 60
+F = 96
+OX, OY = 16, 28   # offset of the old 64-space drawing inside the 96px frame
+GROUND = 60          # ground line in drawing space (row 88 in the frame)
 CLOAK, CLOAK_D, CLOAK_L = (112, 24, 34), (62, 14, 24), (160, 44, 48)
 ARMOR, ARMOR_D, ARMOR_L = (50, 54, 66), (28, 30, 40), (112, 118, 134)
 SKIN, HAIR, BLADE, BLADE_L = (206, 176, 156), (222, 226, 238), (190, 196, 210), (250, 252, 255)
 GOLD = (190, 150, 80)
+
+
+class Shift:
+    """ImageDraw wrapper that translates drawing-space coordinates into frame coordinates."""
+    def __init__(self, d):
+        self.d = d
+
+    @staticmethod
+    def _pt(v):
+        if isinstance(v[0], (tuple, list)):
+            return [(x + OX, y + OY) for x, y in v]
+        return [c + (OX if i % 2 == 0 else OY) for i, c in enumerate(v)]
+
+    def line(self, xy, **k): self.d.line(self._pt(xy), **k)
+    def polygon(self, xy, **k): self.d.polygon(self._pt(xy), **k)
+    def ellipse(self, xy, **k): self.d.ellipse(self._pt(xy), **k)
+    def rectangle(self, xy, **k): self.d.rectangle(self._pt(xy), **k)
+    def pieslice(self, xy, *a, **k): self.d.pieslice(self._pt(xy), *a, **k)
+    def point(self, xy, **k): self.d.point(self._pt([xy])[0], **k)
 
 
 def ang(deg):
@@ -26,7 +46,7 @@ def figure(p):
     q = dict(dx=0, hip_y=42, lean=0, stoop=0, ff=(5, 0), bf=(-4, 0), fh=(9, 8), bh=(-3, 9),
              sword=-60, sway=2, head_dx=0)
     q.update(p)
-    im = Image.new("RGBA", (F, F), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    im = Image.new("RGBA", (F, F), (0, 0, 0, 0)); d = Shift(ImageDraw.Draw(im))
     hx, hy = 28 + q["dx"], q["hip_y"]
     sx, sy = hx + q["lean"], hy - 13 + q["stoop"]
     head = (sx + 2 + q["head_dx"], sy - 7)
@@ -79,8 +99,17 @@ def outline(im):
     return Image.fromarray(a, "RGBA")
 
 
-def lerp_list(vals):
-    return vals
+def settle(im):
+    """Shift a rotated frame up so its lowest pixel rests on the ground line (row GROUND+OY)."""
+    a = np.array(im)[..., 3] > 0
+    if not a.any():
+        return im
+    low = np.argwhere(a).max(0)[0]
+    dy = low - (GROUND + OY)
+    if dy <= 0:
+        return im
+    out = Image.new("RGBA", im.size, (0, 0, 0, 0)); out.alpha_composite(im, (0, -dy))
+    return out
 
 
 def idle():
@@ -113,7 +142,7 @@ def dodge():
     base = figure(dict(hip_y=47, lean=6, stoop=3, ff=(4, 14), bf=(-3, 12), fh=(5, 7), bh=(-2, 8), sword=140, sway=3))
     out = []
     for a in (-70, -160, -250, -340):
-        out.append(base.rotate(a, resample=Image.NEAREST, center=(28, 46)))
+        out.append(settle(base.rotate(a, resample=Image.NEAREST, center=(28 + OX, 46 + OY))))
     return out
 
 
@@ -151,7 +180,7 @@ def death():
     out = []
     for a in (0, 22, 48, 70, 84, 90):
         base = figure(dict(dx=16, lean=-5, hip_y=43, head_dx=-2, fh=(4, 12), sword=100, sway=4))
-        out.append(base.rotate(a, resample=Image.NEAREST, center=(44, GROUND)))
+        out.append(settle(base.rotate(a, resample=Image.NEAREST, center=(44 + OX, GROUND + OY))))
     return out
 
 
@@ -164,7 +193,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     cols = 6
     sheet = Image.new("RGBA", (F * cols, F * len(ANIMS)), (0, 0, 0, 0))
-    meta = {"frame": F, "rows": []}
+    meta = {"frame": F, "feet_row": GROUND + OY, "rows": []}
     for r, (name, fn) in enumerate(ANIMS):
         frames = fn()
         meta["rows"].append({"name": name, "row": r, "frames": len(frames)})
