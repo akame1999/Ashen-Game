@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 import random
 import sys
+from pathlib import Path
 from dataclasses import dataclass
 from collections import OrderedDict
 
@@ -1000,7 +1001,65 @@ class Game:
         self.elapsed = 0.0
         self.fps_value = FPS
         self.decor = self.build_decor()
+        self.background_surfaces = self.load_backgrounds()
+        self.background_tints = []
+        for tint_color in ((26, 48, 70), (73, 34, 38), (91, 34, 22), (48, 34, 84)):
+            tint = pygame.Surface((W, H), pygame.SRCALPHA)
+            tint.fill((*tint_color, 18))
+            self.background_tints.append(tint)
+        self._region_fog_shift = 0.0
 
+    def load_backgrounds(self):
+        """Load authored SVGs and pre-scale them for smooth parallax."""
+        names = ("drowned_march.svg", "ashen_chapel.svg", "cinder_bastion.svg", "veiled_throne.svg")
+        root = Path(__file__).resolve().parent / "assets" / "backgrounds"
+        images = []
+        try:
+            for name in names:
+                file_path = root / name
+                if not file_path.is_file():
+                    raise FileNotFoundError(str(file_path))
+                loaded = pygame.image.load(str(file_path)).convert()
+                images.append(pygame.transform.smoothscale(loaded, (W + 440, H)))
+        except (pygame.error, OSError, ValueError) as exc:
+            print(f"[Ashen Veil] Region artwork couldn't be loaded ({exc}); using procedural fallback.")
+            return []
+        print(f"[Ashen Veil] Loaded {len(images)} illustrated regions.")
+        return images
+
+    def draw_background_art(self, surface):
+        """Paint the current illustrated region with slow parallax and haze."""
+        world_probe = self.camera_x + W * .42
+        area_index = len(AREAS) - 1
+        area_left, area_right, area_name, top, bottom = AREAS[-1]
+        for i, area in enumerate(AREAS):
+            left, right, name, c_top, c_bottom = area
+            if left <= world_probe < right:
+                area_index = i
+                area_left, area_right, area_name, top, bottom = area
+                break
+        background = self.background_surfaces[area_index]
+        span = max(1.0, area_right - area_left)
+        progress = clamp((world_probe - area_left) / span, 0.0, 1.0)
+        max_scroll = max(0, background.get_width() - W)
+        x_offset = int(max_scroll * progress)
+        surface.blit(background, (-x_offset, 0))
+        surface.blit(self.background_tints[area_index], (0, 0))
+        if area_index < len(self.background_surfaces) - 1 and progress > .84:
+            fade = int(clamp((progress - .84) / .16, 0.0, 1.0) * 255)
+            next_bg = self.background_surfaces[area_index + 1]
+            next_bg.set_alpha(fade)
+            surface.blit(next_bg, (0, 0))
+            next_bg.set_alpha(255)
+        self._region_fog_shift = (self._region_fog_shift + .22) % W
+        surface.blit(self.fog_layer, (-int(self._region_fog_shift), H - 164))
+        surface.blit(self.fog_layer, (W - int(self._region_fog_shift), H - 164))
+        for ember in self.decor["embers"]:
+            sx = int(ember[0] - self.camera_x * .62) % W
+            if 70 < ember[1] < H - 70:
+                alpha = 80 + int((math.sin(ember[4] * 3.2) + 1) * 70)
+                color = (min(255, 135 + alpha // 3), min(230, 75 + alpha // 4), min(180, 40 + alpha // 7))
+                pygame.draw.circle(surface, color, (sx, int(ember[1])), 2 if alpha > 150 else 1)
     def build_world(self):
         self.platforms = []
         # Platforms and floor segments form one traversable side-scrolling route.
@@ -1234,6 +1293,9 @@ class Game:
         return AREAS[-1]
 
     def draw_background(self, surface):
+        if self.background_surfaces:
+            self.draw_background_art(surface)
+            return
         left, right, name, top, bottom = self.area_at(self.camera_x + W * .42)
 
         # Layered sky gradient; area transitions subtly shift the palette.
