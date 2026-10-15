@@ -106,10 +106,22 @@ def text(surface, font, content, pos, color=PALE, anchor="topleft", shadow=True)
     return rect
 
 
+_PANEL_CACHE: OrderedDict[tuple, pygame.Surface] = OrderedDict()
+_PANEL_CACHE_MAX = 96
+
+
 def panel(surface, rect, fill=(15, 18, 18, 238), border=(102, 88, 61), radius=9, width=1):
-    layer = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-    pygame.draw.rect(layer, fill, layer.get_rect(), border_radius=radius)
-    pygame.draw.rect(layer, border, layer.get_rect(), width, border_radius=radius)
+    key = (rect.width, rect.height, tuple(fill), tuple(border), int(radius), int(width))
+    layer = _PANEL_CACHE.get(key)
+    if layer is None:
+        layer = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+        pygame.draw.rect(layer, fill, layer.get_rect(), border_radius=radius)
+        pygame.draw.rect(layer, border, layer.get_rect(), width, border_radius=radius)
+        _PANEL_CACHE[key] = layer
+        if len(_PANEL_CACHE) > _PANEL_CACHE_MAX:
+            _PANEL_CACHE.popitem(last=False)
+    else:
+        _PANEL_CACHE.move_to_end(key)
     surface.blit(layer, rect.topleft)
 
 
@@ -125,15 +137,29 @@ def bar(surface, rect, value, maximum, color, back=(35, 36, 34), outline=(94, 86
     pygame.draw.rect(surface, outline, rect, 1, border_radius=5)
 
 
+_GLOW_CACHE: OrderedDict[tuple, pygame.Surface] = OrderedDict()
+_GLOW_CACHE_MAX = 72
+
+
 def glow(surface, point, radius, color, alpha=70):
     r = int(radius)
     if r <= 0:
         return
-    layer = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
-    pygame.draw.circle(layer, (*color, int(alpha * 0.17)), (r, r), r)
-    pygame.draw.circle(layer, (*color, int(alpha * 0.25)), (r, r), int(r * .68))
-    pygame.draw.circle(layer, (*color, int(alpha * 0.35)), (r, r), int(r * .38))
-    surface.blit(layer, (int(point[0] - r), int(point[1] - r)), special_flags=pygame.BLEND_PREMULTIPLIED)
+    key = (r, tuple(color), int(alpha))
+    layer = _GLOW_CACHE.get(key)
+    if layer is None:
+        layer = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
+        pygame.draw.circle(layer, (*color, int(alpha * 0.17)), (r, r), r)
+        pygame.draw.circle(layer, (*color, int(alpha * 0.25)), (r, r), int(r * .68))
+        pygame.draw.circle(layer, (*color, int(alpha * 0.35)), (r, r), int(r * .38))
+        _GLOW_CACHE[key] = layer
+        if len(_GLOW_CACHE) > _GLOW_CACHE_MAX:
+            _GLOW_CACHE.popitem(last=False)
+    else:
+        _GLOW_CACHE.move_to_end(key)
+    # The circles use ordinary straight-alpha pixels, so normal alpha blending
+    # avoids the over-bright fringes produced by a premultiplied blend flag.
+    surface.blit(layer, (int(point[0] - r), int(point[1] - r)))
 
 
 def segment_distance_sq(px, py, x1, y1, x2, y2):
