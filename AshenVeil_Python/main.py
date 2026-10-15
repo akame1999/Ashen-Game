@@ -488,7 +488,7 @@ class Enemy:
             tip=(hand[0]+self.facing*23,hand[1]+9)
             pygame.draw.line(surface,(64,45,34),hand,tip,4)
             pygame.draw.line(surface,(174,128,82),hand,tip,2)
-        if render_hit_flash>0:
+        if self.hit_flash>0:
             pygame.draw.rect(surface,(255,236,194),self.rect.move(-round(camera_x),0),2,border_radius=4)
             pygame.draw.line(surface,(255,238,206),(sx+4,sy+8),(sx+render_w-4,sy+render_h-10),2)
         hpw=render_w+(40 if self.boss else 0)
@@ -496,8 +496,8 @@ class Enemy:
         hp_y=sy-(22 if self.boss else 13)
         pygame.draw.rect(surface,(17,17,18),(hp_x-2,hp_y-2,hpw+4,9),border_radius=3)
         pygame.draw.rect(surface,(44,30,29),(hp_x,hp_y,hpw,6),border_radius=3)
-        if render_hp>0:
-            pct=render_hp/max(1,render_hp_max)
+        if self.hp>0:
+            pct=self.hp/max(1,self.hp_max)
             pygame.draw.rect(surface,(176,48,43),(hp_x+1,hp_y+1,max(1,int((hpw-2)*pct)),4),border_radius=2)
             pygame.draw.line(surface,(235,105,79),(hp_x+2,hp_y+1),(hp_x+max(2,int((hpw-2)*pct)),hp_y+1),1)
 
