@@ -1,6 +1,6 @@
 # Ashen Veil
 
-A dark-fantasy 2D action game prototype. The current Python build is a **side-scrolling Metroidvania-style combat sandbox**, with connected ruins, platforming, weapon-specific attacks, enemy encounters, checkpoints and a boss.
+A dark-fantasy 2D action game prototype. The current Python build is a **side-scrolling Metroidvania-style combat sandbox**, with interconnected ruins, platforming, weapon-specific attacks, enemy encounters, checkpoints and a boss. Recent updates also improve the procedural artwork and fix a Soul Burst charge crash after defeating enemies.
 
 ## Run the game
 
@@ -27,6 +27,6 @@ py -3 main.py
 
 ## Project status
 
-Early playable prototype. The aim is deliberate Soulslike combat and dark atmosphere in a side-view Metroidvania format. Combat feel and visuals should be tested on Windows hardware; further enemy, exploration, animation, ability-gate and level-polish work remains.
+Early playable prototype. The aim is deliberate Soulslike combat and dark atmosphere in a side-view Metroidvania format. Combat feel, platform collisions and visuals should be tested on Windows hardware; further animation, exploration, ability-gate and level-polish work remains.
 
 The game uses original procedural drawings and currently includes no third-party art assets. No open-source license has been assigned yet.
