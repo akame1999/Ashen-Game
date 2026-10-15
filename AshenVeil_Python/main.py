@@ -1,8 +1,9 @@
 """ASHEN VEIL — side-scrolling dark-fantasy combat prototype.
 
-An original, asset-free 2D action-platformer inspired by the atmosphere of
-Soulslike worlds and the pace of action roguelites / Metroidvania games.
-All art is drawn procedurally with Pygame CE; no external assets are required.
+An original 2D action-platformer inspired by Soulslike atmosphere and
+Metroidvania exploration. Four original SVG region backdrops are rendered by
+Pygame CE; playable geometry, characters, combat effects and HUD are drawn
+procedurally. A procedural backdrop remains available as a rendering fallback.
 """
 from __future__ import annotations
 
