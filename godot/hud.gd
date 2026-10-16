@@ -232,7 +232,7 @@ func _paint_hotbar() -> void:
 			_text(str(player.flasks), pos + Vector2(26, 38), 13, GOLD_L, 12.0, HORIZONTAL_ALIGNMENT_RIGHT)
 			if player.flasks == 0 or player.hp >= player.max_hp:
 				canvas.draw_rect(r, Color(0, 0, 0, 0.45))
-		var badge := Rect2(pos.x + 8, pos.y - 10, 24, 13)
+		var badge := Rect2(pos.x + 4, pos.y - 10, 32, 13)
 		canvas.draw_rect(badge, BG)
 		canvas.draw_rect(badge, GOLD, false, 1.0)
 		_text(str(d[0]), Vector2(badge.position.x, badge.position.y + 10), 9, GOLD_L, badge.size.x, HORIZONTAL_ALIGNMENT_CENTER)
