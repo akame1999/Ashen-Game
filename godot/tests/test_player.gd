@@ -33,6 +33,10 @@ func _run(main: Node) -> void:
 	for w in Player.WEAPON_DATA:
 		wd_ok = wd_ok and ResourceLoader.exists(Player.KIT_FX % w["fx"])
 	check(wd_ok, "weapon data (damage/reach/fx) and kit slash art present")
+	var skins_ok := Player.SKINS.size() >= 3
+	for sk in Player.SKINS:
+		skins_ok = skins_ok and ResourceLoader.exists(sk["sheet"]) and FileAccess.file_exists(sk["meta"])
+	check(skins_ok, "all player skins (knight, male, female) have sheet + meta")
 	check(p.is_on_floor(), "player lands on floor")
 	check(p.sprite.animation == "idle", "idle animation")
 	var x0 := p.global_position.x

@@ -10,8 +10,11 @@ const JUMP_V := -330.0
 const GRAVITY := 900.0
 const DODGE_SPEED := 260.0
 const DODGE_TIME := 0.3
-const SHEET := "res://assets/characters/player.png"
-const META := "res://assets/characters/player.json"
+const SKINS := [ # F6 cycles; the painted Ashen Knight stays the default
+	{"name": "Ashen Knight", "sheet": "res://assets/characters/player.png", "meta": "res://assets/characters/player.json"},
+	{"name": "Male (pack)", "sheet": "res://assets/characters/player_male.png", "meta": "res://assets/characters/player_male.json"},
+	{"name": "Female (pack)", "sheet": "res://assets/characters/player_female.png", "meta": "res://assets/characters/player_female.json"}]
+static var skin := 0 ## survives scene reloads; F6 cycles skins
 const FPS := {"idle": 6.0, "run": 16.0, "jump": 8.0, "fall": 8.0, "dodge": 20.0, "light1": 14.0,
 		"light2": 14.0, "heavy": 10.0, "skill": 12.0, "hurt": 8.0, "death": 8.0}
 const LOOPS := ["idle", "run", "fall"]
@@ -68,6 +71,12 @@ func _ready() -> void:
 	sprite.play("idle")
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F6:
+		skin = (skin + 1) % SKINS.size()
+		get_tree().reload_current_scene()
+
+
 func _setup_input() -> void:
 	var keys := {"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 			"jump": [KEY_SPACE, KEY_W, KEY_UP], "dodge": [KEY_SHIFT], "attack": [KEY_J],
@@ -86,8 +95,9 @@ func _setup_input() -> void:
 
 
 func _build_sprite() -> void:
-	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(META))
-	var tex: Texture2D = load(SHEET)
+	var sk: Dictionary = SKINS[clampi(skin, 0, SKINS.size() - 1)]
+	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(sk["meta"]))
+	var tex: Texture2D = load(sk["sheet"])
 	_frame_size = int(meta["frame"])
 	_cx = float(meta.get("center_x", 44.0))
 	_node_scale = float(meta.get("scale", 1.0))

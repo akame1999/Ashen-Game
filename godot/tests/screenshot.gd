@@ -2,6 +2,8 @@ extends SceneTree
 ## Saves a screenshot of the main scene. Needs a display (xvfb-run) and a renderer.
 ## xvfb-run -a godot --rendering-driver opengl3 --path godot --script res://tests/screenshot.gd -- /tmp/shot.png
 func _initialize() -> void:
+	if OS.has_environment("ASHEN_SKIN"):
+		Player.skin = int(OS.get_environment("ASHEN_SKIN")) # 0 knight, 1 male, 2 female
 	var main: Node = load("res://main.tscn").instantiate()
 	root.add_child(main)
 	_run()
