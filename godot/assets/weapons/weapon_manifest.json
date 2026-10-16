@@ -1,0 +1,312 @@
+{
+  "pack": "Ashen Veil Godot Weapon Kit",
+  "version": "1.0",
+  "target": "Godot 4.x",
+  "assets": [
+    {
+      "id": "01_rookfang_longsword",
+      "png": "assets/weapons/01_rookfang_longsword.png",
+      "svg": "assets/weapons/01_rookfang_longsword.svg",
+      "type": "rookfang_longsword",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 215,
+        "y": 230
+      },
+      "grip_anchor_normalized": {
+        "x": 0.21,
+        "y": 0.4492
+      },
+      "atlas_cell": {
+        "column": 0,
+        "row": 0,
+        "x": 0,
+        "y": 0,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "02_oathbreaker_greatsword",
+      "png": "assets/weapons/02_oathbreaker_greatsword.png",
+      "svg": "assets/weapons/02_oathbreaker_greatsword.svg",
+      "type": "oathbreaker_greatsword",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 213,
+        "y": 232
+      },
+      "grip_anchor_normalized": {
+        "x": 0.208,
+        "y": 0.4531
+      },
+      "atlas_cell": {
+        "column": 1,
+        "row": 0,
+        "x": 512,
+        "y": 0,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "03_ashen_katana",
+      "png": "assets/weapons/03_ashen_katana.png",
+      "svg": "assets/weapons/03_ashen_katana.svg",
+      "type": "ashen_katana",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 215,
+        "y": 242
+      },
+      "grip_anchor_normalized": {
+        "x": 0.21,
+        "y": 0.4727
+      },
+      "atlas_cell": {
+        "column": 2,
+        "row": 0,
+        "x": 1024,
+        "y": 0,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "04_gravetide_twinblades",
+      "png": "assets/weapons/04_gravetide_twinblades.png",
+      "svg": "assets/weapons/04_gravetide_twinblades.svg",
+      "type": "gravetide_twinblades",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 205,
+        "y": 253
+      },
+      "grip_anchor_normalized": {
+        "x": 0.2002,
+        "y": 0.4941
+      },
+      "atlas_cell": {
+        "column": 3,
+        "row": 0,
+        "x": 1536,
+        "y": 0,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "05_void_dagger_pair",
+      "png": "assets/weapons/05_void_dagger_pair.png",
+      "svg": "assets/weapons/05_void_dagger_pair.svg",
+      "type": "void_dagger_pair",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 205,
+        "y": 225
+      },
+      "grip_anchor_normalized": {
+        "x": 0.2002,
+        "y": 0.4395
+      },
+      "atlas_cell": {
+        "column": 0,
+        "row": 1,
+        "x": 0,
+        "y": 256,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "06_veilpiercer_spear",
+      "png": "assets/weapons/06_veilpiercer_spear.png",
+      "svg": "assets/weapons/06_veilpiercer_spear.svg",
+      "type": "veilpiercer_spear",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 245,
+        "y": 257
+      },
+      "grip_anchor_normalized": {
+        "x": 0.2393,
+        "y": 0.502
+      },
+      "atlas_cell": {
+        "column": 1,
+        "row": 1,
+        "x": 512,
+        "y": 256,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "07_cinder_greataxe",
+      "png": "assets/weapons/07_cinder_greataxe.png",
+      "svg": "assets/weapons/07_cinder_greataxe.svg",
+      "type": "cinder_greataxe",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 235,
+        "y": 255
+      },
+      "grip_anchor_normalized": {
+        "x": 0.2295,
+        "y": 0.498
+      },
+      "atlas_cell": {
+        "column": 2,
+        "row": 1,
+        "x": 1024,
+        "y": 256,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "08_frost_halberd",
+      "png": "assets/weapons/08_frost_halberd.png",
+      "svg": "assets/weapons/08_frost_halberd.svg",
+      "type": "frost_halberd",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 210,
+        "y": 257
+      },
+      "grip_anchor_normalized": {
+        "x": 0.2051,
+        "y": 0.502
+      },
+      "atlas_cell": {
+        "column": 3,
+        "row": 1,
+        "x": 1536,
+        "y": 256,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "09_ghostwood_bow",
+      "png": "assets/weapons/09_ghostwood_bow.png",
+      "svg": "assets/weapons/09_ghostwood_bow.svg",
+      "type": "ghostwood_bow",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 510,
+        "y": 350
+      },
+      "grip_anchor_normalized": {
+        "x": 0.498,
+        "y": 0.6836
+      },
+      "atlas_cell": {
+        "column": 0,
+        "row": 2,
+        "x": 0,
+        "y": 512,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "10_soulfire_rune_staff",
+      "png": "assets/weapons/10_soulfire_rune_staff.png",
+      "svg": "assets/weapons/10_soulfire_rune_staff.svg",
+      "type": "soulfire_rune_staff",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 510,
+        "y": 340
+      },
+      "grip_anchor_normalized": {
+        "x": 0.498,
+        "y": 0.6641
+      },
+      "atlas_cell": {
+        "column": 1,
+        "row": 2,
+        "x": 512,
+        "y": 512,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "11_blackthorn_shield",
+      "png": "assets/weapons/11_blackthorn_shield.png",
+      "svg": "assets/weapons/11_blackthorn_shield.svg",
+      "type": "blackthorn_shield",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 512,
+        "y": 370
+      },
+      "grip_anchor_normalized": {
+        "x": 0.5,
+        "y": 0.7227
+      },
+      "atlas_cell": {
+        "column": 2,
+        "row": 2,
+        "x": 1024,
+        "y": 512,
+        "width": 512,
+        "height": 256
+      }
+    },
+    {
+      "id": "12_nightfall_scythe",
+      "png": "assets/weapons/12_nightfall_scythe.png",
+      "svg": "assets/weapons/12_nightfall_scythe.svg",
+      "type": "nightfall_scythe",
+      "width": 1024,
+      "height": 512,
+      "grip_anchor_px": {
+        "x": 325,
+        "y": 340
+      },
+      "grip_anchor_normalized": {
+        "x": 0.3174,
+        "y": 0.6641
+      },
+      "atlas_cell": {
+        "column": 3,
+        "row": 2,
+        "x": 1536,
+        "y": 512,
+        "width": 512,
+        "height": 256
+      }
+    }
+  ],
+  "effects": [
+    "assets/effects/slash_crimson.png",
+    "assets/effects/slash_frost.png",
+    "assets/effects/slash_holy.png",
+    "assets/effects/impact_soulburst.png",
+    "assets/effects/impact_blood.png",
+    "assets/effects/magic_arcane.png",
+    "assets/effects/dash_trail.png"
+  ],
+  "atlas": {
+    "path": "assets/weapon_sprite_atlas.png",
+    "cell_width": 512,
+    "cell_height": 256,
+    "columns": 4,
+    "rows": 3,
+    "note": "Transparent utility atlas for slicing; individual source PNGs remain preferable when you want maximum resolution."
+  }
+}

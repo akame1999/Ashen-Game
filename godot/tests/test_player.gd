@@ -28,7 +28,11 @@ func _run(main: Node) -> void:
 	var room: Room = main.get_node("Room")
 	await frames(40)
 	check(room.parallax_count == 2 and room.torch_count >= 5 and room.platform_count >= 4, "room built (parallax, torches, platforms)")
-	check(Room.REGIONS.size() == 4 and room.region_name == Room.REGIONS[Room.current_region]["name"], "region backdrop selected")
+	check(Room.REGIONS.size() == 5 and room.region_name == Room.REGIONS[Room.current_region]["name"], "region backdrop selected")
+	var wd_ok := Player.WEAPON_DATA.size() == Player.WEAPONS.size() and Player.WEAPON_DATA[2]["dmg"] > Player.WEAPON_DATA[0]["dmg"]
+	for w in Player.WEAPON_DATA:
+		wd_ok = wd_ok and ResourceLoader.exists(Player.KIT_FX % w["fx"])
+	check(wd_ok, "weapon data (damage/reach/fx) and kit slash art present")
 	check(p.is_on_floor(), "player lands on floor")
 	check(p.sprite.animation == "idle", "idle animation")
 	var x0 := p.global_position.x

@@ -12,11 +12,12 @@ const CELL := 100.0
 const TOTAL_CELLS := 30
 const HOTBAR_ITEMS: Array = [
 	["R", "Flask", 5, "flask"],
-	["1", "Rookfang", 0, "weapon_1"],
-	["2", "Gravetide", 7, "weapon_2"],
-	["3", "Oathbreaker", 1, "weapon_3"]
+	["1", "Rookfang", 0, "weapon_1", "01_rookfang_longsword"],
+	["2", "Gravetide", 7, "weapon_2", "04_gravetide_twinblades"],
+	["3", "Oathbreaker", 1, "weapon_3", "02_oathbreaker_greatsword"]
 ]
 
+var _icons := {}
 var area_name := "Gravework Keep"
 var player: Player
 var room: Room
@@ -44,6 +45,9 @@ func _ready() -> void:
 	canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(canvas)
 	canvas.draw.connect(_paint)
+	for it in HOTBAR_ITEMS:
+		if it.size() > 4:
+			_icons[it[4]] = load("res://assets/weapons/icons/%s.png" % it[4])
 	player = get_parent().get_node("Player")
 	room = get_parent().get_node("Room")
 	_hp_last = player.hp
@@ -246,7 +250,10 @@ func _paint_hotbar() -> void:
 		var pos := Vector2(24 + i * 54, 540 - 74)
 		var r := Rect2(pos, Vector2(40, 40))
 		_frame(r)
-		_icon(int(d[2]), pos + Vector2(20, 20))
+		if d.size() > 4:
+			canvas.draw_texture_rect(_icons[d[4]], Rect2(pos, Vector2(40, 40)), false, Color.WHITE)
+		else:
+			_icon(int(d[2]), pos + Vector2(20, 20))
 		var is_weapon: bool = (i >= 1)
 		var is_active: bool = is_weapon and (player.current_weapon_idx == (i - 1))
 		if is_active:

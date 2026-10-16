@@ -49,3 +49,20 @@ static func spawn_fx(parent: Node, path: String, n: int, fps: float, pos: Vector
 	parent.add_child(a)
 	a.play("default")
 	return a
+
+
+static func pop_sprite(parent: Node, path: String, pos: Vector2, scale_f: float, flip_h := false, flip_v := false, life := 0.2, grow := 1.2, z := 5) -> Sprite2D:
+	## Single-image effect (kit slash/impact): appears, grows slightly and fades out.
+	var sp := Sprite2D.new()
+	sp.texture = load(path)
+	sp.position = pos
+	sp.scale = Vector2(scale_f, scale_f)
+	sp.flip_h = flip_h
+	sp.flip_v = flip_v
+	sp.z_index = z
+	parent.add_child(sp)
+	var tw := sp.create_tween().set_parallel(true)
+	tw.tween_property(sp, "scale", Vector2(scale_f, scale_f) * grow, life)
+	tw.tween_property(sp, "modulate:a", 0.0, life)
+	tw.chain().tween_callback(sp.queue_free)
+	return sp

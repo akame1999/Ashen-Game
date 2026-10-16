@@ -46,6 +46,11 @@ var jumps_left := 2
 const MAX_JUMPS := 2
 var current_weapon_idx := 0
 const WEAPONS := ["Rookfang", "Gravetide", "Oathbreaker"]
+const WEAPON_DATA := [ # damage x, reach x, slash FX image
+	{"dmg": 1.0, "reach": 1.0, "fx": "slash_crimson"},
+	{"dmg": 0.85, "reach": 0.95, "fx": "slash_frost"},
+	{"dmg": 1.5, "reach": 1.2, "fx": "slash_holy"}]
+const KIT_FX := "res://assets/fx/kit/%s.png"
 const SKILL_COST := 20.0
 const SOUL_COST := 40.0
 const FLASK_HEAL := 110
@@ -226,6 +231,7 @@ func _start_dodge() -> void:
 	state = State.DODGE
 	invulnerable = true
 	dodge_time = DODGE_TIME
+	SheetUtil.pop_sprite(get_parent(), KIT_FX % "dash_trail", global_position + Vector2(-facing * 26, -22), 0.2, facing < 0, false, 0.3, 1.1, 4)
 	sprite.play("dodge")
 
 
@@ -266,17 +272,19 @@ func _do_hit() -> void:
 	if attack_name == "soul_burst":
 		_soul_burst()
 		return
-	var reach: float = REACH.get(attack_name, 46.0)
-	var dmg: int = DAMAGE.get(attack_name, 25)
+	var wd: Dictionary = WEAPON_DATA[clampi(current_weapon_idx, 0, WEAPON_DATA.size() - 1)]
+	var reach: float = float(REACH.get(attack_name, 46.0)) * float(wd["reach"])
+	var dmg: int = int(round(float(DAMAGE.get(attack_name, 25)) * float(wd["dmg"])))
 	var box := Rect2(global_position + Vector2(4.0 if facing > 0 else -4.0 - reach, -46.0), Vector2(reach, 46.0))
-	var fx_name: String = FX.get(attack_name, "slash_light")
-	SheetUtil.spawn_fx(get_parent(), "res://assets/fx/%s.png" % fx_name, int(FX_FRAMES[fx_name]), 22.0,
-			global_position + Vector2(0, -22), Vector2(29, 50), facing < 0, attack_name == "light2")
+	var big := 1.3 if attack_name == "heavy" or attack_name == "skill" else 1.0
+	SheetUtil.pop_sprite(get_parent(), KIT_FX % wd["fx"], global_position + Vector2(facing * reach * 0.5, -26), reach * 1.7 * big / 512.0,
+			facing < 0, attack_name == "light2", 0.22, 1.15)
 	for n in get_tree().get_nodes_in_group("enemies"):
 		var en := n as Enemy
 		if en and en.alive and box.intersects(Rect2(en.global_position + Vector2(-10, -40), Vector2(20, 40))):
 			en.take_damage(dmg, global_position.x)
 			SheetUtil.spawn_fx(get_parent(), "res://assets/fx/impact_spark.png", 6, 24.0, en.global_position + Vector2(0, -26), Vector2(48, 48))
+			SheetUtil.pop_sprite(get_parent(), KIT_FX % "impact_blood", en.global_position + Vector2(0, -24), 0.16, false, false, 0.25, 1.4, 6)
 
 
 func die() -> void:

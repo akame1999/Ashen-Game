@@ -13,10 +13,11 @@ const LEVEL_LEFT := -600.0
 const LEVEL_RIGHT := 2400.0
 const REGIONS := [ # area name, backdrop file, ambient CanvasModulate tint
 	{"name": "Moonlit Citadel", "bg": "moonlit_citadel.jpg", "tint": Color(0.72, 0.78, 0.95), "stone": Color(0.78, 0.84, 1.0), "rim": Color(0.55, 0.70, 1.0)},
-	{"name": "Crimson Gravework", "bg": "crimson_gravework.jpg", "tint": Color(0.95, 0.80, 0.82), "stone": Color(1.0, 0.82, 0.85), "rim": Color(1.0, 0.45, 0.35)},
-	{"name": "Ember Viaduct", "bg": "ember_viaduct.jpg", "tint": Color(1.0, 0.82, 0.72), "stone": Color(1.0, 0.75, 0.60), "rim": Color(1.0, 0.55, 0.15)},
-	{"name": "Eclipse Reliquary", "bg": "eclipse_reliquary.jpg", "tint": Color(0.84, 0.78, 1.0), "stone": Color(0.85, 0.78, 1.0), "rim": Color(0.70, 0.50, 1.0)}]
-static var current_region := 0 ## survives scene reloads; F1-F4 switch region
+	{"name": "Ashen Chapel", "bg": "crimson_gravework.jpg", "tint": Color(0.95, 0.80, 0.82), "stone": Color(1.0, 0.82, 0.85), "rim": Color(1.0, 0.45, 0.35)},
+	{"name": "Cinder Bastion", "bg": "ember_viaduct.jpg", "tint": Color(1.0, 0.82, 0.72), "stone": Color(1.0, 0.75, 0.60), "rim": Color(1.0, 0.55, 0.15)},
+	{"name": "The Drowned March", "bg": "eclipse_reliquary.jpg", "tint": Color(0.84, 0.78, 1.0), "stone": Color(0.85, 0.78, 1.0), "rim": Color(0.70, 0.50, 1.0)},
+	{"name": "The Veiled Throne", "bg": "veiled_throne.jpg", "tint": Color(0.84, 0.78, 1.0), "stone": Color(0.82, 0.76, 1.0), "rim": Color(0.78, 0.55, 1.0)}]
+static var current_region := 0 ## survives scene reloads; F1-F5 switch region
 const PARALLAX := [ # file, horizontal scroll scale, z_index, alpha (region backdrop is prepended; placeholder mid layers removed, painted art has its own depth)
 	["4_foreground.png", 1.25, 10, 0.85]]
 const PLATFORMS := [[560, 350, 6], [820, 290, 5], [1100, 350, 6], [1400, 300, 5], [1700, 360, 5]]
