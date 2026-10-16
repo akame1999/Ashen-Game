@@ -30,13 +30,6 @@ var _frame_size := 96
 func _ready() -> void:
 	_setup_input()
 	_build_sprite()
-	var shape := CollisionShape2D.new()
-	var cap := CapsuleShape2D.new()
-	cap.radius = 7.0
-	cap.height = 36.0
-	shape.shape = cap
-	shape.position = Vector2(0, -18)
-	add_child(shape)
 	sprite.animation_finished.connect(_on_anim_finished)
 	sprite.play("idle")
 
