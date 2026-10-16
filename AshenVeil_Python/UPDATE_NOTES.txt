@@ -1,6 +1,0 @@
-Ashen Veil — Update Notes
-=========================
-
-This version focuses on responsive simultaneous movement and attacks, buffered input during recovery, repeated hit checks during the active swing, clearer weapon effects, a brighter arena and improved HUD readability.
-
-To run: launch_windows.bat (Windows with Python 3.10+). The launcher installs requirements.txt before starting the game.

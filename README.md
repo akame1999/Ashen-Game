@@ -1,34 +1,40 @@
 # Ashen Veil
 
-A dark-fantasy 2D action game prototype. The current Python build is a **side-scrolling Metroidvania-style combat sandbox** with platforming, weapon-specific attacks, enemy encounters, checkpoints, and a boss.
+A dark-fantasy 2D Metroidvania action game built in **Godot 4.7+ (GDScript)**.
 
-The world now uses four original SVG environment illustrations (Drowned March, Ashen Chapel, Cinder Bastion, and Veiled Throne), rendered with slow parallax, color grading, drifting fog, and ember effects. The game also retains a procedural drawing fallback if SVG loading isn't supported by a particular Pygame build.
-
-## Run the game
-
-Open [`AshenVeil_Python`](AshenVeil_Python/) and follow its [README](AshenVeil_Python/README.md).
-
-On Windows, install Python 3.10+ and double-click `launch_windows.bat`, or run:
-
-```powershell
-py -3 -m pip install -r requirements.txt
-py -3 main.py
-```
+The game features fast, responsive side-scrolling combat, dodge rolls, multi-strike combos, heavy attacks, weapon skills, Soul Burst area damage, double-jumping, enemy AI with varying behaviors (patrolling, chasing, ranged archers, shielded defenders, armored knights), and an ornate dark-fantasy HUD with real-time fog-of-war minimap, floating damage numbers, and healing flasks.
 
 ## Controls
 
-- **A / D** or arrow keys: move
-- **Space / W / Up:** jump (double jump available)
-- **Left mouse button:** light attacks / combos
-- **Right mouse button:** heavy attack
-- **Shift:** dodge
-- **1 / 2 / 3:** change weapon
-- **E:** weapon skill
-- **Q:** Soul Burst
-- **Esc:** pause
+| Action | Primary Input | Secondary Input |
+| :--- | :--- | :--- |
+| **Move** | `A` / `D` | `Left` / `Right` Arrow keys |
+| **Jump** | `Space` | `W` / `Up` (Double jump in air) |
+| **Light Attack** | `J` | Left Mouse Button (press again for combo) |
+| **Heavy Attack** | `K` | Right Mouse Button |
+| **Dodge Roll** | `Shift` | Invulnerable roll |
+| **Weapon Skill** | `E` | Costs 20 FP |
+| **Soul Burst** | `Q` | Costs 40 FP (AoE explosion) |
+| **Healing Flask** | `R` | Restores 110 HP (3 charges) |
+| **Pause Menu** | `Esc` | Displays controls & resume/restart |
 
-## Project status
+## Running the Project
 
-Early playable prototype. Automated smoke tests cover source compilation, headless rendering, background-asset loading, and enemy-death soul rewards. Visual gameplay and collision feel should still be tested on Windows hardware.
+Open the `godot/` folder in **Godot 4.7+** (standard version) and press **F5** (or run `main.tscn`).
 
-No third-party art assets are bundled. No open-source license has been assigned yet.
+To run headlessly or execute automated tests:
+```bash
+# Run player mechanics & state tests (18 assertions)
+godot --headless --path godot --script res://tests/test_player.gd
+
+# Run combat & enemy AI tests (10 assertions)
+godot --headless --path godot --script res://tests/test_combat.gd
+```
+
+## Architecture
+
+- **`godot/player.gd`**: Player state machine (`NORMAL`, `DODGE`, `ATTACK`, `HURT`, `DEAD`), double-jump, combat combos, FP and cooldown management.
+- **`godot/enemy.gd`**: Flexible enemy AI controller supporting melee, shielded blockers, leashed archers with projectiles, and armored brutes.
+- **`godot/room.gd`**: Multi-layer parallax environment renderer, one-way collision platforms, dynamic PointLight2D torches, and prop placement.
+- **`godot/hud.gd`**: Code-drawn gothic HUD in Cinzel typography, including dynamic HP/FP bars with damage trails, cooldown overlays, rolling souls counter, and fog-of-war minimap.
+- **`godot/sheet_util.gd`**: Dynamic sprite sheet and FX animation loader supporting variable frame dimensions and hot-swappable art assets.

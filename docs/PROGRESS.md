@@ -3,8 +3,7 @@
 Priority: SAVE PROGRESS > MANY FEATURES. Commit and push after every small step.
 
 ## Done
-- Python prototype in `AshenVeil_Python/` (playable, left untouched).
-- Reference screenshots in `AshenVeil_Python/assets/reference_art/full/`.
+- Python prototype decommissioned and removed; project is now exclusively focused on Godot 4 (GDScript).
 - Generated placeholder art (96x96 frames, facing right, feet on row 88): `assets/characters/` (player + 4 enemies), `assets/fx/` (slashes, impact), `assets/tiles/`, `assets/props/`; generators in `tools/`.
 - Cinzel font in `assets/fonts/`.
 - Godot 4.7.2 (standard, not .NET) runs headless in the sandbox; project in `godot/` boots OK.
