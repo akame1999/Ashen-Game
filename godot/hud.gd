@@ -45,9 +45,8 @@ func _ready() -> void:
 	canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(canvas)
 	canvas.draw.connect(_paint)
-	for it in HOTBAR_ITEMS:
-		if it.size() > 4:
-			_icons[it[4]] = load("res://assets/weapons/icons/%s.png" % it[4])
+	for wid in Player.WEAPON_IDS: # preload every weapon icon (first-draw load shows white squares)
+		_icons[wid] = load("res://assets/weapons/icons/%s.png" % wid)
 	player = get_parent().get_node("Player")
 	room = get_parent().get_node("Room")
 	_hp_last = player.hp
@@ -268,6 +267,17 @@ func _paint_hotbar() -> void:
 		canvas.draw_rect(badge, BG)
 		canvas.draw_rect(badge, GOLD_L if is_active else GOLD, false, 1.0)
 		_text(str(d[0]), Vector2(badge.position.x, badge.position.y + 9), 9, GOLD_L, badge.size.x, HORIZONTAL_ALIGNMENT_CENTER)
+	if player.current_weapon_idx >= 3: # weapon beyond the 3 hotbar slots: show it in an extra active slot
+		var pos2 := Vector2(24 + HOTBAR_ITEMS.size() * 54, 540 - 74)
+		var r2 := Rect2(pos2, Vector2(40, 40))
+		_frame(r2)
+		canvas.draw_texture_rect(_icons[Player.WEAPON_IDS[player.current_weapon_idx]], r2, false, Color.WHITE)
+		canvas.draw_rect(r2.grow(2.0), GOLD_L, false, 2.0)
+		var key_txt: String = ["4", "5", "6", "7", "8", "9", "0", "-", "="][player.current_weapon_idx - 3]
+		var badge2 := Rect2(pos2.x + 10, pos2.y + 43, 20, 11)
+		canvas.draw_rect(badge2, BG)
+		canvas.draw_rect(badge2, GOLD_L, false, 1.0)
+		_text(key_txt, Vector2(badge2.position.x, badge2.position.y + 9), 9, GOLD_L, badge2.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _icon(kind: int, c: Vector2) -> void:
@@ -356,7 +366,7 @@ func _paint_pause() -> void:
 	_text("PAUSED", Vector2(r.position.x, 168), 30, GOLD_L, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 	canvas.draw_line(Vector2(r.position.x + 40, 180), Vector2(r.end.x - 40, 180), GOLD, 1.0)
 	var lines := [["Esc", "Resume"], ["Enter", "Restart"], ["A / D", "Move"], ["Space", "Jump (double jump in air)"], ["Shift", "Dodge roll"],
-		["J / LMB", "Attack / combo"], ["K / RMB", "Heavy attack"], ["1 / 2 / 3", "Switch weapons (Rookfang / Gravetide / Oathbreaker)"],
+		["J / LMB", "Attack / combo"], ["K / RMB", "Heavy attack"], ["1-9 / 0 / - / =", "Switch weapons (12 total)"],
 		["E", "Weapon Skill (20 FP)"], ["Q", "Soul Burst (40 FP)"], ["R", "Healing flask"]]
 	for i in lines.size():
 		var y := 210.0 + i * 20.0

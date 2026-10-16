@@ -16,7 +16,7 @@ The game features fast, responsive side-scrolling combat, dodge rolls, multi-str
 | **Weapon Skill** | `E` | Costs 20 FP |
 | **Soul Burst** | `Q` | Costs 40 FP (AoE explosion) |
 | **Healing Flask** | `R` | Restores 110 HP (3 charges) |
-| **Switch Weapon** | `1` / `2` / `3` | Rookfang / Gravetide / Oathbreaker (each changes damage, reach and slash FX) |
+| **Switch Weapon** | `1`–`9`, `0`, `-`, `=` | All 12 pack weapons (each changes damage, reach and slash FX; hotbar shows slots 1-3 plus the active weapon) |
 | **Switch Region** | `F1`–`F4` | Drowned March / Ashen Chapel / Cinder Bastion / Veiled Throne backdrops |
 | **Switch Skin** | `F6` | Male (default) / Female / Ashen Knight |
 | **Pause Menu** | `Esc` | Displays controls & resume/restart |

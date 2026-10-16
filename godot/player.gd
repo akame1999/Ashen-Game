@@ -54,14 +54,25 @@ var _equipped_idx := -1
 var _hand := Vector2.ZERO # hand socket at pack scale; ZERO = skin has its own sword
 const MAX_JUMPS := 2
 var current_weapon_idx := 0
-const WEAPONS := ["Rookfang", "Gravetide", "Oathbreaker"]
+const WEAPONS := ["Rookfang", "Gravetide", "Oathbreaker", "Ashen Katana", "Void Daggers", "Veilpiercer", "Cinder Greataxe", "Frost Halberd", "Ghostwood Bow", "Soulfire Staff", "Blackthorn Shield", "Nightfall Scythe"]
 const WEAPON_DATA := [ # damage x, reach x, slash FX image
 	{"dmg": 1.0, "reach": 1.0, "fx": "slash_crimson"},
 	{"dmg": 0.85, "reach": 0.95, "fx": "slash_frost"},
-	{"dmg": 1.5, "reach": 1.2, "fx": "slash_holy"}]
+	{"dmg": 1.5, "reach": 1.2, "fx": "slash_holy"},
+	{"dmg": 1.09, "reach": 1.16, "fx": "slash_frost"}, # Ashen Katana
+	{"dmg": 0.73, "reach": 0.82, "fx": "slash_crimson"}, # Void Daggers
+	{"dmg": 1.09, "reach": 1.47, "fx": "slash_holy"}, # Veilpiercer spear
+	{"dmg": 1.27, "reach": 1.25, "fx": "slash_crimson"}, # Cinder Greataxe
+	{"dmg": 1.09, "reach": 1.42, "fx": "slash_frost"}, # Frost Halberd
+	{"dmg": 0.91, "reach": 1.6, "fx": "slash_holy"}, # Ghostwood Bow (ranged, melee-approximated for now)
+	{"dmg": 0.82, "reach": 1.6, "fx": "slash_holy"}, # Soulfire Staff (ranged, melee-approximated for now)
+	{"dmg": 0.45, "reach": 0.74, "fx": "slash_crimson"}, # Blackthorn Shield
+	{"dmg": 1.18, "reach": 1.32, "fx": "slash_frost"}] # Nightfall Scythe
 const KIT_FX := "res://assets/fx/kit/%s.png"
 const WEAPON_MANIFEST := "res://assets/weapons/runtime_manifest.json"
-const WEAPON_IDS := ["01_rookfang_longsword", "04_gravetide_twinblades", "02_oathbreaker_greatsword"] # hotbar slots 1-3
+const WEAPON_IDS := ["01_rookfang_longsword", "04_gravetide_twinblades", "02_oathbreaker_greatsword",
+	"03_ashen_katana", "05_void_dagger_pair", "06_veilpiercer_spear", "07_cinder_greataxe", "08_frost_halberd", "09_ghostwood_bow",
+	"10_soulfire_rune_staff", "11_blackthorn_shield", "12_nightfall_scythe"] # keys 1-9, 0, -, =
 const SWING_KEY := {"light1": "swing_light", "light2": "swing_light", "heavy": "swing_heavy", "skill": "swing_skill", "soul_burst": "swing_skill"}
 const SKILL_COST := 20.0
 const SOUL_COST := 40.0
@@ -90,7 +101,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func _setup_input() -> void:
 	var keys := {"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 			"jump": [KEY_SPACE, KEY_W, KEY_UP], "dodge": [KEY_SHIFT], "attack": [KEY_J],
-			"heavy": [KEY_K], "skill": [KEY_E], "soul_burst": [KEY_Q], "flask": [KEY_R], "weapon_1": [KEY_1, KEY_KP_1], "weapon_2": [KEY_2, KEY_KP_2], "weapon_3": [KEY_3, KEY_KP_3]}
+			"heavy": [KEY_K], "skill": [KEY_E], "soul_burst": [KEY_Q], "flask": [KEY_R], "weapon_1": [KEY_1, KEY_KP_1], "weapon_2": [KEY_2, KEY_KP_2], "weapon_3": [KEY_3, KEY_KP_3],
+			"weapon_4": [KEY_4], "weapon_5": [KEY_5], "weapon_6": [KEY_6], "weapon_7": [KEY_7], "weapon_8": [KEY_8], "weapon_9": [KEY_9],
+			"weapon_10": [KEY_0], "weapon_11": [KEY_MINUS], "weapon_12": [KEY_EQUAL]}
 	for a in keys:
 		if not InputMap.has_action(a):
 			InputMap.add_action(a)
@@ -207,12 +220,9 @@ func _physics_process(delta: float) -> void:
 					jumps_left -= 1
 					sprite.play("jump")
 					SheetUtil.spawn_fx(get_parent(), "res://assets/fx/impact_spark.png", 6, 24.0, global_position + Vector2(0, -6), Vector2(48, 48), false, false, 96, 0.45)
-			if Input.is_action_just_pressed("weapon_1"):
-				current_weapon_idx = 0
-			elif Input.is_action_just_pressed("weapon_2"):
-				current_weapon_idx = 1
-			elif Input.is_action_just_pressed("weapon_3"):
-				current_weapon_idx = 2
+			for wi in WEAPON_IDS.size():
+				if Input.is_action_just_pressed("weapon_%d" % (wi + 1)):
+					current_weapon_idx = wi
 
 			if Input.is_action_just_pressed("dodge") and is_on_floor() and _cd_ready("dodge"):
 				_cd_start("dodge")
