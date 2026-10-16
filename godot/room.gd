@@ -118,7 +118,8 @@ func _build_platform(x: float, y: float, tiles: int) -> void:
 		_tile(T_DARK, Vector2(x + i * TILE, y + TILE), body)
 	platform_count += 1
 	var chain := load("res://assets/props/chain.png")
-	for k in 2:
+	var links := mini(2, int((FLOOR_Y - (y + TILE * 2)) / 32.0))
+	for k in links:
 		var c := Sprite2D.new()
 		c.texture = chain
 		c.centered = false

@@ -25,6 +25,14 @@ var attack_name := ""
 var combo_queued := false
 var dodge_time := 0.0
 var _frame_size := 96
+var max_hp := 320
+var hp := 320
+var max_fp := 120.0
+var fp := 120.0
+var level := 1
+var souls := 27
+const SKILL_COST := 20.0
+const FP_REGEN := 4.0
 
 
 func _ready() -> void:
@@ -75,6 +83,7 @@ func _build_sprite() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	fp = minf(max_fp, fp + FP_REGEN * delta)
 	if not is_on_floor():
 		velocity.y += GRAVITY * delta
 	if state == State.DEAD:
@@ -95,7 +104,8 @@ func _physics_process(delta: float) -> void:
 				_start_attack("light1")
 			elif Input.is_action_just_pressed("heavy"):
 				_start_attack("heavy")
-			elif Input.is_action_just_pressed("skill"):
+			elif Input.is_action_just_pressed("skill") and fp >= SKILL_COST:
+				fp -= SKILL_COST
 				_start_attack("skill")
 			if state == State.NORMAL:
 				_update_move_anim()
@@ -141,8 +151,12 @@ func _start_attack(anim: String) -> void:
 	sprite.play(anim)
 
 
-func hurt() -> void:
+func hurt(amount: int = 30) -> void:
 	if invulnerable or state == State.DEAD:
+		return
+	hp = maxi(0, hp - amount)
+	if hp == 0:
+		die()
 		return
 	state = State.HURT
 	velocity.x = -facing * 120.0
