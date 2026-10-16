@@ -1,6 +1,6 @@
 {
- "frame": 96,
- "feet_row": 88,
+ "frame": 128,
+ "feet_row": 120,
  "rows": [
   {
    "name": "idle",
@@ -10,7 +10,7 @@
   {
    "name": "run",
    "row": 1,
-   "frames": 6
+   "frames": 4
   },
   {
    "name": "jump",
@@ -58,5 +58,5 @@
    "frames": 6
   }
  ],
- "center_x": 44
+ "center_x": 64
 }
