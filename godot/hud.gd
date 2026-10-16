@@ -10,12 +10,14 @@ const BG := Color(0.04, 0.04, 0.07, 0.9)
 const TXT := Color(0.9, 0.88, 0.82)
 const CELL := 100.0
 const TOTAL_CELLS := 30
-## key label, name, icon, cooldown key, FP cost
-const SLOTS := [
-	["R", "Flask", 5, "", 0.0], ["LMB", "Attack", 0, "", 0.0], ["RMB", "Heavy", 1, "heavy", 0.0],
-	["Shift", "Dodge", 2, "dodge", 0.0], ["E", "Skill", 3, "skill", 20.0], ["Q", "Soul Burst", 4, "soul_burst", 40.0]]
+const HOTBAR_ITEMS: Array = [
+	["R", "Flask", 5, "flask"],
+	["1", "Rookfang", 0, "weapon_1"],
+	["2", "Gravetide", 7, "weapon_2"],
+	["3", "Oathbreaker", 1, "weapon_3"]
+]
 
-var area_name := "Ruined Kingdom"
+var area_name := "Gravework Keep"
 var player: Player
 var room: Room
 var font: Font
@@ -207,64 +209,100 @@ func _paint_top_left(ratio: float) -> void:
 	_bar(fp_rect, player.fp / player.max_fp, player.fp / player.max_fp, Color(0.10, 0.32, 0.65), Color(0.32, 0.62, 0.95), 0)
 	_text("%d / %d" % [int(player.fp), int(player.max_fp)], fp_rect.position + Vector2(0, 9), 10, TXT, fp_rect.size.x - 6.0, HORIZONTAL_ALIGNMENT_RIGHT)
 
+	var abilities := [
+		{"key": "Q", "action": "soul_burst", "fp": 40.0, "icon": 4},
+		{"key": "", "action": "focus", "fp": 0.0, "icon": 6},
+		{"key": "E", "action": "skill", "fp": 20.0, "icon": 3}
+	]
+	for i in abilities.size():
+		var ab: Dictionary = abilities[i]
+		var ab_pos := Vector2(82 + i * 36, 66)
+		var ab_r := Rect2(ab_pos, Vector2(26, 26))
+		_frame(ab_r)
+		_icon(int(ab["icon"]), ab_pos + Vector2(13, 13))
+		var akey: String = ab["action"]
+		if akey in Player.CD_TIME:
+			var cd := float(player.cd.get(akey, 0.0))
+			var frac := cd / float(Player.CD_TIME[akey])
+			if frac > 0.0:
+				canvas.draw_rect(Rect2(ab_pos.x, ab_pos.y + 26.0 * (1.0 - frac), 26.0, 26.0 * frac), Color(0, 0, 0, 0.65))
+				var s := "%d" % ceili(cd) if cd >= 1.0 else "%.1f" % cd
+				_text(s, ab_pos + Vector2(0, 18), 11, GOLD_L, 26.0, HORIZONTAL_ALIGNMENT_CENTER)
+			if float(ab["fp"]) > player.fp:
+				canvas.draw_rect(ab_r, Color(0.04, 0.08, 0.28, 0.6))
+			var fl: float = float(_ready_flash.get(akey, 0.0))
+			if fl > 0.0:
+				canvas.draw_rect(ab_r, Color(1, 1, 1, 0.5 * fl / 0.35))
+		if ab["key"] != "":
+			var ab_badge := Rect2(ab_pos.x + 4, ab_pos.y + 28, 18, 11)
+			canvas.draw_rect(ab_badge, BG)
+			canvas.draw_rect(ab_badge, GOLD, false, 1.0)
+			_text(ab["key"], ab_badge.position + Vector2(0, 9), 9, GOLD_L, ab_badge.size.x, HORIZONTAL_ALIGNMENT_CENTER)
+
 
 func _paint_hotbar() -> void:
-	for i in SLOTS.size():
-		var d: Array = SLOTS[i]
-		var pos := Vector2(20 + i * 58, 540 - 88)
+	for i in HOTBAR_ITEMS.size():
+		var d: Array = HOTBAR_ITEMS[i]
+		var pos := Vector2(24 + i * 54, 540 - 74)
 		var r := Rect2(pos, Vector2(40, 40))
 		_frame(r)
 		_icon(int(d[2]), pos + Vector2(20, 20))
-		var key: String = d[3]
-		if key != "":
-			var cd := float(player.cd.get(key, 0.0))
-			var frac := cd / float(Player.CD_TIME[key])
-			if frac > 0.0:
-				canvas.draw_rect(Rect2(pos.x, pos.y + 40.0 * (1.0 - frac), 40.0, 40.0 * frac), Color(0, 0, 0, 0.62))
-				var s := "%d" % ceili(cd) if cd >= 1.0 else "%.1f" % cd
-				_text(s, pos + Vector2(0, 25), 14, GOLD_L, 40.0, HORIZONTAL_ALIGNMENT_CENTER)
-			if float(d[4]) > player.fp:
-				canvas.draw_rect(r, Color(0.04, 0.08, 0.28, 0.6))
-			var fl := float(_ready_flash.get(key, 0.0))
-			if fl > 0.0:
-				canvas.draw_rect(r, Color(1, 1, 1, 0.5 * fl / 0.35))
+		var is_weapon: bool = (i >= 1)
+		var is_active: bool = is_weapon and (player.current_weapon_idx == (i - 1))
+		if is_active:
+			canvas.draw_rect(r.grow(2.0), GOLD_L, false, 2.0)
+			for corner in [r.position + Vector2(-2, -2), Vector2(r.end.x + 2, r.position.y - 2), Vector2(r.position.x - 2, r.end.y + 2), r.end + Vector2(2, 2)]:
+				_stud(corner, 3.5, GOLD_L)
 		elif int(d[2]) == 5:
-			_text(str(player.flasks), pos + Vector2(26, 38), 13, GOLD_L, 12.0, HORIZONTAL_ALIGNMENT_RIGHT)
+			_text(str(player.flasks), pos + Vector2(24, 38), 12, GOLD_L, 16.0, HORIZONTAL_ALIGNMENT_RIGHT)
 			if player.flasks == 0 or player.hp >= player.max_hp:
 				canvas.draw_rect(r, Color(0, 0, 0, 0.45))
-		var badge := Rect2(pos.x + 4, pos.y - 10, 32, 13)
+		var badge := Rect2(pos.x + 10, pos.y + 43, 20, 11)
 		canvas.draw_rect(badge, BG)
-		canvas.draw_rect(badge, GOLD, false, 1.0)
-		_text(str(d[0]), Vector2(badge.position.x, badge.position.y + 10), 9, GOLD_L, badge.size.x, HORIZONTAL_ALIGNMENT_CENTER)
-		_text(str(d[1]), pos + Vector2(-15, 54), 10, TXT, 70.0, HORIZONTAL_ALIGNMENT_CENTER)
+		canvas.draw_rect(badge, GOLD_L if is_active else GOLD, false, 1.0)
+		_text(str(d[0]), Vector2(badge.position.x, badge.position.y + 9), 9, GOLD_L, badge.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _icon(kind: int, c: Vector2) -> void:
 	match kind:
-		0:
-			canvas.draw_line(c + Vector2(-11, 12), c + Vector2(11, -12), Color(0.85, 0.88, 0.95), 3.0)
-			canvas.draw_line(c + Vector2(-10, 3), c + Vector2(-3, 10), GOLD, 3.0)
-		1:
-			canvas.draw_arc(c + Vector2(-2, 2), 12, -2.4, 0.5, 18, Color(0.35, 0.65, 0.95), 4.0)
-		2:
+		0: # Rookfang Longsword
+			canvas.draw_line(c + Vector2(-12, 12), c + Vector2(12, -12), Color(0.9, 0.92, 0.98), 2.5)
+			canvas.draw_line(c + Vector2(-10, 4), c + Vector2(-4, 10), GOLD_L, 2.5)
+			canvas.draw_circle(c + Vector2(-11, 11), 2.0, GOLD_L)
+		1: # Oathbreaker Greatsword
+			canvas.draw_line(c + Vector2(-11, 13), c + Vector2(13, -11), Color(0.85, 0.75, 0.55), 4.5)
+			canvas.draw_line(c + Vector2(-10, 12), c + Vector2(12, -10), Color(0.95, 0.9, 0.8), 2.0)
+			canvas.draw_line(c + Vector2(-10, 2), c + Vector2(-2, 10), GOLD, 3.5)
+		2: # Dodge
 			canvas.draw_circle(c + Vector2(2, -9), 4, Color(0.8, 0.82, 0.9))
 			canvas.draw_line(c + Vector2(2, -5), c + Vector2(-3, 6), Color(0.8, 0.82, 0.9), 3.0)
 			canvas.draw_line(c + Vector2(-13, -2), c + Vector2(-5, -2), Color(0.5, 0.6, 0.8), 2.0)
 			canvas.draw_line(c + Vector2(-3, 6), c + Vector2(5, 13), Color(0.8, 0.82, 0.9), 3.0)
-		3:
-			canvas.draw_colored_polygon(PackedVector2Array([c + Vector2(0, -13), c + Vector2(10, 0), c + Vector2(0, 13), c + Vector2(-10, 0)]), Color(0.85, 0.2, 0.3))
-			canvas.draw_line(c + Vector2(0, -13), c + Vector2(0, 13), Color(1, 0.7, 0.7), 1.0)
-		5:
+		3: # Skill (radiant ruby star diamond)
+			canvas.draw_colored_polygon(PackedVector2Array([c + Vector2(0, -11), c + Vector2(8, 0), c + Vector2(0, 11), c + Vector2(-8, 0)]), Color(0.95, 0.22, 0.32))
+			canvas.draw_line(c + Vector2(0, -11), c + Vector2(0, 11), Color(1, 0.8, 0.8), 1.0)
+			canvas.draw_line(c + Vector2(-8, 0), c + Vector2(8, 0), Color(1, 0.8, 0.8), 1.0)
+		4: # Soul burst (fiery radiant cross flare)
+			for a in 4:
+				canvas.draw_line(c, c + Vector2(11, 0).rotated(a * PI / 2.0), Color(1.0, 0.65, 0.2), 2.5)
+			canvas.draw_circle(c, 4, Color(1.0, 0.95, 0.7))
+		5: # Flask (curved vial with elixir)
 			var empty := player.flasks == 0
-			canvas.draw_circle(c + Vector2(0, 4), 9, Color(0.35, 0.35, 0.38) if empty else Color(0.82, 0.14, 0.2))
-			canvas.draw_circle(c + Vector2(-3, 1), 2.5, Color(1, 0.7, 0.7, 0.8))
+			canvas.draw_circle(c + Vector2(0, 4), 9, Color(0.35, 0.35, 0.38) if empty else Color(0.85, 0.12, 0.18))
+			canvas.draw_circle(c + Vector2(-3, 1), 2.5, Color(1, 0.7, 0.7, 0.85))
 			canvas.draw_rect(Rect2(c + Vector2(-3, -10), Vector2(6, 7)), Color(0.75, 0.8, 0.9))
 			canvas.draw_rect(Rect2(c + Vector2(-4, -13), Vector2(8, 3)), GOLD)
+		6: # Focus orb (mystic blue energy orb)
+			canvas.draw_circle(c, 8, Color(0.12, 0.35, 0.75))
+			canvas.draw_circle(c + Vector2(-2, -2), 3, Color(0.45, 0.75, 1.0))
+			canvas.draw_arc(c, 10, 0, TAU, 24, Color(0.3, 0.65, 0.95, 0.7), 1.2)
+		7: # Gravetide Twinblades
+			canvas.draw_line(c + Vector2(-11, -8), c + Vector2(7, 10), Color(0.45, 0.88, 0.85), 2.5)
+			canvas.draw_line(c + Vector2(11, -8), c + Vector2(-7, 10), Color(0.45, 0.88, 0.85), 2.5)
+			canvas.draw_circle(c + Vector2(-9, -9), 1.5, GOLD_L)
+			canvas.draw_circle(c + Vector2(9, -9), 1.5, GOLD_L)
 		_:
-			for a in 4:
-				canvas.draw_line(c, c + Vector2(14, 0).rotated(a * PI / 2.0), Color(1.0, 0.82, 0.35), 3.0)
-			canvas.draw_circle(c, 5, Color(1.0, 0.95, 0.7))
-
+			canvas.draw_circle(c, 5, GOLD)
 
 func _paint_souls() -> void:
 	var p := Vector2(792, 504)
@@ -280,13 +318,9 @@ func _paint_souls() -> void:
 
 
 func _paint_minimap() -> void:
-	var cx := 870.0
-	var tw := font.get_string_size(area_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
-	_text(area_name, Vector2(cx - 90.0, 20), 14, TXT, 180.0, HORIZONTAL_ALIGNMENT_CENTER)
-	canvas.draw_line(Vector2(cx - tw / 2.0 - 24.0, 15), Vector2(cx - tw / 2.0 - 8.0, 15), GOLD, 1.0)
-	canvas.draw_line(Vector2(cx + tw / 2.0 + 8.0, 15), Vector2(cx + tw / 2.0 + 24.0, 15), GOLD, 1.0)
-	var r := Rect2(796, 30, 148, 64)
+	var r := Rect2(796, 22, 148, 66)
 	_frame(r)
+	_text(area_name, Vector2(r.position.x, r.end.y + 14), 11, TXT, r.size.x, HORIZONTAL_ALIGNMENT_RIGHT)
 	var sx := (r.size.x - 8.0) / (Room.LEVEL_RIGHT - Room.LEVEL_LEFT)
 	var map := func(wx: float, wy: float) -> Vector2:
 		return Vector2(r.position.x + 4.0 + (wx - Room.LEVEL_LEFT) * sx, r.position.y + 8.0 + (wy - 250.0) * 0.26)
@@ -310,12 +344,13 @@ func _paint_minimap() -> void:
 func _paint_pause() -> void:
 	var sz := canvas.size
 	canvas.draw_rect(Rect2(Vector2.ZERO, sz), Color(0, 0, 0, 0.62))
-	var r := Rect2(sz.x / 2.0 - 190.0, 120, 380, 300)
+	var r := Rect2(sz.x / 2.0 - 190.0, 110, 380, 320)
 	_frame(r)
 	_text("PAUSED", Vector2(r.position.x, 168), 30, GOLD_L, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 	canvas.draw_line(Vector2(r.position.x + 40, 180), Vector2(r.end.x - 40, 180), GOLD, 1.0)
 	var lines := [["Esc", "Resume"], ["Enter", "Restart"], ["A / D", "Move"], ["Space", "Jump (double jump in air)"], ["Shift", "Dodge roll"],
-		["J / LMB", "Attack (press again for combo)"], ["K / RMB", "Heavy attack"], ["E", "Skill  (20 FP)"], ["Q", "Soul Burst  (40 FP)"], ["R", "Healing flask"]]
+		["J / LMB", "Attack / combo"], ["K / RMB", "Heavy attack"], ["1 / 2 / 3", "Switch weapons (Rookfang / Gravetide / Oathbreaker)"],
+		["E", "Weapon Skill (20 FP)"], ["Q", "Soul Burst (40 FP)"], ["R", "Healing flask"]]
 	for i in lines.size():
 		var y := 210.0 + i * 20.0
 		_text(str(lines[i][0]), Vector2(r.position.x + 36, y), 13, GOLD_L)

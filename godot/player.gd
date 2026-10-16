@@ -43,6 +43,8 @@ var level := 1
 var souls := 27
 var jumps_left := 2
 const MAX_JUMPS := 2
+var current_weapon_idx := 0
+const WEAPONS := ["Rookfang", "Gravetide", "Oathbreaker"]
 const SKILL_COST := 20.0
 const SOUL_COST := 40.0
 const FLASK_HEAL := 110
@@ -63,7 +65,7 @@ func _ready() -> void:
 func _setup_input() -> void:
 	var keys := {"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 			"jump": [KEY_SPACE, KEY_W, KEY_UP], "dodge": [KEY_SHIFT], "attack": [KEY_J],
-			"heavy": [KEY_K], "skill": [KEY_E], "soul_burst": [KEY_Q], "flask": [KEY_R]}
+			"heavy": [KEY_K], "skill": [KEY_E], "soul_burst": [KEY_Q], "flask": [KEY_R], "weapon_1": [KEY_1, KEY_KP_1], "weapon_2": [KEY_2, KEY_KP_2], "weapon_3": [KEY_3, KEY_KP_3]}
 	for a in keys:
 		if not InputMap.has_action(a):
 			InputMap.add_action(a)
@@ -129,6 +131,13 @@ func _physics_process(delta: float) -> void:
 					jumps_left -= 1
 					sprite.play("jump")
 					SheetUtil.spawn_fx(get_parent(), "res://assets/fx/impact_spark.png", 6, 24.0, global_position + Vector2(0, -6), Vector2(48, 48), false, false, 96, 0.45)
+			if Input.is_action_just_pressed("weapon_1"):
+				current_weapon_idx = 0
+			elif Input.is_action_just_pressed("weapon_2"):
+				current_weapon_idx = 1
+			elif Input.is_action_just_pressed("weapon_3"):
+				current_weapon_idx = 2
+
 			if Input.is_action_just_pressed("dodge") and is_on_floor() and _cd_ready("dodge"):
 				_cd_start("dodge")
 				_start_dodge()
