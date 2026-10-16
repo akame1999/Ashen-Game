@@ -11,9 +11,12 @@ const T_MOSS := 2
 const PARALLAX_HEIGHT := 540.0
 const LEVEL_LEFT := -600.0
 const LEVEL_RIGHT := 2400.0
-const PARALLAX := [ # file, horizontal scroll scale, z_index
-	["0_sky", 0.03, 0], ["1_castle", 0.12, 0], ["2_aqueduct", 0.3, 0],
-	["3_ruins", 0.6, 0], ["4_foreground", 1.25, 10]]
+const PARALLAX := [ # file, horizontal scroll scale, z_index, alpha
+	["drowned_march_bg.jpg", 0.04, -8, 1.0],
+	["1_castle.png", 0.12, -4, 0.35],
+	["2_aqueduct.png", 0.28, -2, 0.45],
+	["3_ruins.png", 0.55, -1, 0.6],
+	["4_foreground.png", 1.25, 10, 0.85]]
 const PLATFORMS := [[560, 350, 6], [820, 290, 5], [1100, 350, 6], [1400, 300, 5], [1700, 360, 5]]
 const TORCH_X := [200, 480, 760, 1040, 1320, 1600, 1880]
 const ENEMIES := [["skeleton", 690, 420, 90], ["shield_skeleton", 1000, 420, 90], ["skeleton", 1250, 420, 90],
@@ -68,7 +71,9 @@ func _make_light_texture() -> GradientTexture2D:
 func _build_parallax() -> void:
 	## Any layer size works: each PNG is scaled to PARALLAX_HEIGHT tall and repeated horizontally.
 	for layer in PARALLAX:
-		var tex: Texture2D = load("res://assets/parallax/%s.png" % layer[0])
+		var fn: String = layer[0]
+		var path := "res://assets/parallax/%s" % fn if (fn.ends_with(".jpg") or fn.ends_with(".png")) else ("res://assets/parallax/%s.png" % fn)
+		var tex: Texture2D = load(path)
 		var sc := PARALLAX_HEIGHT / float(tex.get_height())
 		var w := tex.get_width() * sc
 		var px := Parallax2D.new()
@@ -81,6 +86,8 @@ func _build_parallax() -> void:
 		s.centered = false
 		s.scale = Vector2(sc, sc)
 		s.position = Vector2(-w, -10)
+		if layer.size() > 3:
+			s.modulate.a = float(layer[3])
 		px.add_child(s)
 		add_child(px)
 		parallax_count += 1
