@@ -15,8 +15,11 @@ const PARALLAX := [ # file, horizontal scroll scale, z_index
 	["3_ruins", 0.6, 0], ["4_foreground", 1.25, 10]]
 const PLATFORMS := [[560, 350, 6], [820, 290, 5], [1100, 350, 6], [1400, 300, 5], [1700, 360, 5]]
 const TORCH_X := [200, 480, 760, 1040, 1320, 1600, 1880]
+const ENEMIES := [["skeleton", 690, 420, 90], ["shield_skeleton", 1000, 420, 90], ["skeleton", 1250, 420, 90],
+		["archer", 1480, 300, 60], ["armored_knight", 1900, 420, 80]]
 
 var torch_count := 0
+var enemy_count := 0
 var platform_count := 0
 var parallax_count := 0
 var _lights: Array[PointLight2D] = []
@@ -37,6 +40,7 @@ func _ready() -> void:
 	for p in PLATFORMS:
 		_build_platform(p[0], p[1], p[2])
 	_build_torches()
+	_spawn_enemies()
 
 
 func _process(delta: float) -> void:
@@ -178,3 +182,13 @@ func _build_torches() -> void:
 		add_child(light)
 		_lights.append(light)
 		torch_count += 1
+
+
+func _spawn_enemies() -> void:
+	for d in ENEMIES:
+		var e := Enemy.new()
+		e.kind = d[0]
+		e.position = Vector2(d[1], d[2])
+		e.patrol_range = d[3]
+		add_child(e)
+		enemy_count += 1

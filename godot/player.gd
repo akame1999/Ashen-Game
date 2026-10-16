@@ -16,6 +16,11 @@ const META := "res://assets/characters/player.json"
 const FPS := {"idle": 6.0, "run": 12.0, "jump": 8.0, "fall": 8.0, "dodge": 14.0, "light1": 14.0,
 		"light2": 14.0, "heavy": 10.0, "skill": 12.0, "hurt": 8.0, "death": 8.0}
 const LOOPS := ["idle", "run", "fall"]
+const HIT_FRAME := {"light1": 2, "light2": 2, "heavy": 3, "skill": 2}
+const DAMAGE := {"light1": 25, "light2": 28, "heavy": 60, "skill": 45}
+const REACH := {"light1": 46.0, "light2": 46.0, "heavy": 58.0, "skill": 78.0}
+const FX := {"light1": "slash_light", "light2": "slash_light", "heavy": "slash_heavy", "skill": "slash_skill"}
+const FX_FRAMES := {"slash_light": 6, "slash_heavy": 7, "slash_skill": 7}
 
 var state: State = State.NORMAL
 var facing := 1
@@ -25,6 +30,8 @@ var attack_name := ""
 var combo_queued := false
 var dodge_time := 0.0
 var _frame_size := 96
+var iframes := 0.0
+var _hit_done := false
 var max_hp := 320
 var hp := 320
 var max_fp := 120.0
@@ -36,6 +43,7 @@ const FP_REGEN := 4.0
 
 
 func _ready() -> void:
+	add_to_group("player")
 	_setup_input()
 	_build_sprite()
 	sprite.animation_finished.connect(_on_anim_finished)
@@ -83,6 +91,7 @@ func _build_sprite() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	iframes = maxf(0.0, iframes - delta)
 	fp = minf(max_fp, fp + FP_REGEN * delta)
 	if not is_on_floor():
 		velocity.y += GRAVITY * delta
@@ -119,6 +128,9 @@ func _physics_process(delta: float) -> void:
 			velocity.x = move_toward(velocity.x, 0.0, 900.0 * delta)
 			if attack_name == "light1" and Input.is_action_just_pressed("attack"):
 				combo_queued = true
+			if not _hit_done and sprite.frame >= int(HIT_FRAME.get(attack_name, 2)):
+				_hit_done = true
+				_do_hit()
 		State.HURT:
 			velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
 	sprite.flip_h = facing < 0
@@ -147,20 +159,38 @@ func _start_attack(anim: String) -> void:
 	state = State.ATTACK
 	attack_name = anim
 	combo_queued = false
+	_hit_done = false
 	velocity.x = facing * 60.0
 	sprite.play(anim)
 
 
 func hurt(amount: int = 30) -> void:
-	if invulnerable or state == State.DEAD:
+	if invulnerable or iframes > 0.0 or state == State.DEAD:
 		return
 	hp = maxi(0, hp - amount)
+	iframes = 0.7
+	sprite.modulate = Color(2.0, 0.6, 0.6)
+	create_tween().tween_property(sprite, "modulate", Color.WHITE, 0.25)
 	if hp == 0:
 		die()
 		return
 	state = State.HURT
 	velocity.x = -facing * 120.0
 	sprite.play("hurt")
+
+
+func _do_hit() -> void:
+	var reach: float = REACH.get(attack_name, 46.0)
+	var dmg: int = DAMAGE.get(attack_name, 25)
+	var box := Rect2(global_position + Vector2(4.0 if facing > 0 else -4.0 - reach, -46.0), Vector2(reach, 46.0))
+	var fx_name: String = FX.get(attack_name, "slash_light")
+	SheetUtil.spawn_fx(get_parent(), "res://assets/fx/%s.png" % fx_name, int(FX_FRAMES[fx_name]), 22.0,
+			global_position + Vector2(0, -22), Vector2(29, 50), facing < 0, attack_name == "light2")
+	for n in get_tree().get_nodes_in_group("enemies"):
+		var en := n as Enemy
+		if en and en.alive and box.intersects(Rect2(en.global_position + Vector2(-10, -40), Vector2(20, 40))):
+			en.take_damage(dmg, global_position.x)
+			SheetUtil.spawn_fx(get_parent(), "res://assets/fx/impact_spark.png", 6, 24.0, en.global_position + Vector2(0, -26), Vector2(48, 48))
 
 
 func die() -> void:
