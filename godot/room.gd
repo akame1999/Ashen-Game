@@ -12,10 +12,10 @@ const PARALLAX_HEIGHT := 540.0
 const LEVEL_LEFT := -600.0
 const LEVEL_RIGHT := 2400.0
 const REGIONS := [ # area name, backdrop file, ambient CanvasModulate tint
-	{"name": "Moonlit Citadel", "bg": "moonlit_citadel.jpg", "tint": Color(0.72, 0.78, 0.95)},
-	{"name": "Crimson Gravework", "bg": "crimson_gravework.jpg", "tint": Color(0.95, 0.80, 0.82)},
-	{"name": "Ember Viaduct", "bg": "ember_viaduct.jpg", "tint": Color(1.0, 0.82, 0.72)},
-	{"name": "Eclipse Reliquary", "bg": "eclipse_reliquary.jpg", "tint": Color(0.84, 0.78, 1.0)}]
+	{"name": "Moonlit Citadel", "bg": "moonlit_citadel.jpg", "tint": Color(0.72, 0.78, 0.95), "stone": Color(0.78, 0.84, 1.0), "rim": Color(0.55, 0.70, 1.0)},
+	{"name": "Crimson Gravework", "bg": "crimson_gravework.jpg", "tint": Color(0.95, 0.80, 0.82), "stone": Color(1.0, 0.82, 0.85), "rim": Color(1.0, 0.45, 0.35)},
+	{"name": "Ember Viaduct", "bg": "ember_viaduct.jpg", "tint": Color(1.0, 0.82, 0.72), "stone": Color(1.0, 0.75, 0.60), "rim": Color(1.0, 0.55, 0.15)},
+	{"name": "Eclipse Reliquary", "bg": "eclipse_reliquary.jpg", "tint": Color(0.84, 0.78, 1.0), "stone": Color(0.85, 0.78, 1.0), "rim": Color(0.70, 0.50, 1.0)}]
 static var current_region := 0 ## survives scene reloads; F1-F4 switch region
 const PARALLAX := [ # file, horizontal scroll scale, z_index, alpha (region backdrop is prepended; placeholder mid layers removed, painted art has its own depth)
 	["4_foreground.png", 1.25, 10, 0.85]]
@@ -29,6 +29,8 @@ var enemy_count := 0
 var platform_count := 0
 var parallax_count := 0
 var region_name := ""
+var _stone := Color.WHITE
+var _rim := Color(1, 1, 1)
 var _lights: Array[PointLight2D] = []
 var _tileset: Texture2D
 var _light_tex: GradientTexture2D
@@ -42,6 +44,8 @@ func _ready() -> void:
 	var region: Dictionary = REGIONS[clampi(current_region, 0, REGIONS.size() - 1)]
 	region_name = region["name"]
 	mod.color = region["tint"]
+	_stone = region["stone"]
+	_rim = region["rim"]
 	add_child(mod)
 	_build_parallax()
 	_build_props()
@@ -115,7 +119,30 @@ func _tile(idx: int, pos: Vector2, parent: Node) -> void:
 	s.region_rect = Rect2(idx * TILE, 0, TILE, TILE)
 	s.centered = false
 	s.position = pos
+	s.modulate = _stone
 	parent.add_child(s)
+
+
+func _edge(parent: Node, x: float, y: float, w: float, shadow_h: float) -> void:
+	## Region-coloured rim light on the walking surface plus a soft shadow beneath it.
+	var glow := ColorRect.new()
+	glow.color = Color(_rim, 0.22)
+	glow.position = Vector2(x, y - 4)
+	glow.size = Vector2(w, 6)
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(glow)
+	var rim := ColorRect.new()
+	rim.color = Color(_rim, 0.85)
+	rim.position = Vector2(x, y)
+	rim.size = Vector2(w, 2)
+	rim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(rim)
+	var sh := ColorRect.new()
+	sh.color = Color(0, 0, 0, 0.4)
+	sh.position = Vector2(x, y + TILE * (2 if shadow_h > 20.0 else 1) - 2)
+	sh.size = Vector2(w, shadow_h)
+	sh.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(sh)
 
 
 func _box(parent: Node, rect: Rect2, one_way := false) -> void:
@@ -139,6 +166,7 @@ func _build_floor() -> void:
 		_tile(T_STONE, Vector2(x, FLOOR_Y + TILE), body)
 		_tile(T_DARK, Vector2(x, FLOOR_Y + TILE * 2), body)
 		x += TILE
+	_edge(body, LEVEL_LEFT, FLOOR_Y, LEVEL_RIGHT - LEVEL_LEFT, 28.0)
 
 
 func _build_platform(x: float, y: float, tiles: int) -> void:
@@ -148,6 +176,7 @@ func _build_platform(x: float, y: float, tiles: int) -> void:
 	for i in tiles:
 		_tile(T_MOSS, Vector2(x + i * TILE, y), body)
 		_tile(T_DARK, Vector2(x + i * TILE, y + TILE), body)
+	_edge(body, x, y, tiles * TILE, 10.0)
 	platform_count += 1
 	var chain := load("res://assets/props/chain.png")
 	var links := mini(2, int((FLOOR_Y - (y + TILE * 2)) / 32.0))
