@@ -31,6 +31,7 @@ var combo_queued := false
 var dodge_time := 0.0
 var _frame_size := 96
 var iframes := 0.0
+var cd := {}
 var _hit_done := false
 var max_hp := 320
 var hp := 320
@@ -39,6 +40,10 @@ var fp := 120.0
 var level := 1
 var souls := 27
 const SKILL_COST := 20.0
+const SOUL_COST := 40.0
+const SOUL_RADIUS := 110.0
+const SOUL_DAMAGE := 70
+const CD_TIME := {"heavy": 1.2, "dodge": 0.8, "skill": 2.0, "soul_burst": 4.0}
 const FP_REGEN := 4.0
 
 
@@ -53,7 +58,7 @@ func _ready() -> void:
 func _setup_input() -> void:
 	var keys := {"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 			"jump": [KEY_SPACE, KEY_W, KEY_UP], "dodge": [KEY_SHIFT], "attack": [KEY_J],
-			"heavy": [KEY_K], "skill": [KEY_E]}
+			"heavy": [KEY_K], "skill": [KEY_E], "soul_burst": [KEY_Q]}
 	for a in keys:
 		if not InputMap.has_action(a):
 			InputMap.add_action(a)
@@ -92,6 +97,8 @@ func _build_sprite() -> void:
 
 func _physics_process(delta: float) -> void:
 	iframes = maxf(0.0, iframes - delta)
+	for k in cd:
+		cd[k] = maxf(0.0, float(cd[k]) - delta)
 	fp = minf(max_fp, fp + FP_REGEN * delta)
 	if not is_on_floor():
 		velocity.y += GRAVITY * delta
@@ -107,15 +114,23 @@ func _physics_process(delta: float) -> void:
 				facing = 1 if dir > 0.0 else -1
 			if Input.is_action_just_pressed("jump") and is_on_floor():
 				velocity.y = JUMP_V
-			if Input.is_action_just_pressed("dodge") and is_on_floor():
+			if Input.is_action_just_pressed("dodge") and is_on_floor() and _cd_ready("dodge"):
+				_cd_start("dodge")
 				_start_dodge()
 			elif Input.is_action_just_pressed("attack"):
 				_start_attack("light1")
-			elif Input.is_action_just_pressed("heavy"):
+			elif Input.is_action_just_pressed("heavy") and _cd_ready("heavy"):
+				_cd_start("heavy")
 				_start_attack("heavy")
-			elif Input.is_action_just_pressed("skill") and fp >= SKILL_COST:
+			elif Input.is_action_just_pressed("skill") and fp >= SKILL_COST and _cd_ready("skill"):
 				fp -= SKILL_COST
+				_cd_start("skill")
 				_start_attack("skill")
+			elif Input.is_action_just_pressed("soul_burst") and fp >= SOUL_COST and _cd_ready("soul_burst"):
+				fp -= SOUL_COST
+				_cd_start("soul_burst")
+				iframes = 0.5 # the burst can't be interrupted while it charges
+				_start_attack("soul_burst")
 			if state == State.NORMAL:
 				_update_move_anim()
 		State.DODGE:
@@ -148,6 +163,14 @@ func _update_move_anim() -> void:
 		sprite.play(anim)
 
 
+func _cd_ready(n: String) -> bool:
+	return float(cd.get(n, 0.0)) <= 0.0
+
+
+func _cd_start(n: String) -> void:
+	cd[n] = float(CD_TIME[n])
+
+
 func _start_dodge() -> void:
 	state = State.DODGE
 	invulnerable = true
@@ -161,7 +184,7 @@ func _start_attack(anim: String) -> void:
 	combo_queued = false
 	_hit_done = false
 	velocity.x = facing * 60.0
-	sprite.play(anim)
+	sprite.play("skill" if anim == "soul_burst" else anim)
 
 
 func hurt(amount: int = 30) -> void:
@@ -179,7 +202,19 @@ func hurt(amount: int = 30) -> void:
 	sprite.play("hurt")
 
 
+func _soul_burst() -> void:
+	var center := global_position + Vector2(0, -22)
+	SheetUtil.spawn_fx(get_parent(), "res://assets/fx/soul_burst.png", 8, 18.0, center, Vector2(48, 48), false, false, 96, SOUL_RADIUS / 44.0)
+	for n in get_tree().get_nodes_in_group("enemies"):
+		var en := n as Enemy
+		if en and en.alive and center.distance_to(en.global_position + Vector2(0, -20)) <= SOUL_RADIUS:
+			en.take_damage(SOUL_DAMAGE, global_position.x)
+
+
 func _do_hit() -> void:
+	if attack_name == "soul_burst":
+		_soul_burst()
+		return
 	var reach: float = REACH.get(attack_name, 46.0)
 	var dmg: int = DAMAGE.get(attack_name, 25)
 	var box := Rect2(global_position + Vector2(4.0 if facing > 0 else -4.0 - reach, -46.0), Vector2(reach, 46.0))

@@ -6,6 +6,7 @@ const GOLD := Color(0.69, 0.55, 0.30)
 const GOLD_D := Color(0.30, 0.22, 0.10)
 const BG := Color(0.04, 0.04, 0.07, 0.88)
 const TXT := Color(0.88, 0.86, 0.80)
+const COOLDOWN_KEYS := ["", "heavy", "dodge", "skill", "soul_burst"]
 const SLOTS := [["LMB", "Attack", 0], ["RMB", "Heavy", 1], ["Shift", "Dodge", 2], ["E", "Skill", 3], ["Q", "Soul Burst", 4]]
 
 var area_name := "Ruined Kingdom"
@@ -81,6 +82,14 @@ func _paint_hotbar() -> void:
 		canvas.draw_rect(r, BG)
 		canvas.draw_rect(r.grow(1.0), GOLD, false, 1.0)
 		_icon(SLOTS[i][2], pos + Vector2(19, 19))
+		var key: String = COOLDOWN_KEYS[i]
+		if key != "":
+			var frac := float(player.cd.get(key, 0.0)) / float(Player.CD_TIME[key])
+			if frac > 0.0:
+				canvas.draw_rect(Rect2(pos.x, pos.y + 38.0 * (1.0 - frac), 38.0, 38.0 * frac), Color(0, 0, 0, 0.62))
+			var cost: float = {"skill": Player.SKILL_COST, "soul_burst": Player.SOUL_COST}.get(key, 0.0)
+			if cost > player.fp:
+				canvas.draw_rect(r, Color(0.04, 0.08, 0.28, 0.6))
 		_text(SLOTS[i][0], pos + Vector2(-16, 52), 10, GOLD, 70.0, HORIZONTAL_ALIGNMENT_CENTER)
 		_text(SLOTS[i][1], pos + Vector2(-16, 63), 10, TXT, 70.0, HORIZONTAL_ALIGNMENT_CENTER)
 

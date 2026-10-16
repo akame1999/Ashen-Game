@@ -35,7 +35,7 @@ static func sheet_frames(png: String, json_path: String, fps: Dictionary, loops:
 	return {"frames": fs, "size": size, "feet_row": float(meta["feet_row"])}
 
 
-static func spawn_fx(parent: Node, path: String, n: int, fps: float, pos: Vector2, pivot: Vector2, flip_h := false, flip_v := false, size := 96) -> AnimatedSprite2D:
+static func spawn_fx(parent: Node, path: String, n: int, fps: float, pos: Vector2, pivot: Vector2, flip_h := false, flip_v := false, size := 96, scale_f := 1.0) -> AnimatedSprite2D:
 	var a := AnimatedSprite2D.new()
 	a.sprite_frames = strip_frames(path, size, size, n, fps, false)
 	a.centered = false
@@ -43,6 +43,7 @@ static func spawn_fx(parent: Node, path: String, n: int, fps: float, pos: Vector
 	a.flip_h = flip_h
 	a.flip_v = flip_v
 	a.position = pos
+	a.scale = Vector2(scale_f, scale_f)
 	a.z_index = 5
 	a.animation_finished.connect(a.queue_free)
 	parent.add_child(a)

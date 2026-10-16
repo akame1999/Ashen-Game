@@ -86,13 +86,39 @@ def impact_sheet(frames=6, pal=((255, 230, 150), (255, 150, 60), (200, 50, 40), 
     return sheet
 
 
+def burst_sheet(frames=8, pal=((255, 250, 225), (255, 215, 120), (240, 150, 60), (150, 70, 40))):
+    """Expanding gold ring (Soul Burst), centred in each 96px frame. Scale up in game for a bigger blast."""
+    sheet = np.zeros((FRAME, FRAME * frames, 4), np.uint8)
+    yy, xx = np.mgrid[0:FRAME, 0:FRAME].astype(float)
+    dist = np.hypot(xx - FRAME / 2, yy - FRAME / 2)
+    ang = np.arctan2(yy - FRAME / 2, xx - FRAME / 2)
+    for f in range(frames):
+        t = (f + 1) / frames
+        r = 6 + 40 * t ** 0.7
+        thick = 7 * (1 - t) + 2
+        ring = np.abs(dist - r) <= thick / 2
+        core = np.clip(1 - np.abs(dist - r) / (thick / 2), 0, 1)
+        spokes = (np.abs(np.sin(ang * 6 + t * 3)) > 0.985) & (dist < r * 0.92) & (dist > r * 0.5)
+        glow = (dist < r * 0.5) & (t < 0.6)
+        fade = 1.0 - max(0.0, (t - 0.6) / 0.4) * 0.85
+        frame = np.zeros((FRAME, FRAME, 4), np.uint8)
+        lvl = np.minimum(((1 - core * fade) * len(pal)).astype(int), len(pal) - 1)
+        for i, col in enumerate(pal):
+            frame[ring & (lvl == i)] = (*col, 255)
+        frame[spokes] = (*pal[1], int(200 * fade))
+        frame[glow] = (*pal[0], 255)
+        sheet[:, f * FRAME:(f + 1) * FRAME] = frame
+    return Image.fromarray(sheet, "RGBA")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for name, args in SLASHES.items():
         slash_sheet(*args).save(OUT / f"{name}.png")
     impact_sheet().save(OUT / "impact_spark.png")
+    burst_sheet().save(OUT / "soul_burst.png")
     # contact sheet for quick review (dark background)
-    names = list(SLASHES) + ["impact_spark"]
+    names = list(SLASHES) + ["impact_spark", "soul_burst"]
     imgs = [Image.open(OUT / f"{n}.png") for n in names]
     w = max(i.width for i in imgs)
     prev = Image.new("RGBA", (w, FRAME * len(imgs)), (14, 18, 28, 255))

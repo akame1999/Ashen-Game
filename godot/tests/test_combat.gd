@@ -82,5 +82,19 @@ func _run(main: Node) -> void:
 	var hp1 := p.hp
 	await frames(400)
 	check(p.hp < hp1, "archer arrow hurts player (hp %d)" % p.hp)
+	# soul burst hits enemies at range, costs FP, starts a cooldown
+	for n in get_nodes_in_group("enemies"):
+		n.queue_free()
+	await frames(3)
+	p.iframes = 0.0
+	p.fp = p.max_fp
+	var sb := Enemy.new()
+	sb.kind = "skeleton"
+	sb.position = Vector2(p.position.x + 90, 420)
+	main.add_child(sb)
+	await frames(2)
+	await tap("soul_burst", 2)
+	await frames(40)
+	check(not sb.alive and p.fp < p.max_fp - 30.0 and float(p.cd.get("soul_burst", 0.0)) > 0.0, "soul burst kills in radius, costs FP, cooldown starts")
 	print("FAILURES: ", failures)
 	quit(failures)

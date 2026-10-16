@@ -9,7 +9,25 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var main := root.get_node("Main")
-	if args.size() > 1 and args[1] == "combat":
+	if args.size() > 1 and args[1] == "burst":
+		var pb: Player = main.get_node("Player")
+		for i in 20:
+			await process_frame
+		pb.position.x = 600.0
+		for i in 40:
+			await process_frame
+		print("before: fp=", pb.fp, " cd=", pb.cd, " state=", pb.state, " physics_fps=", Engine.physics_ticks_per_second)
+		Input.action_press("soul_burst")
+		for i in 6:
+			await physics_frame
+		Input.action_release("soul_burst")
+		for i in 12:
+			await physics_frame
+		await process_frame
+		for i in 2:
+			await process_frame
+		print("after: fp=", pb.fp, " cd=", pb.cd, " state=", pb.state, " attack=", pb.attack_name, " frame=", pb.sprite.frame)
+	elif args.size() > 1 and args[1] == "combat":
 		var p: Player = main.get_node("Player")
 		for i in 20:
 			await process_frame
