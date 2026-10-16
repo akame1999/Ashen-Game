@@ -41,6 +41,8 @@ var max_fp := 120.0
 var fp := 120.0
 var level := 1
 var souls := 27
+var jumps_left := 2
+const MAX_JUMPS := 2
 const SKILL_COST := 20.0
 const SOUL_COST := 40.0
 const FLASK_HEAL := 110
@@ -106,6 +108,8 @@ func _physics_process(delta: float) -> void:
 	fp = minf(max_fp, fp + FP_REGEN * delta)
 	if not is_on_floor():
 		velocity.y += GRAVITY * delta
+	else:
+		jumps_left = MAX_JUMPS
 	if state == State.DEAD:
 		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
 		move_and_slide()
@@ -116,8 +120,15 @@ func _physics_process(delta: float) -> void:
 			velocity.x = dir * SPEED
 			if dir != 0.0:
 				facing = 1 if dir > 0.0 else -1
-			if Input.is_action_just_pressed("jump") and is_on_floor():
-				velocity.y = JUMP_V
+			if Input.is_action_just_pressed("jump"):
+				if is_on_floor():
+					velocity.y = JUMP_V
+					jumps_left = MAX_JUMPS - 1
+				elif jumps_left > 0:
+					velocity.y = JUMP_V * 0.95
+					jumps_left -= 1
+					sprite.play("jump")
+					SheetUtil.spawn_fx(get_parent(), "res://assets/fx/impact_spark.png", 6, 24.0, global_position + Vector2(0, -6), Vector2(48, 48), false, false, 96, 0.45)
 			if Input.is_action_just_pressed("dodge") and is_on_floor() and _cd_ready("dodge"):
 				_cd_start("dodge")
 				_start_dodge()

@@ -168,7 +168,7 @@ func _paint() -> void:
 	_paint_minimap()
 	if _t < 14.0:
 		var a := clampf((14.0 - _t) / 2.0, 0.0, 1.0)
-		_text("A / D  move   ·   Space  jump   ·   J  attack   ·   Esc  pause", Vector2(180, 118), 12, Color(0.85, 0.82, 0.75, 0.8 * a), 600.0, HORIZONTAL_ALIGNMENT_CENTER)
+		_text("A / D  move   ·   Space  jump (x2)   ·   J  attack   ·   Esc  pause", Vector2(180, 118), 12, Color(0.85, 0.82, 0.75, 0.8 * a), 600.0, HORIZONTAL_ALIGNMENT_CENTER)
 	if _death_t > 0.0:
 		var a := clampf(_death_t / 1.2, 0.0, 1.0)
 		canvas.draw_rect(Rect2(Vector2.ZERO, canvas.size), Color(0, 0, 0, 0.55 * a))
@@ -314,7 +314,7 @@ func _paint_pause() -> void:
 	_frame(r)
 	_text("PAUSED", Vector2(r.position.x, 168), 30, GOLD_L, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 	canvas.draw_line(Vector2(r.position.x + 40, 180), Vector2(r.end.x - 40, 180), GOLD, 1.0)
-	var lines := [["Esc", "Resume"], ["Enter", "Restart"], ["A / D", "Move"], ["Space", "Jump"], ["Shift", "Dodge roll"],
+	var lines := [["Esc", "Resume"], ["Enter", "Restart"], ["A / D", "Move"], ["Space", "Jump (double jump in air)"], ["Shift", "Dodge roll"],
 		["J / LMB", "Attack (press again for combo)"], ["K / RMB", "Heavy attack"], ["E", "Skill  (20 FP)"], ["Q", "Soul Burst  (40 FP)"], ["R", "Healing flask"]]
 	for i in lines.size():
 		var y := 210.0 + i * 20.0
