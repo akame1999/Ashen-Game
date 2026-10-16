@@ -71,26 +71,80 @@ def fall_over(base, n):
     return out
 
 
-def roll(base, n=4):
-    """Dodge roll: the crouched run pose shrunk and spun forward around the body centre."""
-    small = base.resize((round(FRAME * 0.72), round(FRAME * 0.72)), Image.LANCZOS)
+import math
+
+HIP_Y = 184          # hip line in the 256px idle frame
+SPLIT_X = 128        # separates back leg (left) from front leg (right)
+PIV_BACK = (112, HIP_Y)
+PIV_FRONT = (150, HIP_Y)
+
+
+def _split(base):
+    """Upper body (incl. cape) / back leg / front leg layers of the clean idle pose."""
+    a = np.array(base)
+    op = a[:, :, 3] > 0
+    red = (a[:, :, 0].astype(int) > a[:, :, 1].astype(int) + 50) & (a[:, :, 0].astype(int) > a[:, :, 2].astype(int) + 50)
+    yy, xx = np.mgrid[0:FRAME, 0:FRAME]
+    leg = op & ~red & (yy >= HIP_Y - 4)
+    layers = []
+    for sel in (op & ~leg, leg & (xx < SPLIT_X), leg & (xx >= SPLIT_X)):
+        b = a.copy()
+        b[~sel] = 0
+        layers.append(Image.fromarray(b, "RGBA"))
+    return layers
+
+
+def pose(base, back_deg=0.0, front_deg=0.0, back_lift=0.0, front_lift=0.0, bob=0.0, lean=0.0):
+    """Procedural pose from the clean idle frame: legs rotate about the hips, torso bobs/leans."""
+    upper, back, front = _split(base)
+    out = Image.new("RGBA", (FRAME, FRAME), (0, 0, 0, 0))
+    for layer, deg, lift, piv in ((back, back_deg, back_lift, PIV_BACK), (front, front_deg, front_lift, PIV_FRONT)):
+        r = layer.rotate(deg, resample=Image.BICUBIC, center=piv)
+        out.alpha_composite(r, (0, round(-lift - bob)))
+    u = upper.rotate(-lean, resample=Image.BICUBIC, center=(CX, HIP_Y))
+    out.alpha_composite(u, (0, round(-bob)))
+    return out
+
+
+def run_cycle(base, n=8):
+    frames = []
+    for i in range(n):
+        ph = 2 * math.pi * i / n
+        frames.append(pose(base,
+                           back_deg=26 * math.sin(ph + math.pi), front_deg=26 * math.sin(ph),
+                           back_lift=7 * max(0.0, math.cos(ph + math.pi)), front_lift=7 * max(0.0, math.cos(ph)),
+                           bob=3 * abs(math.sin(ph)), lean=7))
+    return frames
+
+
+def jump_frames(base):
+    return [pose(base, back_deg=-28, front_deg=34, back_lift=8, front_lift=14, bob=2, lean=3),
+            pose(base, back_deg=-20, front_deg=28, back_lift=10, front_lift=10, bob=0, lean=2)]
+
+
+def fall_frames(base):
+    return [pose(base, back_deg=-12, front_deg=14, back_lift=0, front_lift=2, bob=0, lean=-2),
+            pose(base, back_deg=-16, front_deg=18, back_lift=0, front_lift=3, bob=1, lean=-3)]
+
+
+def roll(base, n=6):
+    """Dodge roll: the clean pose shrunk and spun forward once around the body centre."""
+    sz = round(FRAME * 0.62)
+    small = base.resize((sz, sz), Image.LANCZOS)
     out = []
     for i in range(n):
-        f = Image.new("RGBA", (FRAME, FRAME), (0, 0, 0, 0))
-        cy = FEET - 50
-        # sit the shrunken pose so its feet are at the ground, then rotate about the body centre
         tmp = Image.new("RGBA", (FRAME, FRAME), (0, 0, 0, 0))
-        tmp.paste(small, ((FRAME - small.width) // 2, FEET - small.height + 4), small)
-        out.append(tmp.rotate(-90 * i - 20 * (i > 0), resample=Image.BICUBIC, center=(CX, cy)))
+        tmp.paste(small, ((FRAME - sz) // 2, FEET - sz + 3), small)
+        out.append(tmp.rotate(-360 * (i + 0.5) / n, resample=Image.BICUBIC, center=(CX, FEET - 42)))
     return out
 
 
 ROWS = [
     ("idle", idle),
-    ("run", run),
-    ("jump", [run[1], run[2]]),
-    ("fall", [run[0], run[3]]),
-    ("dodge", roll(run[1])),
+    ("run", run_cycle(idle[0])),
+    ("jump", jump_frames(idle[0])),
+    ("fall", fall_frames(idle[0])),
+    ("dodge", roll(idle[0])),
     ("light1", [atk[0], atk[0], atk[1], atk[3], atk[3]]),
     ("light2", [atk[0], atk[2], atk[2], atk[3], atk[3]]),
     ("heavy", [atk[0], atk[0], atk[0], atk[2], atk[3], atk[3]]),

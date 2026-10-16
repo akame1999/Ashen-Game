@@ -10,7 +10,7 @@
   {
    "name": "run",
    "row": 1,
-   "frames": 4
+   "frames": 8
   },
   {
    "name": "jump",
@@ -25,7 +25,7 @@
   {
    "name": "dodge",
    "row": 4,
-   "frames": 4
+   "frames": 6
   },
   {
    "name": "light1",
