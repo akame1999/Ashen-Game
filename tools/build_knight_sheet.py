@@ -3,26 +3,45 @@
 Run from repo root: python3 tools/build_knight_sheet.py
 """
 import json
-from PIL import Image
+import numpy as np
+from PIL import Image, ImageEnhance
 
 SRC = "godot/assets/characters/src/ashen_knight_spritesheet.png"
 OUT_PNG = "godot/assets/characters/player.png"
 OUT_JSON = "godot/assets/characters/player.json"
 CW, CH = 384, 342
-FRAME = 128
-SCALE = 0.24
-FEET = 120
-CX = 64
+FRAME = 256          # frames are rendered at ~2x game size; player.gd scales the sprite by NODE_SCALE
+SCALE = 0.48
+NODE_SCALE = 0.5
+FEET = 240
+CX = 128
 
 src = Image.open(SRC).convert("RGBA")
 
 
+def anchor_x(c):
+    """x of the body mass (armour/hood/legs, ignoring the red cape and thin sword) so frames line up."""
+    a = np.array(c)
+    op = a[:, :, 3] > 40
+    red = (a[:, :, 0].astype(int) > a[:, :, 1].astype(int) + 50) & (a[:, :, 0].astype(int) > a[:, :, 2].astype(int) + 50)
+    m = op & ~red
+    m[:120, :] = False
+    ys, xs = np.where(m)
+    return float(xs.mean()) if len(xs) else CW / 2
+
+
 def cell(row, col):
     c = src.crop((col * CW, row * CH, (col + 1) * CW, (row + 1) * CH))
+    ax = anchor_x(c) * SCALE
     w, h = round(CW * SCALE), round(CH * SCALE)
     c = c.resize((w, h), Image.LANCZOS)
+    c = ImageEnhance.Contrast(c).enhance(1.15)
+    c = ImageEnhance.Color(c).enhance(1.1)
+    r, g, b, al = c.split()
+    r, g, b = [ImageEnhance.Brightness(ch).enhance(1.12) for ch in (r, g, b)]
+    c = Image.merge("RGBA", (r, g, b, al))
     f = Image.new("RGBA", (FRAME, FRAME), (0, 0, 0, 0))
-    f.paste(c, ((FRAME - w) // 2, FEET - round(331 * SCALE)), c)
+    f.paste(c, (round(CX - ax), FEET - round(331 * SCALE)), c)
     return f
 
 
@@ -35,7 +54,7 @@ def fall_over(base, n):
     out = []
     for i in range(n):
         t = i / (n - 1)
-        im = base.rotate(-85 * t, resample=Image.BICUBIC, center=(CX + 10, FEET))
+        im = base.rotate(-85 * t, resample=Image.BICUBIC, center=(CX + 20, FEET))
         out.append(im)
     return out
 
@@ -61,5 +80,5 @@ for r, (name, frames) in enumerate(ROWS):
         sheet.paste(fr, (i * FRAME, r * FRAME))
     meta_rows.append({"name": name, "row": r, "frames": len(frames)})
 sheet.save(OUT_PNG)
-json.dump({"frame": FRAME, "feet_row": FEET, "rows": meta_rows, "center_x": CX}, open(OUT_JSON, "w"), indent=1)
+json.dump({"frame": FRAME, "feet_row": FEET, "rows": meta_rows, "center_x": CX, "scale": NODE_SCALE}, open(OUT_JSON, "w"), indent=1)
 print("wrote", OUT_PNG, sheet.size)

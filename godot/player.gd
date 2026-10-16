@@ -29,6 +29,7 @@ var attack_name := ""
 var combo_queued := false
 var dodge_time := 0.0
 var _frame_size := 96
+var _node_scale := 1.0
 var _cx := 44.0 # character's x centre inside a frame (from player.json)
 var iframes := 0.0
 var cd := {}
@@ -84,6 +85,7 @@ func _build_sprite() -> void:
 	var tex: Texture2D = load(SHEET)
 	_frame_size = int(meta["frame"])
 	_cx = float(meta.get("center_x", 44.0))
+	_node_scale = float(meta.get("scale", 1.0))
 	var fs := SpriteFrames.new()
 	fs.remove_animation("default")
 	for row in meta["rows"]:
@@ -100,6 +102,7 @@ func _build_sprite() -> void:
 	sprite.sprite_frames = fs
 	sprite.centered = false
 	sprite.offset = Vector2(-_cx, -float(meta["feet_row"]))
+	sprite.scale = Vector2(_node_scale, _node_scale)
 	add_child(sprite)
 
 
@@ -175,7 +178,7 @@ func _physics_process(delta: float) -> void:
 		State.HURT:
 			velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
 	sprite.flip_h = facing < 0
-	sprite.position.x = -(_frame_size - 2.0 * _cx) if facing < 0 else 0.0
+	sprite.position.x = -(_frame_size - 2.0 * _cx) * _node_scale if facing < 0 else 0.0
 	move_and_slide()
 
 

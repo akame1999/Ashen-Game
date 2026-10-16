@@ -1,6 +1,6 @@
 {
- "frame": 128,
- "feet_row": 120,
+ "frame": 256,
+ "feet_row": 240,
  "rows": [
   {
    "name": "idle",
@@ -58,5 +58,6 @@
    "frames": 6
   }
  ],
- "center_x": 64
+ "center_x": 128,
+ "scale": 0.5
 }
