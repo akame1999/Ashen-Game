@@ -43,7 +43,7 @@ func _process(delta: float) -> void:
 	_time += delta
 	for i in _lights.size():
 		var l := _lights[i]
-		l.energy = 1.25 + sin(_time * 9.0 + i * 1.7) * 0.12 + sin(_time * 23.0 + i) * 0.06
+		l.energy = 1.0 + sin(_time * 9.0 + i * 1.7) * 0.1 + sin(_time * 23.0 + i) * 0.05
 
 
 func _make_light_texture() -> GradientTexture2D:
@@ -171,8 +171,8 @@ func _build_torches() -> void:
 		var light := PointLight2D.new()
 		light.texture = _light_tex
 		light.color = Color(1.0, 0.62, 0.28)
-		light.energy = 1.25
-		light.texture_scale = 3.2
+		light.energy = 1.0
+		light.texture_scale = 2.2
 		light.position = Vector2(x, FLOOR_Y - 34)
 		add_child(light)
 		_lights.append(light)

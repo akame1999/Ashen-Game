@@ -30,10 +30,10 @@ def sky():
     top, bot = np.array([7, 10, 26]), np.array([46, 66, 104])
     a = (top + (bot - top) * (ys ** 1.4))[:, None, :] * np.ones((1, W, 1))
     img = np.broadcast_to(a, (H, W, 3)).copy()
-    mx, my, mr = 190, 84, 40
+    mx, my, mr = 170, 70, 24
     yy, xx = np.mgrid[0:H, 0:W]
     dist = np.hypot(xx - mx, yy - my)
-    glow = np.clip(1 - dist / 170, 0, 1) ** 2.2
+    glow = np.clip(1 - dist / 110, 0, 1) ** 2.2
     img += glow[..., None] * np.array([40, 56, 84])
     n = noise(W, H, 32, 5) * 0.6 + noise(W, H, 12, 6) * 0.4
     cloud = np.clip((n - 0.5) * 3.2, 0, 1) * np.clip(1 - dist / 230, 0.25, 1)
@@ -132,10 +132,6 @@ def foreground():
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     col, edge = (5, 7, 13, 255), (22, 28, 44, 255)
     rng = np.random.default_rng(15)
-    for px, w in ((10, 34), (590, 40)):                 # big pillars with arch springers
-        d.rectangle([px, 0, px + w, H], fill=col); d.line([(px + w, 0), (px + w, H)], fill=edge)
-    d.polygon([(44, 0), (44, 46), (96, 0)], fill=col)           # arch springers
-    d.polygon([(590, 0), (590, 46), (538, 0)], fill=col)
     for _ in range(30):                                  # hanging vines
         x = int(rng.integers(0, W)); l = int(rng.integers(10, 60))
         d.line([(x, 0), (x + int(rng.integers(-3, 3)), l)], fill=(10, 18, 14, 255), width=1)

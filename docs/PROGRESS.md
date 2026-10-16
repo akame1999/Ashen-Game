@@ -11,7 +11,7 @@ Priority: SAVE PROGRESS > MANY FEATURES. Commit and push after every small step.
 - Godot step 2 done: `godot/player.gd` (run, jump, dodge, light1->light2 combo, heavy, skill, hurt, death) builds animations from `player.png`/`player.json`; `main.tscn` has a test floor + camera. Headless test `godot/tests/test_player.gd` passes 13/13.
 - Controls: A/D or arrows move, Space/W jump, Shift dodge, J or LMB light (press again for combo), K or RMB heavy, E skill.
 
-- Godot step 3 done: `godot/room.gd` builds the first room in code (5 parallax layers from `assets/parallax/`, tiled stone floor, 5 one-way platforms, 7 torches with flickering PointLight2D, banners, statue, ladder, chains, CanvasModulate dusk tint). Camera zoom 1.25. Headless test 14/14. NOT yet visually reviewed by the owner.
+- Godot step 3 done: `godot/room.gd` builds the first room in code (5 parallax layers from `assets/parallax/`, tiled stone floor, 5 one-way platforms, 7 torches with flickering PointLight2D, banners, statue, ladder, chains, CanvasModulate dusk tint). Camera zoom 1.25. Headless test 14/14. Rendered screenshot: `docs/room_preview.png` (made with `xvfb-run -a godot --rendering-driver opengl3 --resolution 1280x720 --path godot --script res://tests/screenshot.gd -- out.png`).
 
 ## Decision
 Port to Godot 4 (GDScript) for 2D lights, parallax, particles and shaders. Python version stays as a fallback.
