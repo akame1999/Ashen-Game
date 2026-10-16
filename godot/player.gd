@@ -10,10 +10,10 @@ const JUMP_V := -330.0
 const GRAVITY := 900.0
 const DODGE_SPEED := 260.0
 const DODGE_TIME := 0.3
-const SKINS := [ # F6 cycles; the painted Ashen Knight stays the default
-	{"name": "Ashen Knight", "sheet": "res://assets/characters/player.png", "meta": "res://assets/characters/player.json"},
-	{"name": "Male (pack)", "sheet": "res://assets/characters/player_male.png", "meta": "res://assets/characters/player_male.json"},
-	{"name": "Female (pack)", "sheet": "res://assets/characters/player_female.png", "meta": "res://assets/characters/player_female.json"}]
+const SKINS := [ # F6 cycles; Ashen Veil asset-pack combat bodies (no sword baked in) are the default
+	{"name": "Male", "sheet": "res://assets/characters/player_male.png", "meta": "res://assets/characters/player_male.json"},
+	{"name": "Female", "sheet": "res://assets/characters/player_female.png", "meta": "res://assets/characters/player_female.json"},
+	{"name": "Ashen Knight", "sheet": "res://assets/characters/player.png", "meta": "res://assets/characters/player.json"}]
 static var skin := 0 ## survives scene reloads; F6 cycles skins
 const FPS := {"idle": 6.0, "run": 16.0, "jump": 8.0, "fall": 8.0, "dodge": 20.0, "light1": 14.0,
 		"light2": 14.0, "heavy": 10.0, "skill": 12.0, "hurt": 8.0, "death": 8.0}

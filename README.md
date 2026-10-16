@@ -17,8 +17,8 @@ The game features fast, responsive side-scrolling combat, dodge rolls, multi-str
 | **Soul Burst** | `Q` | Costs 40 FP (AoE explosion) |
 | **Healing Flask** | `R` | Restores 110 HP (3 charges) |
 | **Switch Weapon** | `1` / `2` / `3` | Rookfang / Gravetide / Oathbreaker (each changes damage, reach and slash FX) |
-| **Switch Region** | `F1`–`F5` | Jump between the five painted backdrops (debug/preview) |
-| **Switch Skin** | `F6` | Ashen Knight (default) / Male / Female from the asset pack |
+| **Switch Region** | `F1`–`F4` | Drowned March / Ashen Chapel / Cinder Bastion / Veiled Throne backdrops |
+| **Switch Skin** | `F6` | Male (default) / Female / Ashen Knight |
 | **Pause Menu** | `Esc` | Displays controls & resume/restart |
 
 ## Running the Project

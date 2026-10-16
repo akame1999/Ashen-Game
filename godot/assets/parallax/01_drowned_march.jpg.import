@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://blo8xcsipbrm0"
-path="res://.godot/imported/eclipse_reliquary.jpg-7d18dc59ef5f9fa6fbde24ae8cbdc31e.ctex"
+uid="uid://hilto1262eth"
+path="res://.godot/imported/01_drowned_march.jpg-87b605b4a4b0642a1a84e98af9c44f85.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/parallax/eclipse_reliquary.jpg"
-dest_files=["res://.godot/imported/eclipse_reliquary.jpg-7d18dc59ef5f9fa6fbde24ae8cbdc31e.ctex"]
+source_file="res://assets/parallax/01_drowned_march.jpg"
+dest_files=["res://.godot/imported/01_drowned_march.jpg-87b605b4a4b0642a1a84e98af9c44f85.ctex"]
 
 [params]
 

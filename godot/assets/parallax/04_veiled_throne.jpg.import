@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cqyduv12g7h28"
-path="res://.godot/imported/veiled_throne.jpg-09a2a590e55305330c7f2b9b70a305c9.ctex"
+uid="uid://b7vpmkpbfn1bi"
+path="res://.godot/imported/04_veiled_throne.jpg-d26c47b85d93fee3bd3c97863c8f9ed8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/parallax/veiled_throne.jpg"
-dest_files=["res://.godot/imported/veiled_throne.jpg-09a2a590e55305330c7f2b9b70a305c9.ctex"]
+source_file="res://assets/parallax/04_veiled_throne.jpg"
+dest_files=["res://.godot/imported/04_veiled_throne.jpg-d26c47b85d93fee3bd3c97863c8f9ed8.ctex"]
 
 [params]
 

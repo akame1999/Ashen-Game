@@ -19,13 +19,14 @@ ROWS = [
     ("light2", "attack_light", 6), ("heavy", "attack_heavy", 8),
     ("skill", "skill", 6), ("hurt", "hurt", 3), ("death", "death", 6),
 ]
-FEET_ROW = 146   # body feet (the pack frames carry a ground shadow below, ~row 151)
+FEET_ROW = 140   # ground line used by the pack itself (sprite centre y=80 sits 60px above the origin)
 CENTER_X = 80
+SRC_DIR = "characters_combat"  # bodies without a sword; weapons are drawn separately at the hand
 SCALE = 0.45     # 160px pack frames -> about the on-screen size of the knight
 
 
 def build(pack_root, name, out_dir):
-    src = os.path.join(pack_root, "assets", "characters", name)
+    src = os.path.join(pack_root, "assets", SRC_DIR, name)
     sheet = Image.new("RGBA", (FRAME * 8, FRAME * len(ROWS)), (0, 0, 0, 0))
     rows = []
     for r, (row_name, strip, n) in enumerate(ROWS):

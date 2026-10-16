@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://o2ebwich5n06"
-path="res://.godot/imported/ember_viaduct.jpg-79308b9cc989036c2a7b8546ce55fe11.ctex"
+uid="uid://celoi1rw18rsa"
+path="res://.godot/imported/02_ashen_chapel.jpg-32795e0e6868889461a46ecf9221675e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/parallax/ember_viaduct.jpg"
-dest_files=["res://.godot/imported/ember_viaduct.jpg-79308b9cc989036c2a7b8546ce55fe11.ctex"]
+source_file="res://assets/parallax/02_ashen_chapel.jpg"
+dest_files=["res://.godot/imported/02_ashen_chapel.jpg-32795e0e6868889461a46ecf9221675e.ctex"]
 
 [params]
 
