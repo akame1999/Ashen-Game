@@ -320,7 +320,7 @@ func _paint_souls() -> void:
 func _paint_minimap() -> void:
 	var r := Rect2(796, 22, 148, 66)
 	_frame(r)
-	_text(area_name, Vector2(r.position.x, r.end.y + 14), 11, TXT, r.size.x, HORIZONTAL_ALIGNMENT_RIGHT)
+	_text(room.region_name if room and room.region_name != "" else area_name, Vector2(r.position.x, r.end.y + 14), 11, TXT, r.size.x, HORIZONTAL_ALIGNMENT_RIGHT)
 	var sx := (r.size.x - 8.0) / (Room.LEVEL_RIGHT - Room.LEVEL_LEFT)
 	var map := func(wx: float, wy: float) -> Vector2:
 		return Vector2(r.position.x + 4.0 + (wx - Room.LEVEL_LEFT) * sx, r.position.y + 8.0 + (wy - 250.0) * 0.26)

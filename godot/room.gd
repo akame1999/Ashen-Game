@@ -11,8 +11,13 @@ const T_MOSS := 2
 const PARALLAX_HEIGHT := 540.0
 const LEVEL_LEFT := -600.0
 const LEVEL_RIGHT := 2400.0
-const PARALLAX := [ # file, horizontal scroll scale, z_index, alpha
-	["drowned_march_bg.jpg", 0.04, -8, 1.0],
+const REGIONS := [ # area name, backdrop file, ambient CanvasModulate tint
+	{"name": "Moonlit Citadel", "bg": "moonlit_citadel.jpg", "tint": Color(0.72, 0.78, 0.95)},
+	{"name": "Crimson Gravework", "bg": "crimson_gravework.jpg", "tint": Color(0.95, 0.80, 0.82)},
+	{"name": "Ember Viaduct", "bg": "ember_viaduct.jpg", "tint": Color(1.0, 0.82, 0.72)},
+	{"name": "Eclipse Reliquary", "bg": "eclipse_reliquary.jpg", "tint": Color(0.84, 0.78, 1.0)}]
+static var current_region := 0 ## survives scene reloads; F1-F4 switch region
+const PARALLAX := [ # file, horizontal scroll scale, z_index, alpha (backdrop layer is prepended per region)
 	["1_castle.png", 0.12, -4, 0.35],
 	["2_aqueduct.png", 0.28, -2, 0.45],
 	["3_ruins.png", 0.55, -1, 0.6],
@@ -26,6 +31,7 @@ var torch_count := 0
 var enemy_count := 0
 var platform_count := 0
 var parallax_count := 0
+var region_name := ""
 var _lights: Array[PointLight2D] = []
 var _tileset: Texture2D
 var _light_tex: GradientTexture2D
@@ -36,7 +42,9 @@ func _ready() -> void:
 	_tileset = load("res://assets/tiles/tileset.png")
 	_light_tex = _make_light_texture()
 	var mod := CanvasModulate.new()
-	mod.color = Color(0.72, 0.78, 0.95)
+	var region: Dictionary = REGIONS[clampi(current_region, 0, REGIONS.size() - 1)]
+	region_name = region["name"]
+	mod.color = region["tint"]
 	add_child(mod)
 	_build_parallax()
 	_build_props()
@@ -45,6 +53,14 @@ func _ready() -> void:
 		_build_platform(p[0], p[1], p[2])
 	_build_torches()
 	_spawn_enemies()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		var idx: int = int(event.keycode) - int(KEY_F1)
+		if idx >= 0 and idx < REGIONS.size() and idx != current_region:
+			current_region = idx
+			get_tree().reload_current_scene()
 
 
 func _process(delta: float) -> void:
@@ -70,7 +86,9 @@ func _make_light_texture() -> GradientTexture2D:
 
 func _build_parallax() -> void:
 	## Any layer size works: each PNG is scaled to PARALLAX_HEIGHT tall and repeated horizontally.
-	for layer in PARALLAX:
+	var layers: Array = [[REGIONS[clampi(current_region, 0, REGIONS.size() - 1)]["bg"], 0.04, -8, 1.0]]
+	layers.append_array(PARALLAX)
+	for layer in layers:
 		var fn: String = layer[0]
 		var path := "res://assets/parallax/%s" % fn if (fn.ends_with(".jpg") or fn.ends_with(".png")) else ("res://assets/parallax/%s.png" % fn)
 		var tex: Texture2D = load(path)
