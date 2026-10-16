@@ -32,7 +32,7 @@ static func sheet_frames(png: String, json_path: String, fps: Dictionary, loops:
 			at.atlas = tex
 			at.region = Rect2(i * size, int(row["row"]) * size, size, size)
 			fs.add_frame(n, at)
-	return {"frames": fs, "size": size, "feet_row": float(meta["feet_row"])}
+	return {"frames": fs, "size": size, "feet_row": float(meta["feet_row"]), "center_x": float(meta.get("center_x", 44.0))}
 
 
 static func spawn_fx(parent: Node, path: String, n: int, fps: float, pos: Vector2, pivot: Vector2, flip_h := false, flip_v := false, size := 96, scale_f := 1.0) -> AnimatedSprite2D:

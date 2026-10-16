@@ -193,7 +193,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     cols = 6
     sheet = Image.new("RGBA", (F * cols, F * len(ANIMS)), (0, 0, 0, 0))
-    meta = {"frame": F, "feet_row": GROUND + OY, "rows": []}
+    meta = {"frame": F, "feet_row": GROUND + OY, "center_x": 28 + OX, "rows": []}
     for r, (name, fn) in enumerate(ANIMS):
         frames = fn()
         meta["rows"].append({"name": name, "row": r, "frames": len(frames)})

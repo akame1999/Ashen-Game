@@ -5,7 +5,6 @@ extends CharacterBody2D
 enum State { PATROL, CHASE, ATTACK, HURT, DEAD }
 
 const GRAVITY := 900.0
-const CENTER_X := 44.0
 const FPS := {"idle": 6.0, "walk": 8.0, "attack": 10.0, "hurt": 8.0, "death": 8.0}
 const LOOPS := ["idle", "walk"]
 const CONFIGS := {
@@ -29,6 +28,7 @@ var cooldown := 0.5
 var _hit_done := false
 var _flash := 0.0
 var _frame_size := 96
+var _cx := 44.0
 var _font: Font
 
 
@@ -49,10 +49,11 @@ func _ready() -> void:
 	add_child(cs)
 	var data := SheetUtil.sheet_frames("res://assets/characters/%s.png" % kind, "res://assets/characters/%s.json" % kind, FPS, LOOPS)
 	_frame_size = data["size"]
+	_cx = data["center_x"]
 	sprite = AnimatedSprite2D.new()
 	sprite.sprite_frames = data["frames"]
 	sprite.centered = false
-	sprite.offset = Vector2(-CENTER_X, -float(data["feet_row"]))
+	sprite.offset = Vector2(-_cx, -float(data["feet_row"]))
 	add_child(sprite)
 	sprite.animation_finished.connect(_on_anim_finished)
 	sprite.play("idle")
@@ -107,7 +108,7 @@ func _physics_process(delta: float) -> void:
 		State.HURT:
 			velocity.x = move_toward(velocity.x, 0.0, 500.0 * delta)
 	sprite.flip_h = facing < 0
-	sprite.position.x = -(_frame_size - 2.0 * CENTER_X) if facing < 0 else 0.0
+	sprite.position.x = -(_frame_size - 2.0 * _cx) if facing < 0 else 0.0
 	move_and_slide()
 	if cfg.get("leash", false):
 		position.x = clampf(position.x, origin_x - patrol_range, origin_x + patrol_range)

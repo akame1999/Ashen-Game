@@ -150,7 +150,7 @@ def main():
     for kind, fname in (("skeleton", "skeleton"), ("shield", "shield_skeleton"), ("archer", "archer"), ("knight", "armored_knight")):
         A = anims(kind)
         sheet = Image.new("RGBA", (F * 6, F * len(order)), (0, 0, 0, 0))
-        meta = {"frame": F, "feet_row": GROUND + OY, "rows": []}
+        meta = {"frame": F, "feet_row": GROUND + OY, "center_x": 28 + OX, "rows": []}
         for r, name in enumerate(order):
             meta["rows"].append({"name": name, "row": r, "frames": len(A[name])})
             for c, fr in enumerate(A[name]):

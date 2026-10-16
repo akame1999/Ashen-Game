@@ -10,7 +10,6 @@ const JUMP_V := -330.0
 const GRAVITY := 900.0
 const DODGE_SPEED := 260.0
 const DODGE_TIME := 0.3
-const CENTER_X := 44.0 # character's x centre inside a 96px frame
 const SHEET := "res://assets/characters/player.png"
 const META := "res://assets/characters/player.json"
 const FPS := {"idle": 6.0, "run": 12.0, "jump": 8.0, "fall": 8.0, "dodge": 14.0, "light1": 14.0,
@@ -30,6 +29,7 @@ var attack_name := ""
 var combo_queued := false
 var dodge_time := 0.0
 var _frame_size := 96
+var _cx := 44.0 # character's x centre inside a frame (from player.json)
 var iframes := 0.0
 var cd := {}
 var _hit_done := false
@@ -76,6 +76,7 @@ func _build_sprite() -> void:
 	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(META))
 	var tex: Texture2D = load(SHEET)
 	_frame_size = int(meta["frame"])
+	_cx = float(meta.get("center_x", 44.0))
 	var fs := SpriteFrames.new()
 	fs.remove_animation("default")
 	for row in meta["rows"]:
@@ -91,7 +92,7 @@ func _build_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
 	sprite.sprite_frames = fs
 	sprite.centered = false
-	sprite.offset = Vector2(-CENTER_X, -float(meta["feet_row"]))
+	sprite.offset = Vector2(-_cx, -float(meta["feet_row"]))
 	add_child(sprite)
 
 
@@ -149,7 +150,7 @@ func _physics_process(delta: float) -> void:
 		State.HURT:
 			velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
 	sprite.flip_h = facing < 0
-	sprite.position.x = -(_frame_size - 2.0 * CENTER_X) if facing < 0 else 0.0
+	sprite.position.x = -(_frame_size - 2.0 * _cx) if facing < 0 else 0.0
 	move_and_slide()
 
 

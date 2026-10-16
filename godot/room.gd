@@ -8,6 +8,7 @@ const TILE := 32
 const T_STONE := 0
 const T_DARK := 1
 const T_MOSS := 2
+const PARALLAX_HEIGHT := 540.0
 const LEVEL_LEFT := -600.0
 const LEVEL_RIGHT := 2400.0
 const PARALLAX := [ # file, horizontal scroll scale, z_index
@@ -65,16 +66,21 @@ func _make_light_texture() -> GradientTexture2D:
 
 
 func _build_parallax() -> void:
+	## Any layer size works: each PNG is scaled to PARALLAX_HEIGHT tall and repeated horizontally.
 	for layer in PARALLAX:
+		var tex: Texture2D = load("res://assets/parallax/%s.png" % layer[0])
+		var sc := PARALLAX_HEIGHT / float(tex.get_height())
+		var w := tex.get_width() * sc
 		var px := Parallax2D.new()
 		px.scroll_scale = Vector2(layer[1], 1.0)
-		px.repeat_size = Vector2(1280, 0)
+		px.repeat_size = Vector2(w, 0)
 		px.repeat_times = 6
 		px.z_index = layer[2]
 		var s := Sprite2D.new()
-		s.texture = load("res://assets/parallax/%s.png" % layer[0])
+		s.texture = tex
 		s.centered = false
-		s.position = Vector2(-1280, -10)
+		s.scale = Vector2(sc, sc)
+		s.position = Vector2(-w, -10)
 		px.add_child(s)
 		add_child(px)
 		parallax_count += 1
