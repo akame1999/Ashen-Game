@@ -12,7 +12,7 @@ const DODGE_SPEED := 260.0
 const DODGE_TIME := 0.3
 const SHEET := "res://assets/characters/player.png"
 const META := "res://assets/characters/player.json"
-const FPS := {"idle": 6.0, "run": 12.0, "jump": 8.0, "fall": 8.0, "dodge": 14.0, "light1": 14.0,
+const FPS := {"idle": 6.0, "run": 8.0, "jump": 8.0, "fall": 8.0, "dodge": 14.0, "light1": 14.0,
 		"light2": 14.0, "heavy": 10.0, "skill": 12.0, "hurt": 8.0, "death": 8.0}
 const LOOPS := ["idle", "run", "fall"]
 const HIT_FRAME := {"light1": 2, "light2": 2, "heavy": 3, "skill": 2}

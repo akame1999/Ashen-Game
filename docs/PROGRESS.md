@@ -25,6 +25,7 @@ Priority: SAVE PROGRESS > MANY FEATURES. Commit and push after every small step.
 - Floor/platform restyle: each region has `stone` (tile tint) and `rim` (edge light) colours in `Room.REGIONS`; `_edge()` adds a glow + rim line on walking surfaces and a soft shadow underneath. Tests 18/18 + 10/10.
 - Player art replaced with owner's Ashen Knight (`godot/assets/characters/src/ashen_knight_spritesheet.png`, 4x3 atlas: idle/run/attack). `tools/build_knight_sheet.py` rebuilds `player.png`/`player.json` (128px frames, feet row 120). Only idle/run/attack exist in the source, so jump/fall/dodge reuse run frames, light1/light2/heavy/skill reuse attack frames, hurt reuses idle, and death is a rotated idle frame. Needs real jump/dodge/hurt/death art later. Tests 18/18 + 10/10.
 - Knight stability/clarity fix: frames are now aligned by body mass (armour/legs, cape excluded) and feet row instead of cell centre, so no sideways shaking; sheet rendered at 2x (256px frames, `scale: 0.5` in `player.json`, applied to the sprite node in `player.gd`) with a contrast/brightness lift to counter the dark scene tint. Tests 18/18 + 10/10.
+- Run/dodge stability: run frames normalised to equal body height (source varied ~20%), run cadence 8 fps (was 12) to reduce foot sliding, dodge is now a generated forward roll (shrunk crouch pose spun 4 frames) instead of reordered run frames. Tests 18/18 + 10/10.
 
 ## Decision
 Port to Godot 4 (GDScript) for 2D lights, parallax, particles and shaders. Python version stays as a fallback.
