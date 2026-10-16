@@ -7,10 +7,23 @@ func _initialize() -> void:
 	_run()
 
 func _run() -> void:
-	for i in 90:
-		await process_frame
-	var path := "/tmp/shot.png"
 	var args := OS.get_cmdline_user_args()
+	var main := root.get_node("Main")
+	if args.size() > 1 and args[1] == "combat":
+		var p: Player = main.get_node("Player")
+		for i in 20:
+			await process_frame
+		p.position.x = 560.0
+		for i in 50:
+			await process_frame
+		Input.action_press("attack")
+		for i in 14:
+			await process_frame
+		Input.action_release("attack")
+	else:
+		for i in 90:
+			await process_frame
+	var path := "/tmp/shot.png"
 	if args.size() > 0:
 		path = args[0]
 	root.get_texture().get_image().save_png(path)

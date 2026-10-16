@@ -13,6 +13,7 @@ Priority: SAVE PROGRESS > MANY FEATURES. Commit and push after every small step.
 
 - Godot step 3 done: `godot/room.gd` builds the first room in code (5 parallax layers from `assets/parallax/`, tiled stone floor, 5 one-way platforms, 7 torches with flickering PointLight2D, banners, statue, ladder, chains, CanvasModulate dusk tint). Camera zoom 1.25. Headless test 14/14. Rendered screenshot: `docs/room_preview.png` (made with `xvfb-run -a godot --rendering-driver opengl3 --resolution 1280x720 --path godot --script res://tests/screenshot.gd -- out.png`).
 - Godot step 4 done: `godot/hud.gd` (code-drawn HUD in Cinzel: portrait + level, HP/FP bars, 5-slot hotbar LMB/RMB/Shift/E/Q, souls counter, minimap with area name). Player stats in `player.gd` (hp 320, fp 120, skill costs 20 FP, FP regen, `hurt(amount)`). Chains no longer poke into the floor. Tests 15/15.
+- Godot step 5 done: enemies (`enemy.gd`, configs for skeleton / shield_skeleton / archer / armored_knight; patrol -> chase -> attack, hurt, death, souls), `arrow.gd`, `sheet_util.gd`; player melee hit detection with slash FX + impact sparks + damage numbers; i-frames after being hit; death reloads the scene after 2.5 s. Room spawns 5 enemies. Tests: `tests/test_player.gd` 14/14, `tests/test_combat.gd` 9/9. Combat screenshot: `xvfb-run -a godot --rendering-driver opengl3 --resolution 1280x720 --path godot --script res://tests/screenshot.gd -- out.png combat`.
 
 ## Decision
 Port to Godot 4 (GDScript) for 2D lights, parallax, particles and shaders. Python version stays as a fallback.
