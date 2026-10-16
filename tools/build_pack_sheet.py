@@ -14,8 +14,8 @@ from PIL import Image
 FRAME = 160
 # game row name -> (pack strip name, frames to use)
 ROWS = [
-    ("idle", "idle", 6), ("run", "run", 8), ("jump", "jump_loop", 4),
-    ("fall", "fall", 2), ("dodge", "dodge", 6), ("light1", "attack_light", 6),
+    ("idle", "idle", 6), ("run", "run", 8), ("jump", "jump_loop", 6),
+    ("fall", "fall", 4), ("dodge", "dodge", 6), ("light1", "attack_light", 6),
     ("light2", "attack_light", 6), ("heavy", "attack_heavy", 8),
     ("skill", "skill", 6), ("hurt", "hurt", 3), ("death", "death", 6),
 ]
