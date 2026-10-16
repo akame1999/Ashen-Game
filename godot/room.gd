@@ -17,10 +17,7 @@ const REGIONS := [ # area name, backdrop file, ambient CanvasModulate tint
 	{"name": "Ember Viaduct", "bg": "ember_viaduct.jpg", "tint": Color(1.0, 0.82, 0.72)},
 	{"name": "Eclipse Reliquary", "bg": "eclipse_reliquary.jpg", "tint": Color(0.84, 0.78, 1.0)}]
 static var current_region := 0 ## survives scene reloads; F1-F4 switch region
-const PARALLAX := [ # file, horizontal scroll scale, z_index, alpha (backdrop layer is prepended per region)
-	["1_castle.png", 0.12, -4, 0.35],
-	["2_aqueduct.png", 0.28, -2, 0.45],
-	["3_ruins.png", 0.55, -1, 0.6],
+const PARALLAX := [ # file, horizontal scroll scale, z_index, alpha (region backdrop is prepended; placeholder mid layers removed, painted art has its own depth)
 	["4_foreground.png", 1.25, 10, 0.85]]
 const PLATFORMS := [[560, 350, 6], [820, 290, 5], [1100, 350, 6], [1400, 300, 5], [1700, 360, 5]]
 const TORCH_X := [200, 480, 760, 1040, 1320, 1600, 1880]

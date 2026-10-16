@@ -27,7 +27,7 @@ func _run(main: Node) -> void:
 	var p: Player = main.get_node("Player")
 	var room: Room = main.get_node("Room")
 	await frames(40)
-	check(room.parallax_count == 5 and room.torch_count >= 5 and room.platform_count >= 4, "room built (parallax, torches, platforms)")
+	check(room.parallax_count == 2 and room.torch_count >= 5 and room.platform_count >= 4, "room built (parallax, torches, platforms)")
 	check(Room.REGIONS.size() == 4 and room.region_name == Room.REGIONS[Room.current_region]["name"], "region backdrop selected")
 	check(p.is_on_floor(), "player lands on floor")
 	check(p.sprite.animation == "idle", "idle animation")
