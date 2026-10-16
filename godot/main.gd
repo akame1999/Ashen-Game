@@ -11,5 +11,5 @@ func _process(delta: float) -> void:
 	var p := get_node_or_null("Player") as Player
 	if p and p.state == Player.State.DEAD:
 		_dead_time += delta
-		if _dead_time > 2.5 and DisplayServer.get_name() != "headless":
+		if _dead_time > 3.5 and DisplayServer.get_name() != "headless":
 			get_tree().reload_current_scene()

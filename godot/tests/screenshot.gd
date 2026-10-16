@@ -9,7 +9,42 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var main := root.get_node("Main")
-	if args.size() > 1 and args[1] == "burst":
+	if args.size() > 1 and (args[1] == "pause" or args[1] == "death"):
+		var pd: Player = main.get_node("Player")
+		for i in 30:
+			await process_frame
+		if args[1] == "pause":
+			paused = true
+		else:
+			pd.die()
+			for i in 80:
+				await physics_frame
+		for i in 3:
+			await process_frame
+	elif args.size() > 1 and args[1] == "ui":
+		var pu: Player = main.get_node("Player")
+		for i in 20:
+			await process_frame
+		for x in [400.0, 700.0, 1000.0]:
+			pu.position.x = x
+			for i in 6:
+				await process_frame
+		pu.position.x = 700.0
+		pu.hp = 140
+		pu.souls += 33
+		pu.fp = 15.0
+		for i in 30:
+			await process_frame
+		pu.hp = 95
+		Input.action_press("heavy")
+		for i in 4:
+			await physics_frame
+		Input.action_release("heavy")
+		for i in 12:
+			await physics_frame
+		for i in 2:
+			await process_frame
+	elif args.size() > 1 and args[1] == "burst":
 		var pb: Player = main.get_node("Player")
 		for i in 20:
 			await process_frame

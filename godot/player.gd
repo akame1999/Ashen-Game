@@ -32,6 +32,8 @@ var _frame_size := 96
 var _cx := 44.0 # character's x centre inside a frame (from player.json)
 var iframes := 0.0
 var cd := {}
+var flasks := 3
+var max_flasks := 3
 var _hit_done := false
 var max_hp := 320
 var hp := 320
@@ -41,6 +43,7 @@ var level := 1
 var souls := 27
 const SKILL_COST := 20.0
 const SOUL_COST := 40.0
+const FLASK_HEAL := 110
 const SOUL_RADIUS := 110.0
 const SOUL_DAMAGE := 70
 const CD_TIME := {"heavy": 1.2, "dodge": 0.8, "skill": 2.0, "soul_burst": 4.0}
@@ -58,7 +61,7 @@ func _ready() -> void:
 func _setup_input() -> void:
 	var keys := {"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 			"jump": [KEY_SPACE, KEY_W, KEY_UP], "dodge": [KEY_SHIFT], "attack": [KEY_J],
-			"heavy": [KEY_K], "skill": [KEY_E], "soul_burst": [KEY_Q]}
+			"heavy": [KEY_K], "skill": [KEY_E], "soul_burst": [KEY_Q], "flask": [KEY_R]}
 	for a in keys:
 		if not InputMap.has_action(a):
 			InputMap.add_action(a)
@@ -132,6 +135,8 @@ func _physics_process(delta: float) -> void:
 				_cd_start("soul_burst")
 				iframes = 0.5 # the burst can't be interrupted while it charges
 				_start_attack("soul_burst")
+			elif Input.is_action_just_pressed("flask") and flasks > 0 and hp < max_hp:
+				_drink_flask()
 			if state == State.NORMAL:
 				_update_move_anim()
 		State.DODGE:
@@ -162,6 +167,28 @@ func _update_move_anim() -> void:
 		anim = "run"
 	if sprite.animation != anim or not sprite.is_playing():
 		sprite.play(anim)
+
+
+func _drink_flask() -> void:
+	flasks -= 1
+	var healed := mini(FLASK_HEAL, max_hp - hp)
+	hp += healed
+	sprite.modulate = Color(0.7, 2.0, 0.9)
+	create_tween().tween_property(sprite, "modulate", Color.WHITE, 0.4)
+	var l := Label.new()
+	l.text = "+%d" % healed
+	l.add_theme_font_override("font", load("res://assets/fonts/Cinzel-Variable.ttf"))
+	l.add_theme_font_size_override("font_size", 14)
+	l.add_theme_color_override("font_color", Color(0.6, 1.0, 0.65))
+	l.add_theme_color_override("font_outline_color", Color(0.05, 0.25, 0.1))
+	l.add_theme_constant_override("outline_size", 4)
+	l.z_index = 20
+	l.position = global_position + Vector2(-10, -64)
+	get_parent().add_child(l)
+	var t := l.create_tween()
+	t.tween_property(l, "position:y", l.position.y - 26.0, 0.7)
+	t.parallel().tween_property(l, "modulate:a", 0.0, 0.7)
+	t.tween_callback(l.queue_free)
 
 
 func _cd_ready(n: String) -> bool:

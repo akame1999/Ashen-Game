@@ -63,6 +63,10 @@ func _run(main: Node) -> void:
 	check(p.state == Player.State.DODGE and p.invulnerable, "dodge is invulnerable")
 	await frames(40)
 	check(p.state == Player.State.NORMAL and not p.invulnerable, "dodge ends")
+	p.hp = 100
+	await tap("flask", 2)
+	check(p.hp == 210 and p.flasks == 2, "flask heals 110 and uses a charge")
+	await frames(5)
 	var hp0 := p.hp
 	p.hurt(25)
 	check(p.hp == hp0 - 25, "damage reduces HP")
