@@ -11,8 +11,8 @@ const GRAVITY := 900.0
 const DODGE_SPEED := 260.0
 const DODGE_TIME := 0.3
 const SKINS := [ # F6 cycles; Ashen Veil asset-pack combat bodies (no sword baked in) are the default
-	{"name": "Male", "sheet": "res://assets/characters/player_male.png", "meta": "res://assets/characters/player_male.json"},
-	{"name": "Female", "sheet": "res://assets/characters/player_female.png", "meta": "res://assets/characters/player_female.json"},
+	{"name": "Male", "sheet": "res://assets/characters/player_male.png", "meta": "res://assets/characters/player_male.json", "hand": Vector2(34, -69)},
+	{"name": "Female", "sheet": "res://assets/characters/player_female.png", "meta": "res://assets/characters/player_female.json", "hand": Vector2(36, -68)},
 	{"name": "Ashen Knight", "sheet": "res://assets/characters/player.png", "meta": "res://assets/characters/player.json"}]
 static var skin := 0 ## survives scene reloads; F6 cycles skins
 const FPS := {"idle": 6.0, "run": 16.0, "jump": 8.0, "fall": 8.0, "dodge": 20.0, "light1": 14.0,
@@ -46,6 +46,12 @@ var fp := 120.0
 var level := 1
 var souls := 27
 var jumps_left := 2
+var weapon_pivot: Node2D
+var weapon_sprite: Sprite2D
+var weapon_info := {} # runtime manifest entry of the drawn weapon
+var _weapons := {} # manifest id -> entry
+var _equipped_idx := -1
+var _hand := Vector2.ZERO # hand socket at pack scale; ZERO = skin has its own sword
 const MAX_JUMPS := 2
 var current_weapon_idx := 0
 const WEAPONS := ["Rookfang", "Gravetide", "Oathbreaker"]
@@ -54,6 +60,9 @@ const WEAPON_DATA := [ # damage x, reach x, slash FX image
 	{"dmg": 0.85, "reach": 0.95, "fx": "slash_frost"},
 	{"dmg": 1.5, "reach": 1.2, "fx": "slash_holy"}]
 const KIT_FX := "res://assets/fx/kit/%s.png"
+const WEAPON_MANIFEST := "res://assets/weapons/runtime_manifest.json"
+const WEAPON_IDS := ["01_rookfang_longsword", "04_gravetide_twinblades", "02_oathbreaker_greatsword"] # hotbar slots 1-3
+const SWING_KEY := {"light1": "swing_light", "light2": "swing_light", "heavy": "swing_heavy", "skill": "swing_skill", "soul_burst": "swing_skill"}
 const SKILL_COST := 20.0
 const SOUL_COST := 40.0
 const FLASK_HEAL := 110
@@ -67,6 +76,7 @@ func _ready() -> void:
 	add_to_group("player")
 	_setup_input()
 	_build_sprite()
+	_build_weapon()
 	sprite.animation_finished.connect(_on_anim_finished)
 	sprite.play("idle")
 
@@ -119,6 +129,54 @@ func _build_sprite() -> void:
 	sprite.offset = Vector2(-_cx, -float(meta["feet_row"]))
 	sprite.scale = Vector2(_node_scale, _node_scale)
 	add_child(sprite)
+
+
+func _build_weapon() -> void:
+	var sk: Dictionary = SKINS[clampi(skin, 0, SKINS.size() - 1)]
+	_hand = sk.get("hand", Vector2.ZERO)
+	var man: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(WEAPON_MANIFEST))
+	for w in man["weapons"]:
+		_weapons[w["id"]] = w
+	weapon_pivot = Node2D.new()
+	weapon_pivot.z_index = 2
+	weapon_sprite = Sprite2D.new()
+	weapon_sprite.centered = false
+	weapon_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	weapon_pivot.add_child(weapon_sprite)
+	add_child(weapon_pivot)
+	weapon_pivot.visible = _hand != Vector2.ZERO
+
+
+func _equip_weapon(idx: int) -> void:
+	_equipped_idx = idx
+	weapon_info = _weapons.get(WEAPON_IDS[clampi(idx, 0, WEAPON_IDS.size() - 1)], {})
+	if weapon_info.is_empty():
+		return
+	var anchor := Vector2(float(weapon_info["grip_anchor"][0]), float(weapon_info["grip_anchor"][1]))
+	var sc := float(weapon_info["scale"])
+	weapon_sprite.texture = load(weapon_info["texture"])
+	weapon_sprite.scale = Vector2(sc, sc)
+	weapon_sprite.position = -anchor * sc # grip sits on the pivot (the hand)
+
+
+func _update_weapon() -> void:
+	if _hand == Vector2.ZERO:
+		return
+	weapon_pivot.visible = state != State.DEAD
+	if _equipped_idx != current_weapon_idx:
+		_equip_weapon(current_weapon_idx)
+	# mirror via scale.x like the asset pack does; whole rig is shrunk by the sprite scale
+	weapon_pivot.scale = Vector2(facing * _node_scale, _node_scale)
+	var pos := _hand
+	var rot := 0.0
+	if state == State.ATTACK and SWING_KEY.has(attack_name) and not weapon_info.is_empty():
+		var n := maxi(1, sprite.sprite_frames.get_frame_count(sprite.animation))
+		var p := clampf((float(sprite.frame) + sprite.frame_progress) / float(n), 0.0, 1.0)
+		var ang: Array = weapon_info.get(SWING_KEY[attack_name], [-1.1, 0.8])
+		rot = lerpf(float(ang[0]), float(ang[1]), p)
+		pos += Vector2(sin(p * PI) * 7.0, -sin(p * PI) * 4.0)
+	weapon_pivot.position = Vector2(facing * pos.x, pos.y) * _node_scale
+	weapon_pivot.rotation = rot
 
 
 func _physics_process(delta: float) -> void:
@@ -194,6 +252,7 @@ func _physics_process(delta: float) -> void:
 			velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
 	sprite.flip_h = facing < 0
 	sprite.position.x = -(_frame_size - 2.0 * _cx) * _node_scale if facing < 0 else 0.0
+	_update_weapon()
 	move_and_slide()
 
 
@@ -299,6 +358,8 @@ func _do_hit() -> void:
 
 func die() -> void:
 	state = State.DEAD
+	if weapon_pivot:
+		weapon_pivot.visible = false
 	sprite.play("death")
 
 

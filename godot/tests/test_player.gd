@@ -38,6 +38,7 @@ func _run(main: Node) -> void:
 		skins_ok = skins_ok and ResourceLoader.exists(sk["sheet"]) and FileAccess.file_exists(sk["meta"])
 	check(skins_ok, "all player skins (knight, male, female) have sheet + meta")
 	check(p.is_on_floor(), "player lands on floor")
+	check(p.weapon_pivot.visible and p.weapon_sprite.texture != null and p.weapon_info.get("id", "") == Player.WEAPON_IDS[0], "held weapon drawn at the hand (Rookfang)")
 	check(p.sprite.animation == "idle", "idle animation")
 	var x0 := p.global_position.x
 	Input.action_press("move_right")
