@@ -140,12 +140,12 @@ func _start_dodge() -> void:
 	sprite.play("dodge")
 
 
-func _start_attack(name: String) -> void:
+func _start_attack(anim: String) -> void:
 	state = State.ATTACK
-	attack_name = name
+	attack_name = anim
 	combo_queued = false
 	velocity.x = facing * 60.0
-	sprite.play(name)
+	sprite.play(anim)
 
 
 func hurt() -> void:
