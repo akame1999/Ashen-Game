@@ -18,6 +18,16 @@ namespace Ashen.Enemies
         public Vector2 attackOffset = new Vector2(0.9f, 0f);
         public Vector2 attackSize = new Vector2(1.4f, 1.1f);
 
+        public string Pose => _state switch
+        {
+            State.Windup => "windup",
+            State.Strike => "strike",
+            State.Patrol => "walk",
+            State.Chase => "walk",
+            State.Dead => "hurt",
+            _ => "idle"
+        };
+
         Rigidbody2D _rb;
         Health _health;
         SpriteRenderer _sr;
@@ -36,6 +46,7 @@ namespace Ashen.Enemies
             _sr = GetComponentInChildren<SpriteRenderer>();
             _baseColor = _sr != null ? _sr.color : Color.white;
             _rb.freezeRotation = true;
+            _rb.sleepMode = RigidbodySleepMode2D.NeverSleep;
             _origin = transform.position;
             _health.team = 1;
             _health.Died += OnDied;

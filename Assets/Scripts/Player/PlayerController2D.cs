@@ -33,6 +33,10 @@ namespace Ashen.Player
 
         public float Stamina { get; private set; }
         public Health Health { get; private set; }
+        public bool Grounded { get; private set; }
+        public bool IsDashing => _dashing;
+        public bool IsStunned => Time.time < _stunUntil;
+        public float LastAttackTime { get; private set; } = -10f;
 
         Rigidbody2D _rb;
         float _baseGravity;
@@ -47,6 +51,7 @@ namespace Ashen.Player
             _rb = GetComponent<Rigidbody2D>();
             Health = GetComponent<Health>();
             _rb.freezeRotation = true;
+            _rb.sleepMode = RigidbodySleepMode2D.NeverSleep;
             _rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             _rb.sharedMaterial = new PhysicsMaterial2D("NoFriction") { friction = 0f, bounciness = 0f };
             _baseGravity = _rb.gravityScale;
@@ -69,6 +74,7 @@ namespace Ashen.Player
         {
             if (Health.IsDead) { _rb.linearVelocity = new Vector2(0, _rb.linearVelocity.y); return; }
 
+            Grounded = _grounded;
             if (_grounded) _lastGrounded = Time.time;
             _grounded = false; // re-set by OnCollisionStay2D during the next physics step
 
@@ -135,6 +141,7 @@ namespace Ashen.Player
             if (_dashing || Time.time < _nextAttack || Stamina < attackStamina || Time.time < _stunUntil) return;
             Stamina -= attackStamina;
             _nextAttack = Time.time + attackCooldown;
+            LastAttackTime = Time.time;
             MeleeAttack.Strike(transform, Health.team, attackOffset, attackSize, lightDamage, 7f);
             StartCoroutine(SwingFlash());
         }
