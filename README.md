@@ -20,7 +20,7 @@ Souls-like combat (stamina, dodge i-frames, telegraphed enemy attacks) with metr
 ## Layout
 - `Assets/Scripts/Player` player controller (coyote time, jump buffer, dash, attack, stamina)
 - `Assets/Scripts/Combat` Health + shared melee hit check
-- `Assets/Scripts/Enemies` state-machine enemy (patrol, chase, wind-up, strike, recover)
+- `Assets/Scripts/Enemies` state-machine enemy (patrol, chase, wind-up, strike, recover) + `BossEncounter` (boss health bar, enrage phase at 50% HP)
 - `Assets/Scripts/Core` camera follow, parallax, sprite animator, checkpoints, torch flicker, placeholder sprites
 - `Assets/Scripts/UI` temporary HUD
 - `Assets/Scripts/Editor` one-click starter scene builder
@@ -28,4 +28,4 @@ Souls-like combat (stamina, dodge i-frames, telegraphed enemy attacks) with metr
 Art is generated pixel art in a dark-fantasy style (`Tools/generate_sprites.py` (128px characters, 72 px/unit), `Tools/generate_backgrounds.py`, `Tools/generate_props.py` (torches with flicker + glow, hanging chains, ruins, gravestones), `Tools/generate_environment.py` (mossy stone ground/platform tiles + checkpoint pillar, 32 px/unit, 9-sliced), shared grading in `Tools/stylize.py`: rim light, glowing eyes, dithered fog, atmospheric perspective); replace the PNGs under `Assets/Resources/` with real art any time.
 
 ## Roadmap
-Boss fight, skill tree/items, interconnected rooms with ability gates, save/load (checkpoints done: touch a pillar to set respawn), parallax + 2D lighting, animation and audio.
+Boss fight (first boss, the Hollow Warden, done: enrage phase + health bar; more bosses/arena gates planned), skill tree/items, interconnected rooms with ability gates, save/load (checkpoints done: touch a pillar to set respawn), parallax + 2D lighting, animation and audio.

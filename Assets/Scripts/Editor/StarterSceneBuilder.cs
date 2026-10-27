@@ -63,6 +63,8 @@ namespace Ashen.EditorTools
             Enemy("Husk A", new Vector2(2, 1.2f));
             Enemy("Husk B", new Vector2(10, 5.4f));
 
+            Boss("Hollow Warden", new Vector2(17f, 2f));
+
             var hud = new GameObject("HUD").AddComponent<SimpleHUD>();
             hud.player = pc; hud.respawnPoint = respawn;
 
@@ -214,6 +216,20 @@ namespace Ashen.EditorTools
             var fsr = flame.AddComponent<SpriteRenderer>();
             fsr.sprite = Placeholder.Square(new Color(1f, 0.6f, 0.15f));
             fsr.sortingOrder = 2;
+        }
+
+        // Big husk with more health, a longer reach and an enrage phase (see BossEncounter).
+        static void Boss(string name, Vector2 pos)
+        {
+            var go = Actor(name, pos, new Vector2(0.9f, 1.6f));
+            go.transform.localScale = new Vector3(1.8f, 1.8f, 1f);
+            var h = go.GetComponent<Health>(); h.team = 1; h.maxHealth = 400; h.hitInvulnerability = 0.15f;
+            var ai = go.AddComponent<EnemyAI>();
+            ai.aggroRange = 12f; ai.attackRange = 2.6f; ai.damage = 28;
+            ai.chaseSpeed = 3.2f; ai.windupTime = 0.7f; ai.recoverTime = 1.0f;
+            ai.attackOffset = new Vector2(1.0f, 0f); ai.attackSize = new Vector2(2.0f, 1.6f);
+            go.AddComponent<EnemyAnimator>();
+            go.AddComponent<BossEncounter>();
         }
 
         static void Enemy(string name, Vector2 pos)
