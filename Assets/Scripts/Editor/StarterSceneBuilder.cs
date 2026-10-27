@@ -19,6 +19,7 @@ namespace Ashen.EditorTools
         {
             // make sure character sprites are imported with the pixel-art settings
             AssetDatabase.ImportAsset("Assets/Resources/Sprites", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+            AssetDatabase.ImportAsset("Assets/Resources/Backgrounds", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -30,6 +31,12 @@ namespace Ashen.EditorTools
             camGo.transform.position = new Vector3(0, 2, -10);
             camGo.AddComponent<AudioListener>();
             var follow = camGo.AddComponent<CameraFollow>();
+
+            var bg = new GameObject("Background").transform;
+            Layer(bg, "Sky",  "Backgrounds/sky",  -20, 1f,    1f,   0f, true);
+            Layer(bg, "Far",  "Backgrounds/far",  -15, 0.92f, 0.8f, -4.5f, false);
+            Layer(bg, "Mid",  "Backgrounds/mid",  -10, 0.75f, 0.6f, -4.5f, false);
+            Layer(bg, "Near", "Backgrounds/near", -5,  0.45f, 0.4f, -4.5f, false);
 
             Ground("Floor", new Vector2(0, -1), new Vector2(40, 2));
             Ground("WallL", new Vector2(-20, 4), new Vector2(2, 12));
@@ -56,6 +63,15 @@ namespace Ashen.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             Debug.Log("Ashen: starter scene built at " + ScenePath);
+        }
+
+        static void Layer(Transform parent, string name, string path, int order, float follow, float vFollow, float baseY, bool pin)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var l = go.AddComponent<ParallaxLayer>();
+            l.resourcePath = path; l.sortingOrder = order; l.follow = follow;
+            l.verticalFollow = vFollow; l.baseY = baseY; l.pinToCamera = pin;
         }
 
         static void Ground(string name, Vector2 pos, Vector2 size)

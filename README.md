@@ -25,7 +25,7 @@ Souls-like combat (stamina, dodge i-frames, telegraphed enemy attacks) with metr
 - `Assets/Scripts/UI` temporary HUD
 - `Assets/Scripts/Editor` one-click starter scene builder
 
-Art is placeholder squares until real sprites are imported.
+Art is generated placeholder pixel art (`Tools/generate_sprites.py`, `Tools/generate_backgrounds.py`); replace the PNGs under `Assets/Resources/` with real art any time.
 
 ## Roadmap
 Boss fight, skill tree/items, interconnected rooms with ability gates, checkpoints and save/load, parallax + 2D lighting, animation and audio.
