@@ -2,6 +2,9 @@
 sky.png (1024x512, pinned to camera) + far/mid/near.png (512x320, seamless horizontally, bottom-pivot)."""
 import math, os, random
 from PIL import Image, ImageDraw, ImageFilter
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from stylize import stylize_layer, vignette_sky
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Assets', 'Resources', 'Backgrounds')
 os.makedirs(OUT, exist_ok=True)
@@ -35,7 +38,7 @@ def sky():
     d.ellipse([mx - 42, my - 42, mx + 42, my + 42], fill=C('#d9d4ea'))
     for cx, cy, r in ((mx - 14, my - 10, 9), (mx + 16, my + 14, 6), (mx + 8, my - 22, 4)):
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=C('#b9b3d0'))
-    im.save(os.path.join(OUT, 'sky.png'))
+    vignette_sky(im); stylize_layer(im, 'sky').save(os.path.join(OUT, 'sky.png'))
 
 def far():
     im = Image.new('RGBA', (TW, TH), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
@@ -52,7 +55,7 @@ def far():
     d.polygon([(bx - 32, base - 40), (bx - 22, base - 58), (bx - 12, base - 40)], fill=C('#120e26'))
     for wx, wy in ((bx - 2, base - 56), (bx - 24, base - 26)):
         d.rectangle([wx, wy, wx + 3, wy + 6], fill=C('#ffb64a'))
-    im.save(os.path.join(OUT, 'far.png'))
+    stylize_layer(im, 'far').save(os.path.join(OUT, 'far.png'))
 
 def tree(d, x, base, h, col, rnd):
     def branch(x0, y0, ang, ln, w, depth):
@@ -83,7 +86,7 @@ def mid():
     for gx in (110, 150, 400, 428):
         d.rectangle([gx, gy(gx) - 16, gx + 8, gy(gx) + 4], fill=col)
         d.ellipse([gx, gy(gx) - 20, gx + 8, gy(gx) - 12], fill=col)
-    im.save(os.path.join(OUT, 'mid.png'))
+    stylize_layer(im, 'mid').save(os.path.join(OUT, 'mid.png'))
 
 def near():
     im = Image.new('RGBA', (TW, TH), (0, 0, 0, 0))

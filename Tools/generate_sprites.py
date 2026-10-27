@@ -5,6 +5,9 @@ Character is drawn facing right; feet on the bottom row; body centre at x=24.
 """
 import math, os
 from PIL import Image, ImageDraw
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from stylize import stylize_sprite
 
 W = H = 64
 G = 63  # ground row
@@ -125,5 +128,5 @@ if __name__ == '__main__':
     for folder, pal in (('Player', PLAYER), ('Husk', HUSK)):
         os.makedirs(os.path.join(root, folder), exist_ok=True)
         for name, kw in FRAMES.items():
-            frame(pal, **kw).save(os.path.join(root, folder, name + '.png'))
+            stylize_sprite(frame(pal, **kw)).save(os.path.join(root, folder, name + '.png'))
     print('generated', len(FRAMES) * 2, 'sprites')
