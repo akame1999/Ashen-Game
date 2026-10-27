@@ -1,3 +1,4 @@
+using Ashen.Core;
 using Ashen.Enemies;
 using Ashen.Player;
 using UnityEngine;
@@ -15,6 +16,8 @@ namespace Ashen.UI
 
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.F9)) SaveGame.Clear();   // wipe save; takes effect next Play
+
             if (player != null && player.Health.IsDead && Input.GetKeyDown(KeyCode.R))
             {
                 player.Health.Revive();

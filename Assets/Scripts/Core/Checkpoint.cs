@@ -25,13 +25,28 @@ namespace Ashen.Core
             Paint(inactiveColor, false);
         }
 
-        void Start() => _hud = FindFirstObjectByType<SimpleHUD>();
+        void Start()
+        {
+            _hud = FindFirstObjectByType<SimpleHUD>();
+            // restore the saved checkpoint: light it and start the player here
+            if (_hud != null && SaveGame.CheckpointName == name)
+            {
+                Activate();
+                var p = FindFirstObjectByType<PlayerController2D>();
+                if (p != null) p.transform.position = transform.position + Vector3.up * 0.6f;
+            }
+        }
 
         void OnTriggerEnter2D(Collider2D other)
         {
             if (_current == this || other.GetComponentInParent<PlayerController2D>() == null) return;
             if (_hud == null) return;
+            Activate();
+            SaveGame.CheckpointName = name;
+        }
 
+        void Activate()
+        {
             if (_current != null) _current.Paint(_current.inactiveColor, false);
             _current = this;
             _hud.respawnPoint = transform;

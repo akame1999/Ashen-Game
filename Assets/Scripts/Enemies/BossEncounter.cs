@@ -1,4 +1,5 @@
 using Ashen.Combat;
+using Ashen.Core;
 using UnityEngine;
 
 namespace Ashen.Enemies
@@ -33,6 +34,7 @@ namespace Ashen.Enemies
 
         void Awake()
         {
+            if (SaveGame.BossDefeated) { Destroy(gameObject); return; }   // already beaten in a previous session
             Health = GetComponent<Health>();
             _ai = GetComponent<EnemyAI>();
             _sr = GetComponentInChildren<SpriteRenderer>();
@@ -50,7 +52,7 @@ namespace Ashen.Enemies
 
         void Update()
         {
-            if (_player == null || Health.IsDead) return;
+            if (Health == null || _player == null || Health.IsDead) return;
             if (!BarVisible && Vector2.Distance(_player.position, transform.position) < showBarDistance)
                 BarVisible = true;
         }
@@ -75,10 +77,12 @@ namespace Ashen.Enemies
         {
             Defeated = true;
             BarVisible = false;
+            SaveGame.BossDefeated = true;
         }
 
         void OnDestroy()
         {
+            if (Health != null) { Health.Damaged -= OnDamaged; Health.Died -= OnDied; }
             if (Active == this) Active = null;
         }
     }
