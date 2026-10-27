@@ -12,7 +12,8 @@ namespace Ashen.EditorTools
             bool character = assetPath.StartsWith("Assets/Resources/Sprites/");
             bool background = assetPath.StartsWith("Assets/Resources/Backgrounds/");
             bool environment = assetPath.StartsWith("Assets/Resources/Environment/");
-            if (!character && !background && !environment) return;
+            bool props = assetPath.StartsWith("Assets/Resources/Props/");
+            if (!character && !background && !environment && !props) return;
             var ti = (TextureImporter)assetImporter;
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Single;
@@ -28,6 +29,13 @@ namespace Ashen.EditorTools
             {
                 s.spriteAlignment = (int)SpriteAlignment.Custom;
                 s.spritePivot = new Vector2(0.375f, 0f); // character centre is x=48 of 128, feet on the bottom row
+            }
+            else if (props)
+            {
+                string n = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+                s.spriteAlignment = (int)(n == "glow" ? SpriteAlignment.Center : n == "chain" ? SpriteAlignment.TopCenter : SpriteAlignment.BottomCenter);
+                s.spriteMeshType = SpriteMeshType.FullRect;
+                if (n == "glow") ti.filterMode = FilterMode.Bilinear;   // soft gradient, no pixel banding
             }
             else if (environment)
             {

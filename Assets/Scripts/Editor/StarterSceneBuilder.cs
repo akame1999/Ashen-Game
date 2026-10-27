@@ -21,6 +21,7 @@ namespace Ashen.EditorTools
             AssetDatabase.ImportAsset("Assets/Resources/Sprites", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
             AssetDatabase.ImportAsset("Assets/Resources/Backgrounds", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
             AssetDatabase.ImportAsset("Assets/Resources/Environment", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+            AssetDatabase.ImportAsset("Assets/Resources/Props", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -45,6 +46,8 @@ namespace Ashen.EditorTools
             Ground("PlatformA", new Vector2(-6, 2.3f), new Vector2(5, 1f), "Environment/platform");
             Ground("PlatformB", new Vector2(5, 4.3f), new Vector2(5, 1f), "Environment/platform");
 
+            BuildProps();
+
             var respawn = new GameObject("Respawn").transform;
             respawn.position = new Vector3(-14, 1.2f, 0);
 
@@ -67,6 +70,63 @@ namespace Ashen.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             Debug.Log("Ashen: starter scene built at " + ScenePath);
+        }
+
+        // Floor top is y=0, platforms: A top 2.8 (x -8.5..-3.5), B top 4.8 (x 2.5..7.5).
+        static void BuildProps()
+        {
+            var props = new GameObject("Props").transform;
+            // ruins scattered along the floor (non-colliding scenery, behind the actors)
+            Prop(props, "PillarBroken", "Props/pillar_broken", new Vector2(-11f, -0.05f), 1);
+            Prop(props, "Rubble",       "Props/rubble",        new Vector2(-4.2f, -0.05f), 1);
+            Prop(props, "Grave",        "Props/gravestone",    new Vector2(3.2f, -0.05f), 1);
+            Prop(props, "Grave",        "Props/gravestone",    new Vector2(4.4f, -0.05f), 1, true);
+            Prop(props, "PillarShort",  "Props/pillar_short",  new Vector2(8.5f, -0.05f), 1);
+            Prop(props, "Rubble",       "Props/rubble",        new Vector2(11.5f, -0.05f), 1, true);
+            Prop(props, "PillarBroken", "Props/pillar_broken", new Vector2(17f, -0.05f), 1, true);
+
+            // chains hanging from platform undersides (order -1 so the platform covers their tops)
+            Chain(props, new Vector2(-7.6f, 1.9f), 1.3f);
+            Chain(props, new Vector2(-4.4f, 1.9f), 1.9f);
+            Chain(props, new Vector2(3.4f, 3.9f), 2.6f);
+            Chain(props, new Vector2(6.6f, 3.9f), 1.6f);
+
+            // torches
+            foreach (float x in new[] { -16f, -8.5f, 7f, 16f }) Torch(props, new Vector2(x, 0f));
+        }
+
+        static SpriteRenderer Prop(Transform parent, string name, string path, Vector2 pos, int order, bool flip = false)
+        {
+            var sprite = Resources.Load<Sprite>(path);
+            if (sprite == null) return null;
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = pos;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite; sr.sortingOrder = order; sr.flipX = flip;
+            return sr;
+        }
+
+        static void Chain(Transform parent, Vector2 top, float length)
+        {
+            var sr = Prop(parent, "Chain", "Props/chain", top, -1);
+            if (sr == null) return;
+            sr.drawMode = SpriteDrawMode.Tiled;
+            sr.tileMode = SpriteTileMode.Continuous;
+            sr.size = new Vector2(sr.sprite.bounds.size.x, length);
+        }
+
+        // Iron torch stand + flickering flame + soft additive-style glow (see TorchFlicker).
+        static void Torch(Transform parent, Vector2 pos)
+        {
+            var stand = Prop(parent, "Torch", "Props/torch_stand", pos, 1);
+            if (stand == null) return;
+            var flame = Prop(stand.transform, "Flame", "Props/flame_0", Vector2.zero, 1);
+            flame.transform.localPosition = new Vector3(0f, 1.1f, -0.1f);
+            var glow = Prop(stand.transform, "Glow", "Props/glow", Vector2.zero, 1);
+            glow.transform.localPosition = new Vector3(0f, 1.45f, 0.1f);
+            var fl = stand.gameObject.AddComponent<TorchFlicker>();
+            fl.flame = flame; fl.glow = glow;
         }
 
         static void Layer(Transform parent, string name, string path, int order, float follow, float vFollow, float baseY, bool pin)
