@@ -45,6 +45,8 @@ namespace Ashen.Combat
         public void Revive()
         {
             IsDead = false;
+            Invulnerable = false;
+            _hitUntil = 0f;
             Current = maxHealth;
         }
     }

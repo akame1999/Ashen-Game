@@ -21,11 +21,11 @@ Souls-like combat (stamina, dodge i-frames, telegraphed enemy attacks) with metr
 - `Assets/Scripts/Player` player controller (coyote time, jump buffer, dash, attack, stamina)
 - `Assets/Scripts/Combat` Health + shared melee hit check
 - `Assets/Scripts/Enemies` state-machine enemy (patrol, chase, wind-up, strike, recover)
-- `Assets/Scripts/Core` camera follow, placeholder sprites
+- `Assets/Scripts/Core` camera follow, parallax, sprite animator, checkpoints, placeholder sprites
 - `Assets/Scripts/UI` temporary HUD
 - `Assets/Scripts/Editor` one-click starter scene builder
 
 Art is generated placeholder pixel art (`Tools/generate_sprites.py`, `Tools/generate_backgrounds.py`); replace the PNGs under `Assets/Resources/` with real art any time.
 
 ## Roadmap
-Boss fight, skill tree/items, interconnected rooms with ability gates, checkpoints and save/load, parallax + 2D lighting, animation and audio.
+Boss fight, skill tree/items, interconnected rooms with ability gates, save/load (checkpoints done: touch a pillar to set respawn), parallax + 2D lighting, animation and audio.

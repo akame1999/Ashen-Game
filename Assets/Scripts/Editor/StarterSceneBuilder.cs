@@ -53,6 +53,9 @@ namespace Ashen.EditorTools
             player.GetComponent<Health>().team = 0;
             follow.target = player.transform;
 
+            AddCheckpoint("Checkpoint A", new Vector2(0, 0.6f));
+            AddCheckpoint("Checkpoint B", new Vector2(14, 0.6f));
+
             Enemy("Husk A", new Vector2(2, 1.2f));
             Enemy("Husk B", new Vector2(10, 5.4f));
 
@@ -99,6 +102,25 @@ namespace Ashen.EditorTools
             vis.transform.localPosition = new Vector3(0, -colliderSize.y / 2f, 0);
             vis.AddComponent<SpriteRenderer>().sortingOrder = 2;
             return go;
+        }
+
+        // Thin trigger pillar; touching it moves the respawn point here.
+        static void AddCheckpoint(string name, Vector2 pos)
+        {
+            var go = new GameObject(name);
+            go.transform.position = pos;
+            var col = go.AddComponent<BoxCollider2D>();
+            col.size = new Vector2(1.2f, 2.4f);
+            col.offset = new Vector2(0, 0.6f);
+            go.AddComponent<Ashen.Core.Checkpoint>();
+
+            var vis = new GameObject("Visual");
+            vis.transform.SetParent(go.transform, false);
+            vis.transform.localPosition = new Vector3(0, 0.6f, 0);
+            vis.transform.localScale = new Vector3(0.3f, 1.8f, 1f);
+            var sr = vis.AddComponent<SpriteRenderer>();
+            sr.sprite = Placeholder.Square(Color.white);
+            sr.sortingOrder = 1;
         }
 
         static void Enemy(string name, Vector2 pos)
