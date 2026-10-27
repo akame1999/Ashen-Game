@@ -11,11 +11,12 @@ namespace Ashen.EditorTools
         {
             bool character = assetPath.StartsWith("Assets/Resources/Sprites/");
             bool background = assetPath.StartsWith("Assets/Resources/Backgrounds/");
-            if (!character && !background) return;
+            bool environment = assetPath.StartsWith("Assets/Resources/Environment/");
+            if (!character && !background && !environment) return;
             var ti = (TextureImporter)assetImporter;
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Single;
-            ti.spritePixelsPerUnit = character ? 72 : 32;
+            ti.spritePixelsPerUnit = character ? 72 : 32;   // environment tiles are 32 px/unit too
             ti.filterMode = FilterMode.Point;
             ti.mipmapEnabled = false;
             ti.alphaIsTransparency = true;
@@ -27,6 +28,17 @@ namespace Ashen.EditorTools
             {
                 s.spriteAlignment = (int)SpriteAlignment.Custom;
                 s.spritePivot = new Vector2(0.375f, 0f); // character centre is x=48 of 128, feet on the bottom row
+            }
+            else if (environment)
+            {
+                string n = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+                bool prop = n == "checkpoint";
+                s.spriteAlignment = (int)(prop ? SpriteAlignment.BottomCenter : SpriteAlignment.Center);
+                s.spriteMeshType = SpriteMeshType.FullRect;
+                // 9-slice borders (L,B,R,T in px): keep the mossy lip on top, tile everything else
+                if (n == "ground") ti.spriteBorder = new Vector4(0, 0, 0, 10);
+                else if (n == "platform") ti.spriteBorder = new Vector4(0, 6, 0, 10);
+                ti.wrapMode = TextureWrapMode.Repeat;
             }
             else
             {

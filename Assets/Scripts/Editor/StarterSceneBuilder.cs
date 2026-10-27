@@ -20,6 +20,7 @@ namespace Ashen.EditorTools
             // make sure character sprites are imported with the pixel-art settings
             AssetDatabase.ImportAsset("Assets/Resources/Sprites", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
             AssetDatabase.ImportAsset("Assets/Resources/Backgrounds", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+            AssetDatabase.ImportAsset("Assets/Resources/Environment", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -38,11 +39,11 @@ namespace Ashen.EditorTools
             Layer(bg, "Mid",  "Backgrounds/mid",  -10, 0.75f, 0.6f, -4.5f, false);
             Layer(bg, "Near", "Backgrounds/near", -5,  0.45f, 0.4f, -4.5f, false);
 
-            Ground("Floor", new Vector2(0, -1), new Vector2(40, 2));
+            Ground("Floor", new Vector2(0, -1), new Vector2(40, 2), "Environment/ground");
             Ground("WallL", new Vector2(-20, 4), new Vector2(2, 12));
             Ground("WallR", new Vector2(20, 4), new Vector2(2, 12));
-            Ground("PlatformA", new Vector2(-6, 2.5f), new Vector2(5, 0.6f));
-            Ground("PlatformB", new Vector2(5, 4.5f), new Vector2(5, 0.6f));
+            Ground("PlatformA", new Vector2(-6, 2.3f), new Vector2(5, 1f), "Environment/platform");
+            Ground("PlatformB", new Vector2(5, 4.3f), new Vector2(5, 1f), "Environment/platform");
 
             var respawn = new GameObject("Respawn").transform;
             respawn.position = new Vector3(-14, 1.2f, 0);
@@ -77,14 +78,28 @@ namespace Ashen.EditorTools
             l.verticalFollow = vFollow; l.baseY = baseY; l.pinToCamera = pin;
         }
 
-        static void Ground(string name, Vector2 pos, Vector2 size)
+        // Solid geometry. With a 9-sliced tile sprite it is drawn tiled at its real size; otherwise a flat placeholder.
+        static void Ground(string name, Vector2 pos, Vector2 size, string tilePath = null)
         {
             var go = new GameObject(name);
             go.transform.position = pos;
-            go.transform.localScale = new Vector3(size.x, size.y, 1);
-            go.AddComponent<SpriteRenderer>();
-            go.AddComponent<PlaceholderVisual>().color = new Color(0.22f, 0.2f, 0.26f);
-            go.AddComponent<BoxCollider2D>();
+            var sr = go.AddComponent<SpriteRenderer>();
+            var tile = tilePath != null ? Resources.Load<Sprite>(tilePath) : null;
+            if (tile != null)
+            {
+                sr.sprite = tile;
+                sr.drawMode = SpriteDrawMode.Sliced;
+                sr.tileMode = SpriteTileMode.Continuous;
+                sr.size = size;
+                sr.sortingOrder = 0;
+            }
+            else
+            {
+                go.transform.localScale = new Vector3(size.x, size.y, 1);
+                go.AddComponent<PlaceholderVisual>().color = new Color(0.22f, 0.2f, 0.26f);
+            }
+            var col = go.AddComponent<BoxCollider2D>();
+            if (tile != null) col.size = size;
         }
 
         // Root = physics (collider, rigidbody, health). Child "Visual" = sprite, feet aligned to the collider bottom.
@@ -116,11 +131,29 @@ namespace Ashen.EditorTools
 
             var vis = new GameObject("Visual");
             vis.transform.SetParent(go.transform, false);
-            vis.transform.localPosition = new Vector3(0, 0.6f, 0);
-            vis.transform.localScale = new Vector3(0.3f, 1.8f, 1f);
             var sr = vis.AddComponent<SpriteRenderer>();
-            sr.sprite = Placeholder.Square(Color.white);
+            var pillar = Resources.Load<Sprite>("Environment/checkpoint");
+            if (pillar != null)
+            {
+                vis.transform.localPosition = new Vector3(0, -0.6f, 0);   // sprite pivot = bottom centre, base on the floor
+                sr.sprite = pillar;
+            }
+            else
+            {
+                vis.transform.localPosition = new Vector3(0, 0.6f, 0);
+                vis.transform.localScale = new Vector3(0.3f, 1.8f, 1f);
+                sr.sprite = Placeholder.Square(Color.white);
+            }
             sr.sortingOrder = 1;
+
+            // Flame in the brazier, lit while this is the active checkpoint (see Checkpoint.cs)
+            var flame = new GameObject("Flame");
+            flame.transform.SetParent(go.transform, false);
+            flame.transform.localPosition = new Vector3(0, pillar != null ? 1.1f : 1.6f, 0);
+            flame.transform.localScale = new Vector3(0.35f, 0.5f, 1f);
+            var fsr = flame.AddComponent<SpriteRenderer>();
+            fsr.sprite = Placeholder.Square(new Color(1f, 0.6f, 0.15f));
+            fsr.sortingOrder = 2;
         }
 
         static void Enemy(string name, Vector2 pos)
