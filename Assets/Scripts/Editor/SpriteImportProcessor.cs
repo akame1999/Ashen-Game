@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Ashen.EditorTools
 {
-    /// <summary>Imports PNGs under Resources/Sprites (characters, 36 px/unit, pivot at the feet) and Resources/Backgrounds (32 px/unit) as crisp pixel-art sprites.</summary>
+    /// <summary>Imports PNGs under Resources/Sprites (characters, 128px frames at 72 px/unit, pivot at the feet) and Resources/Backgrounds (32 px/unit) as crisp pixel-art sprites.</summary>
     public class SpriteImportProcessor : AssetPostprocessor
     {
         void OnPreprocessTexture()
@@ -15,7 +15,7 @@ namespace Ashen.EditorTools
             var ti = (TextureImporter)assetImporter;
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Single;
-            ti.spritePixelsPerUnit = character ? 36 : 32;
+            ti.spritePixelsPerUnit = character ? 72 : 32;
             ti.filterMode = FilterMode.Point;
             ti.mipmapEnabled = false;
             ti.alphaIsTransparency = true;
@@ -26,7 +26,7 @@ namespace Ashen.EditorTools
             if (character)
             {
                 s.spriteAlignment = (int)SpriteAlignment.Custom;
-                s.spritePivot = new Vector2(0.375f, 0f); // character centre is x=24 of 64, feet on the bottom row
+                s.spritePivot = new Vector2(0.375f, 0f); // character centre is x=48 of 128, feet on the bottom row
             }
             else
             {

@@ -1,89 +1,139 @@
-"""Procedural pixel-art generator for placeholder character sprites.
+"""Procedural dark-fantasy pixel-art character generator (original designs).
 Run:  python3 Tools/generate_sprites.py   (needs Pillow)
-Writes 64x64 PNG frames to Assets/Resources/Sprites/<Player|Husk>/<clip>_<n>.png
-Character is drawn facing right; feet on the bottom row; body centre at x=24.
+Writes 128x128 PNG frames to Assets/Resources/Sprites/<Player|Husk>/<clip>_<n>.png (imported at 72 px/unit).
+Poses are authored on a 64-unit grid and drawn at 2x so every limb gets plate/cloth detail.
+Character faces right; feet on the bottom row; body centre at x=48 (pivot 0.375).
 """
-import math, os
+import math, os, sys
 from PIL import Image, ImageDraw
-import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from stylize import stylize_sprite
 
-W = H = 64
-G = 63  # ground row
+S = 2
+W = H = 64 * S
+G = 63  # ground row on the 64 grid
 
 def C(s):
-    s = s.lstrip('#')
-    return tuple(int(s[i:i+2], 16) for i in (0, 2, 4)) + (255,)
+    s = s.lstrip('#'); return tuple(int(s[i:i+2], 16) for i in (0, 2, 4)) + (255,)
+def dk(c, f): return tuple(int(v * f) for v in c[:3]) + (255,)
+def lt(c, f): return tuple(min(255, int(v + (255 - v) * f)) for v in c[:3]) + (255,)
 
-PLAYER = {k: C(v) for k, v in dict(
-    cloak='#2b2540', cloak_hi='#3f3660', hood='#221d33', hood_hi='#372f50',
-    face='#0b0912', eye='#ffb64a', armor='#7d8699', armor_hi='#aab3c6', armor_lo='#4d5468',
-    scarf='#a3202c', scarf_hi='#cf3a45', boot='#1c1828', leg='#2b2540', leg_back='#1e1a2c',
-    blade='#cfd6e4', blade_edge='#ffffff', hilt='#8a6a3a', outline='#07050b').items()}
-PLAYER['slen'] = 18
+def palette(d, kind, slen):
+    P = {k: C(v) for k, v in d.items()}
+    P['cloak_lo'] = dk(P['cloak'], 0.62); P['hood_lo'] = dk(P['hood'], 0.6)
+    P['armor_dk'] = dk(P['armor_lo'], 0.7); P['rivet'] = lt(P['armor_hi'], 0.4)
+    P['blade_dk'] = dk(P['blade'], 0.62); P['gold'] = C('#c9a24a')
+    P['slen'] = slen; P['kind'] = kind
+    return P
 
-HUSK = {k: C(v) for k, v in dict(
-    cloak='#3b4a3a', cloak_hi='#52654f', hood='#2f3a2c', hood_hi='#44553f',
-    face='#1a0d0d', eye='#ff3a3a', armor='#6b5a4a', armor_hi='#8c7864', armor_lo='#43382e',
+PLAYER = palette(dict(
+    cloak='#2b2540', cloak_hi='#4a3f72', hood='#221d33', hood_hi='#3d3460',
+    face='#07050b', eye='#ffb64a', armor='#7d8699', armor_hi='#b4bdd0', armor_lo='#4d5468',
+    scarf='#a3202c', scarf_hi='#d4414c', boot='#1c1828', leg='#2b2540', leg_back='#1e1a2c',
+    blade='#cfd6e4', blade_edge='#ffffff', hilt='#8a6a3a', outline='#07050b'), 'knight', 18)
+
+HUSK = palette(dict(
+    cloak='#3b4a3a', cloak_hi='#5a7055', hood='#2f3a2c', hood_hi='#4a5d44',
+    face='#120808', eye='#ff3a3a', armor='#6b5a4a', armor_hi='#9a8470', armor_lo='#43382e',
     scarf='#5a3a2a', scarf_hi='#7a5238', boot='#1a1a14', leg='#3b4a3a', leg_back='#2a3629',
-    blade='#8a6a58', blade_edge='#b08a6a', hilt='#3a2a20', outline='#07050b').items()}
-HUSK['slen'] = 14
+    blade='#8a6a58', blade_edge='#b08a6a', hilt='#3a2a20', outline='#07050b'), 'husk', 14)
 
-def pt(p): return (int(round(p[0])), int(round(p[1])))
-
-def leg(d, hip, foot, col, P):
-    fx, fy = foot
-    d.line([pt(hip), (fx, fy - 2)], fill=col, width=4)
-    d.rectangle([fx - 2, fy - 3, fx + 3, fy], fill=P['boot'])
-    d.rectangle([fx - 2, fy - 3, fx + 3, fy - 3], fill=P['armor_lo'])
+class Cv:
+    """Draws in 64-grid coordinates onto a 128px RGBA canvas."""
+    def __init__(self):
+        self.im = Image.new('RGBA', (W, H), (0, 0, 0, 0)); self.d = ImageDraw.Draw(self.im)
+    @staticmethod
+    def p(q): return (q[0] * S, q[1] * S)
+    def poly(self, pts, fill): self.d.polygon([self.p(q) for q in pts], fill=fill)
+    def rect(self, x0, y0, x1, y1, fill): self.d.rectangle([x0 * S, y0 * S, x1 * S + S - 1, y1 * S + S - 1], fill=fill)
+    def line(self, a, b, fill, w=1): self.d.line([self.p(a), self.p(b)], fill=fill, width=max(1, int(round(w * S))))
+    def ell(self, b, fill): self.d.ellipse([b[0] * S, b[1] * S, b[2] * S + S - 1, b[3] * S + S - 1], fill=fill)
+    def dot(self, x, y, fill, r=0.5): self.d.rectangle([x * S - r * S, y * S - r * S, x * S + r * S, y * S + r * S], fill=fill)
 
 def cape_layer(P, tip):
-    im = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    tx, ty = tip
-    d.polygon([(19, 26), (24, 26), (23, 42), (tx + 8, ty), (tx + 1, ty - 3), (tx + 1, ty - 14), (16, 34)], fill=P['cloak'])
-    d.line([(19, 28), (tx + 4, ty - 4)], fill=P['cloak_hi'], width=1)
-    return im
+    c = Cv(); tx, ty = tip
+    hem = [(tx + 8, ty), (tx + 6.5, ty - 2.5), (tx + 5.5, ty + 0.5), (tx + 3.5, ty - 2), (tx + 2.5, ty + 1), (tx + 1, ty - 3)]
+    c.poly([(19, 26), (24, 26), (23, 42)] + hem + [(tx + 1, ty - 14), (16, 34)], P['cloak'])
+    c.poly([(19, 28), (23, 40), (tx + 8, ty), (tx + 6.5, ty - 2.5), (tx + 5, ty - 8)], P['cloak_lo'])   # inner lining
+    for k, (a, b) in enumerate((((20, 30), (tx + 5, ty - 4)), ((21, 34), (tx + 7, ty - 1)), ((18, 33), (tx + 2, ty - 8)))):
+        c.line(a, b, P['cloak_hi'] if k != 1 else P['cloak_lo'], 0.5)
+    c.line((19, 27), (tx + 1, ty - 13), P['cloak_hi'], 0.5)
+    return c.im
 
-def sword(d, hand, ang, length, P):
-    a = math.radians(ang); dx, dy = math.cos(a), math.sin(a); hx, hy = hand
-    d.line([pt((hx - dx * 3, hy - dy * 3)), pt(hand)], fill=P['hilt'], width=2)
-    px, py = -dy, dx
-    d.line([pt((hx + px * 3, hy + py * 3)), pt((hx - px * 3, hy - py * 3))], fill=P['hilt'], width=2)
-    s = (hx + dx * 2, hy + dy * 2); e = (hx + dx * length, hy + dy * length)
-    d.line([pt(s), pt(e)], fill=P['blade'], width=3)
-    d.line([pt(s), pt(e)], fill=P['blade_edge'], width=1)
+def leg(c, hip, foot, col, P):
+    fx, fy = foot
+    c.line(hip, (fx, fy - 3), col, 4)
+    k = ((hip[0] + fx) / 2 + 1, (hip[1] + fy) / 2)                # knee plate
+    c.rect(int(k[0]) - 2, int(k[1]) - 1, int(k[0]) + 2, int(k[1]) + 1, P['armor_lo']); c.rect(int(k[0]) - 2, int(k[1]) - 1, int(k[0]) + 2, int(k[1]) - 1, P['armor'])
+    c.rect(fx - 3, fy - 6, fx + 2, fy - 4, P['armor_lo'])         # greave
+    c.rect(fx - 3, fy - 6, fx + 2, fy - 6, P['armor'])
+    c.rect(fx - 3, fy - 3, fx + 4, fy, P['boot'])                 # boot + toe cap
+    c.rect(fx + 2, fy - 2, fx + 4, fy, P['armor_dk']); c.rect(fx - 3, fy, fx + 4, fy, P['armor_dk'])
+
+def sword(c, hand, ang, length, P):
+    a = math.radians(ang); dx, dy = math.cos(a), math.sin(a); hx, hy = hand; px, py = -dy, dx
+    if P['kind'] == 'husk':                                        # crude spiked club
+        e = (hx + dx * length, hy + dy * length)
+        c.line((hx - dx * 3, hy - dy * 3), (hx + dx * 3, hy + dy * 3), P['hilt'], 2)
+        c.line((hx + dx * 3, hy + dy * 3), e, P['blade'], 4); c.line((hx + dx * 3, hy + dy * 3), e, P['blade_edge'], 1)
+        for t in (0.45, 0.7, 0.92):
+            sx, sy = hx + dx * length * t, hy + dy * length * t
+            c.dot(sx + px * 2, sy + py * 2, P['armor_lo']); c.dot(sx - px * 2, sy - py * 2, P['armor_lo'])
+        return
+    c.line((hx - dx * 4, hy - dy * 4), (hx + dx, hy + dy), P['hilt'], 1.6)                 # wrapped grip
+    c.dot(hx - dx * 4.5, hy - dy * 4.5, P['gold'], 1)                                       # pommel
+    c.line((hx + px * 4, hy + py * 4), (hx - px * 4, hy - py * 4), P['gold'], 1.4)          # crossguard
+    c.dot(hx + px * 4, hy + py * 4, P['gold'], 0.8); c.dot(hx - px * 4, hy - py * 4, P['gold'], 0.8)
+    s0 = (hx + dx * 2, hy + dy * 2); e = (hx + dx * length, hy + dy * length)
+    c.line(s0, e, P['blade_dk'], 3.4)
+    c.line(s0, e, P['blade'], 2.4)
+    c.line((s0[0] + dx, s0[1] + dy), (e[0] - dx * 2, e[1] - dy * 2), P['blade_dk'], 0.6)    # fuller
+    c.line((s0[0] + px * 0.9, s0[1] + py * 0.9), (e[0] + px * 0.9, e[1] + py * 0.9), P['blade_edge'], 0.6)  # edge glint
 
 def upper_layer(P, hand, ang, back):
-    im = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    # far arm
-    d.line([(20, 28), pt(back)], fill=P['cloak'], width=4)
-    d.rectangle([back[0] - 1, back[1] - 1, back[0] + 1, back[1] + 1], fill=P['armor_lo'])
-    # torso, tassets, chest plate, belt
-    d.rectangle([18, 25, 29, 41], fill=P['cloak'])
-    d.rectangle([18, 25, 19, 41], fill=P['cloak_hi'])
-    d.polygon([(18, 40), (29, 40), (30, 46), (17, 46)], fill=P['cloak_hi'])
-    d.rectangle([21, 27, 29, 35], fill=P['armor'])
-    d.rectangle([21, 27, 29, 28], fill=P['armor_hi'])
-    d.rectangle([21, 35, 29, 35], fill=P['armor_lo'])
-    d.rectangle([18, 38, 29, 39], fill=P['boot'])
-    d.rectangle([23, 38, 25, 39], fill=P['hilt'])
-    # scarf
-    d.rectangle([19, 23, 29, 25], fill=P['scarf'])
-    d.rectangle([19, 23, 29, 23], fill=P['scarf_hi'])
-    # hood
-    d.polygon([(19, 24), (17, 15), (20, 8), (24, 4), (29, 8), (31, 15), (30, 24)], fill=P['hood'])
-    d.polygon([(19, 24), (17, 15), (20, 8), (24, 4), (22, 12), (21, 24)], fill=P['hood_hi'])
-    d.polygon([(25, 11), (30, 12), (30, 21), (25, 22), (24, 16)], fill=P['face'])
-    d.rectangle([27, 15, 27, 16], fill=P['eye'])
-    d.rectangle([29, 15, 29, 16], fill=P['eye'])
-    # front arm + pauldron + sword
-    d.line([(27, 28), pt(hand)], fill=P['cloak_hi'], width=4)
-    d.ellipse([24, 24, 32, 31], fill=P['armor'])
-    d.arc([24, 24, 32, 31], 180, 300, fill=P['armor_hi'])
-    sword(d, hand, ang, P['slen'], P)
-    d.rectangle([hand[0] - 1, hand[1] - 1, hand[0] + 1, hand[1] + 1], fill=P['armor_hi'])
-    return im
+    c = Cv()
+    # far arm: sleeve + bracer + gauntlet
+    c.line((20, 28), back, P['cloak_lo'], 4)
+    c.line((back[0] - 2, back[1] - 1), back, P['armor_lo'], 3)
+    c.dot(back[0], back[1], P['armor_dk'], 1.2)
+    # scarf tail trailing behind
+    c.poly([(19, 24), (15, 27), (12, 33), (14, 34), (17, 30), (20, 27)], P['scarf']); c.line((16, 27), (13, 33), P['scarf_hi'], 0.5)
+    # torso / tunic
+    c.rect(18, 25, 29, 41, P['cloak']); c.rect(18, 25, 19, 41, P['cloak_hi']); c.rect(28, 30, 29, 41, P['cloak_lo'])
+    # tassets (3 plates) + belt
+    for i, x in enumerate((18, 21.5, 25)):
+        c.poly([(x, 39), (x + 4, 39), (x + 4.5, 46 + (i % 2)), (x - 0.5, 46 + (i % 2))], P['cloak_hi'] if i != 1 else P['cloak'])
+        c.line((x + 2, 40), (x + 2, 45), P['cloak_lo'], 0.5)
+    c.rect(18, 38, 29, 39, P['boot']); c.rect(23, 38, 25, 39, P['gold']); c.rect(24, 38, 24, 39, P['hilt'])
+    c.rect(18, 40, 20, 42, P['hilt']); c.rect(18, 40, 20, 40, P['gold'])                  # pouch
+    # chest plate: segmented, with rivets and a sigil
+    c.rect(21, 27, 29, 36, P['armor']); c.rect(21, 27, 29, 28, P['armor_hi']); c.rect(21, 27, 21, 36, P['armor_hi'])
+    c.rect(21, 31, 29, 31, P['armor_lo']); c.rect(21, 35, 29, 36, P['armor_lo']); c.rect(28, 28, 29, 36, P['armor_lo'])
+    c.line((25, 29), (25, 34), P['armor_dk'], 0.5); c.dot(23, 29, P['rivet'], 0.3); c.dot(27, 29, P['rivet'], 0.3)
+    c.dot(23, 33, P['rivet'], 0.3); c.dot(27, 33, P['rivet'], 0.3)
+    c.dot(25, 32, P['eye'], 0.4)                                                          # ember sigil
+    # gorget + scarf
+    c.rect(19, 23, 29, 25, P['scarf']); c.rect(19, 23, 29, 23, P['scarf_hi']); c.rect(23, 25, 24, 25, P['scarf_hi'])
+    # hood: outer, rim light, inner shadow, seam, drooping point
+    c.poly([(19, 24), (16.5, 15), (19.5, 8), (24, 3), (29, 7), (31.5, 15), (30, 24)], P['hood'])
+    c.poly([(19, 24), (16.5, 15), (19.5, 8), (24, 3), (22, 11), (21, 24)], P['hood_hi'])
+    c.poly([(30, 24), (31.5, 15), (29, 7), (28, 12), (28, 22)], P['hood_lo'])
+    c.line((23, 4), (21.5, 22), P['hood_lo'], 0.5)                                         # seam
+    c.poly([(24.5, 10.5), (30.5, 11.5), (30.5, 21.5), (24.5, 22), (23.5, 16)], P['face'])   # face void
+    c.rect(26, 14, 27, 15, P['eye']); c.rect(29, 14, 30, 15, P['eye'])                      # glowing eyes
+    if P['kind'] == 'husk':                                                                 # hollow, crooked grin + ragged hood hem
+        c.line((26, 19), (29, 18.5), P['eye'], 0.5)
+        c.poly([(19, 24), (21, 26), (23, 24.5), (25, 26.5), (27, 24.5), (29, 26), (30, 24)], P['hood'])
+    # front arm: sleeve, bracer, pauldron plates, gauntlet
+    c.line((27, 28), hand, P['cloak_hi'], 4)
+    mx, my = (27 + hand[0]) / 2, (28 + hand[1]) / 2
+    c.line((mx, my), hand, P['armor_lo'], 3.4); c.line((mx, my - 0.8), (hand[0], hand[1] - 0.8), P['armor'], 1)
+    c.ell((23.5, 23.5, 32.5, 31), P['armor']); c.ell((24.5, 28, 32, 32.5), P['armor_lo'])
+    c.d.arc([23.5 * S, 23.5 * S, 33 * S, 31.5 * S], 180, 300, fill=P['armor_hi'], width=2)
+    c.dot(28, 26, P['rivet'], 0.35)
+    sword(c, hand, ang, P['slen'], P)
+    c.dot(hand[0], hand[1], P['armor_hi'], 1.4); c.dot(hand[0] - 0.4, hand[1] - 0.4, P['rivet'], 0.5)   # gauntlet
+    return c.im
 
 def outline(img, col):
     src = img.load(); out = img.copy(); o = out.load()
@@ -99,12 +149,12 @@ def outline(img, col):
 def frame(P, legs, lean=0, bob=0, cape=(12, 52), hand=(32, 36), ang=-55, back=(19, 38)):
     img = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     img.alpha_composite(cape_layer(P, cape))
-    ld = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ld)
-    leg(d, (21, 41), legs[0], P['leg_back'], P)
-    leg(d, (26, 41), legs[1], P['leg'], P)
-    img.alpha_composite(ld)
+    lc = Cv()
+    leg(lc, (21, 41), legs[0], P['leg_back'], P)
+    leg(lc, (26, 41), legs[1], P['leg'], P)
+    img.alpha_composite(lc.im)
     up = upper_layer(P, hand, ang, back)
-    img.paste(up, (lean, bob), up)
+    img.paste(up, (lean * S, bob * S), up)
     return outline(img, P['outline'])
 
 FRAMES = {
@@ -129,4 +179,4 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(root, folder), exist_ok=True)
         for name, kw in FRAMES.items():
             stylize_sprite(frame(pal, **kw)).save(os.path.join(root, folder, name + '.png'))
-    print('generated', len(FRAMES) * 2, 'sprites')
+    print('generated', len(FRAMES) * 2, 'sprites at', W, 'px')

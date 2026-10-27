@@ -36,8 +36,9 @@ def stylize_sprite(img, rim=(150, 170, 255), warm=(255, 150, 70), glow_cols=((25
                 if t < -0.15 and BAYER[y & 3][x & 3] < 7: o[x, y] = _mix(c, (0, 0, 10), 0.22) + (a,)
     # foot fog: dithered fade into ground mist on the lowest rows
     fog = (70, 60, 100)
-    for y in range(H - 7, H):
-        k = (y - (H - 7)) / 7.0
+    rows = max(7, H // 9)
+    for y in range(H - rows, H):
+        k = (y - (H - rows)) / float(rows)
         for x in range(W):
             if o[x, y][3] and BAYER[y & 3][x & 3] / 16.0 < k * 0.55:
                 o[x, y] = _mix(o[x, y][:3], fog, 0.55) + (o[x, y][3],)
@@ -48,7 +49,7 @@ def stylize_sprite(img, rim=(150, 170, 255), warm=(255, 150, 70), glow_cols=((25
             p = src[x, y]
             if p[3] and any(p[:3] == gc for gc in glow_cols):
                 gp[x, y] = p[:3] + (255,)
-    halo = glow.filter(ImageFilter.GaussianBlur(2.2))
+    halo = glow.filter(ImageFilter.GaussianBlur(2.2 * max(1, H / 64.0)))
     hp = halo.load()
     for y in range(H):
         for x in range(W):
