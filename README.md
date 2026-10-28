@@ -13,12 +13,12 @@ Unity editor: `6000.6.7f1`; template: Universal 3D (URP).
 ## Phase 2 — Rigged character and animations
 1. Open the prototype scene and wait for scripts to compile.
 2. Select **Tools → Code Lyoko → Phase 2 → Build Rigged Character and Animations**.
-3. Unity creates an original stylized skinned character, bone hierarchy, Generic Avatar, prefab, materials, meshes, Animator Controller and keyframed Idle/Walk/Run/Attack clips under `Assets/_Project/Characters/VeyrWanderer/`.
+3. Unity creates an original stylized articulated character, bone hierarchy, Generic Avatar, prefab, materials, bone-attached mesh parts, Animator Controller and keyframed Idle/Walk/Run/Attack clips under `Assets/_Project/Characters/VeyrWanderer/`.
 4. Select **Tools → Code Lyoko → Phase 2 → Validate Character Rig** and read the `[Phase 2 ...]` Console report.
 5. Press Play. WASD/arrows walk, Shift runs, J/left click attacks if combat setup is present.
 6. Record results in `phase2_test_plan.md`.
 
-The generated model is an original stylized prototype, not a high-detail production hero. Its body/armor sections use SkinnedMeshRenderers weighted to a Generic bone hierarchy, with authored keyframed animation clips. It is not yet a Humanoid Avatar for broad retargeting. Replace or refine it later with a high-detail model and properly licensed animation assets if required.
+The generated model is an original stylized prototype, not a high-detail production hero. Its body/armor sections use rigid mesh parts parented to a Generic bone hierarchy, with authored keyframed animation clips. It is not yet a Humanoid Avatar for broad retargeting. Replace or refine it later with a high-detail model and properly licensed animation assets if required.
 
 ## Combat prototype
 Select **Tools → Code Lyoko → Setup Combat Prototype** to add the training enemy, health, melee, dodge and HUD. Controls: WASD/arrows move; Shift run; J/left click attack; Space dodge.

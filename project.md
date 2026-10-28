@@ -61,7 +61,7 @@ AI roles are suggestions, not guarantees. No AI should claim a feature is tested
 ### Phase 2 — Rigged character and locomotion animations
 **Owner:** ChatGPT builds the editor pipeline; human runs generation and visual tests in Unity.
 **Implementation delivered as an editor generator; local asset generation and acceptance tests pending.** See `phase2_test_plan.md`.
-- [x] Generate original Veyr Wanderer skinned mesh parts with a bone hierarchy and Generic Avatar.
+- [x] Generate original Veyr Wanderer bone-attached mesh parts with a bone hierarchy and Generic Avatar.
 - [x] Generate Animator Controller and keyframed Idle/Walk/Run/Attack clips.
 - [x] Connect movement/combat input to Animator parameters.
 - [x] Add structural rig/controller/clip validation.

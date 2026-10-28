@@ -137,10 +137,10 @@ public static class Phase2CharacterBuilder
 
         AttachCharacterToPlayer(savedPrefab);
         Debug.Log("Phase 2 character generated at " + PrefabPath +
-                  " with skinned mesh parts, a Generic Avatar, and keyframed Idle/Walk/Run/Attack clips.");
+                  " with bone-attached mesh parts, a Generic Avatar, and keyframed Idle/Walk/Run/Attack clips.");
         EditorUtility.DisplayDialog(
             "Phase 2 Character Built",
-            "Generated the Veyr Wanderer skinned character, Generic Avatar, Animator Controller, and Idle/Walk/Run/Attack clips.\n\n" +
+            "Generated the Veyr Wanderer articulated character, Generic Avatar, Animator Controller, and Idle/Walk/Run/Attack clips.\n\n" +
             "Attached it to Player if that object was found in the open scene. Check the Console and run Validate Character Rig.",
             "OK");
     }
@@ -203,15 +203,39 @@ public static class Phase2CharacterBuilder
                 }
             }
 
-            SkinnedMeshRenderer[] renderers = prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            if (renderers.Length > 0) passed.Add("SkinnedMeshRenderers found: " + renderers.Length + ".");
-            else failed.Add("No SkinnedMeshRenderer found.");
-            int broken = 0;
-            foreach (SkinnedMeshRenderer renderer in renderers)
-                if (renderer.sharedMesh == null || renderer.bones == null || renderer.bones.Length == 0)
-                    broken++;
-            if (renderers.Length > 0 && broken == 0) passed.Add("All skinned parts have meshes and bone references.");
-            else if (renderers.Length > 0) failed.Add(broken + " skinned part(s) are missing mesh/bone references.");
+            Transform armature = prefab.transform.Find("Armature");
+            if (armature != null)
+                passed.Add("Armature hierarchy exists.");
+            else
+                failed.Add("Armature hierarchy is missing.");
+
+            MeshRenderer[] renderers = prefab.GetComponentsInChildren<MeshRenderer>(true);
+            int missingMeshes = 0;
+            int partsOutsideArmature = 0;
+            foreach (MeshRenderer renderer in renderers)
+            {
+                MeshFilter filter = renderer.GetComponent<MeshFilter>();
+                if (filter == null || filter.sharedMesh == null)
+                    missingMeshes++;
+
+                if (armature == null || !renderer.transform.IsChildOf(armature))
+                    partsOutsideArmature++;
+            }
+
+            if (renderers.Length >= 20)
+                passed.Add("Character mesh parts found: " + renderers.Length + ".");
+            else
+                failed.Add("Expected a full character assembled from bone-attached mesh parts; found " + renderers.Length + ".");
+
+            if (missingMeshes == 0 && renderers.Length > 0)
+                passed.Add("All character mesh parts have valid meshes.");
+            else if (renderers.Length > 0)
+                failed.Add(missingMeshes + " character mesh part(s) have missing MeshFilters or meshes.");
+
+            if (partsOutsideArmature == 0 && renderers.Length > 0)
+                passed.Add("All character mesh parts are attached within the bone hierarchy.");
+            else if (renderers.Length > 0)
+                failed.Add(partsOutsideArmature + " mesh part(s) are not parented to the character armature.");
         }
 
         foreach (string clipName in new[] { "Idle.anim", "Walk.anim", "Run.anim", "Attack.anim" })
@@ -295,69 +319,30 @@ public static class Phase2CharacterBuilder
     }
 
     private static void AddPart(GameObject character, string partName, PrimitiveType primitiveType,
-        Transform bone, Vector3 localPosition, Vector3 localScale, Material material)
+        Transform bone, Vector3 characterLocalPosition, Vector3 localScale, Material material)
     {
-        GameObject temporary = GameObject.CreatePrimitive(primitiveType);
-        temporary.name = "TMP_" + partName;
-        temporary.transform.SetParent(character.transform, false);
-        temporary.transform.localPosition = localPosition;
-        temporary.transform.localRotation = Quaternion.identity;
-        temporary.transform.localScale = localScale;
-        Collider collider = temporary.GetComponent<Collider>();
-        if (collider != null) UnityEngine.Object.DestroyImmediate(collider);
+        if (character == null || bone == null)
+            throw new ArgumentNullException(bone == null ? nameof(bone) : nameof(character));
 
-        Mesh sourceMesh = temporary.GetComponent<MeshFilter>().sharedMesh;
-        Vector3[] vertices = new Vector3[sourceMesh.vertexCount];
-        Vector3[] normals = new Vector3[sourceMesh.vertexCount];
-        Matrix4x4 vertexMatrix = temporary.transform.localToWorldMatrix;
-        Matrix4x4 normalMatrix = vertexMatrix.inverse.transpose;
-        for (int i = 0; i < sourceMesh.vertexCount; i++)
-        {
-            vertices[i] = character.transform.InverseTransformPoint(vertexMatrix.MultiplyPoint3x4(sourceMesh.vertices[i]));
-            normals[i] = character.transform.InverseTransformDirection(normalMatrix.MultiplyVector(sourceMesh.normals[i])).normalized;
-        }
+        // Build the visible mesh directly under its controlling bone. This rigid-segment
+        // approach is robust for the stylized prototype and avoids the broken bind-pose
+        // results from the previous generated SkinnedMeshRenderer implementation.
+        GameObject part = GameObject.CreatePrimitive(primitiveType);
+        part.name = partName;
+        part.transform.SetParent(bone, false);
 
-        Mesh generated = new Mesh { name = "VeyrWanderer_" + partName };
-        generated.vertices = vertices;
-        generated.normals = normals;
-        generated.uv = sourceMesh.uv;
-        generated.subMeshCount = 1;
-        generated.SetTriangles(sourceMesh.triangles, 0, true);
-        BoneWeight[] weights = new BoneWeight[vertices.Length];
-        for (int i = 0; i < weights.Length; i++)
-            weights[i] = new BoneWeight { boneIndex0 = 0, weight0 = 1f };
-        generated.boneWeights = weights;
+        Vector3 desiredWorldPosition = character.transform.TransformPoint(characterLocalPosition);
+        part.transform.localPosition = bone.InverseTransformPoint(desiredWorldPosition);
+        part.transform.localRotation = Quaternion.identity;
+        part.transform.localScale = localScale;
 
-        GameObject rendererObject = new GameObject("Skin_" + partName);
-        rendererObject.transform.SetParent(character.transform, false);
-        rendererObject.transform.localPosition = Vector3.zero;
-        rendererObject.transform.localRotation = Quaternion.identity;
-        rendererObject.transform.localScale = Vector3.one;
-        generated.bindposes = new[] { bone.worldToLocalMatrix * rendererObject.transform.localToWorldMatrix };
-        generated.RecalculateBounds();
+        Renderer renderer = part.GetComponent<Renderer>();
+        if (renderer != null)
+            renderer.sharedMaterial = material;
 
-        string meshPath = MeshFolder + "/VeyrWanderer_" + partName + ".asset";
-        Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
-        if (mesh != null)
-        {
-            EditorUtility.CopySerialized(generated, mesh);
-            UnityEngine.Object.DestroyImmediate(generated);
-        }
-        else
-        {
-            AssetDatabase.CreateAsset(generated, meshPath);
-            mesh = generated;
-        }
-
-        SkinnedMeshRenderer renderer = rendererObject.AddComponent<SkinnedMeshRenderer>();
-        renderer.sharedMesh = mesh;
-        renderer.sharedMaterial = material;
-        renderer.rootBone = character.transform.Find("Armature/Root");
-        renderer.bones = new[] { bone };
-        renderer.localBounds = new Bounds(Vector3.zero, new Vector3(2.8f, 2.6f, 2.4f));
-        renderer.updateWhenOffscreen = true;
-
-        UnityEngine.Object.DestroyImmediate(temporary);
+        Collider collider = part.GetComponent<Collider>();
+        if (collider != null)
+            UnityEngine.Object.DestroyImmediate(collider);
     }
 
     private static AnimationClip CreateIdleClip()

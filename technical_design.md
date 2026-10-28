@@ -23,12 +23,12 @@ Assets/_Project/
 - `phase1_test_plan.md`: repeatable manual acceptance test matrix.
 
 ## Phase 2 character architecture
-- `Phase2CharacterBuilder`: editor-only generator for original skinned character, Generic Avatar, materials, mesh assets, animation clips, Animator Controller and prefab.
-- `VeyrWanderer.prefab`: generated character asset with bone hierarchy and SkinnedMeshRenderers.
+- `Phase2CharacterBuilder`: editor-only generator for an original articulated character, Generic Avatar, materials, bone-attached primitive meshes, animation clips, Animator Controller and prefab.
+- `VeyrWanderer.prefab`: generated character asset with bone hierarchy and mesh parts parented to their controlling bones.
 - Animator uses `MoveSpeed` (0 idle, 0.5 walk, 1 run) plus an `Attack` trigger.
 - `PlayerLocomotionAnimator` bridges movement/combat input to the Animator while retaining the old procedural placeholder fallback.
 - Root motion stays disabled so the existing CharacterController remains authoritative for movement/collision.
-- This is a custom Generic rig for the prototype, not yet a Humanoid Avatar for one-click retargeting of external animation libraries.
+- This is a custom Generic rig with rigid mesh parts for the prototype, not yet a continuous skinned humanoid or Avatar for one-click retargeting.
 - `phase2_test_plan.md` defines the local generation and visual acceptance tests.
 
 ## Architecture principles
