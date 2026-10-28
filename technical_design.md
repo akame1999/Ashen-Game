@@ -31,6 +31,14 @@ Assets/_Project/
 - This is a custom Generic rig with rigid mesh parts for the prototype, not yet a continuous skinned humanoid or Avatar for one-click retargeting.
 - `phase2_test_plan.md` defines the local generation and visual acceptance tests.
 
+## Graphics pass architecture
+- `GraphicsUpgradeSetup`: Editor tool that rebuilds a `GraphicsPassRoot` containing 49 paving slabs, grout/cracks, perimeter trim, ruined pillars, braziers and lights, rubble and a central rune.
+- New materials are generated under `Assets/_Project/Graphics/Materials/`; an optional global URP volume profile lives under `Assets/_Project/Graphics/Profiles/`.
+- Original `TestFloor` and four wall colliders are preserved. Decorative geometry has no colliders and does not change gameplay collision.
+- Render settings use cool ambient light, soft directional shadows, warm point-light pools and linear fog.
+- URP bloom/vignette/color grading are set up via reflection and are optional; the base environment pass still works if those types are unavailable.
+- `phase3_graphics_test_plan.md` covers readability, collision, Console and performance checks.
+
 ## Architecture principles
 - One component, one clear responsibility.
 - Use ScriptableObjects for reusable definitions where appropriate.

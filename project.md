@@ -70,6 +70,17 @@ AI roles are suggestions, not guarantees. No AI should claim a feature is tested
 - [ ] Decide whether to import a dedicated Humanoid rig and retargetable animation library after the generic rig passes.
 **Done when:** Phase 2 tests pass on the target machine and the character animates cleanly in the arena.
 
+### Graphics pass — dark-fantasy environment presentation
+**Owner:** ChatGPT prepares the editor tool; human runs it and inspects the scene.
+**Implementation committed; local visual/performance acceptance pending.** See `phase3_graphics_test_plan.md`.
+- [~] Varied stone paving, inset seams and hairline cracks without changing gameplay collision.
+- [~] Ruined corner pillars, four braziers with warm point lights, edge rubble and central spectral rune.
+- [~] Cool ambient/directional lighting, soft shadows, distance fog and optional URP post-processing.
+- [~] One-click graphics setup and scene validation.
+- [ ] Review camera composition, torch intensity, rune brightness and path readability in Play mode.
+- [ ] Verify collision remains unchanged and frame rate remains acceptable.
+**Done when:** the style reads clearly at gameplay camera scale, characters/enemy telegraphs remain readable, and no new Console errors occur.
+
 ### Phase 3 — Combat prototype
 - [~] Prototype health, melee, dodge, telegraphed enemy, HUD and placeholder hit feedback are implemented.
 - [ ] Test hit timing, ranges, invulnerability windows and defeat/reset.

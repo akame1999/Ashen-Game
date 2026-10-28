@@ -20,6 +20,16 @@ Unity editor: `6000.6.7f1`; template: Universal 3D (URP).
 
 The generated model is an original stylized prototype, not a high-detail production hero. Its body/armor sections use rigid mesh parts parented to a Generic bone hierarchy, with authored keyframed animation clips. It is not yet a Humanoid Avatar for broad retargeting. Replace or refine it later with a high-detail model and properly licensed animation assets if required.
 
+## Graphics pass — dark-fantasy courtyard
+1. Stop Play mode and wait for compilation.
+2. Select **Tools → Code Lyoko → Graphics → Apply Dark Fantasy Graphics Pass**.
+3. The tool adds stone paving, seams and cracks, perimeter trim, ruined pillars, braziers and warm point lights, edge rubble, a spectral rune, darker ambient lighting and fog.
+4. Select **Tools → Code Lyoko → Graphics → Validate Graphics Pass** and review the `[Graphics PASS]` / `[Graphics CHECK]` Console messages.
+5. Inspect Game view in Play mode. If URP Volume types are available, bloom, vignette and color grading are configured optionally. Otherwise the base lighting/material pass still applies.
+6. Record actual results in `phase3_graphics_test_plan.md`.
+
+This is a procedural style/presentation pass, not high-detail final art, hand-authored textures or a replacement for an environment asset pipeline.
+
 ## Combat prototype
 Select **Tools → Code Lyoko → Setup Combat Prototype** to add the training enemy, health, melee, dodge and HUD. Controls: WASD/arrows move; Shift run; J/left click attack; Space dodge.
 

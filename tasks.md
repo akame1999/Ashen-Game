@@ -32,6 +32,14 @@ Use [ ] for not started, [~] for implemented/in progress, [x] only after the acc
 - [ ] Consider an imported Humanoid character and retargeted clips after the Generic rig works.
 **Acceptance:** bone-attached character animates idle/walk/run/attack without missing references or detached parts; local tests pass.
 
+## M2.5 — Graphics / environment presentation
+- [~] Add dark-fantasy ambient/directional lighting, fog and optional URP post-processing.
+- [~] Add varied paving, seams/cracks, ruined pillars, braziers, warm local lights, edge rubble and spectral rune.
+- [~] Add one-click graphics setup and scene validation commands.
+- [ ] Inspect composition and tonal balance in Play mode.
+- [ ] Confirm floor/wall collisions still work and performance is acceptable.
+**Acceptance:** readable dark-fantasy courtyard with no new Console errors; mark complete only after local visual testing.
+
 ## M3 — Combat prototype
 - [~] Prototype health, melee, dodge, telegraphed enemy, HUD and placeholder feedback.
 - [ ] Test damage range/facing, cooldown, dodge invulnerability, repeat hits and defeat/reset.
