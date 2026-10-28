@@ -482,7 +482,7 @@ public static class PrototypeSceneSetup
         if (camera != null)
         {
             camera.orthographic = true;
-            camera.orthographicSize = 8.3f;
+            camera.orthographicSize = 5.2f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.035f, 0.045f, 0.055f);
             camera.transform.position = player.transform.position + new Vector3(0f, 10f, -10f);
@@ -497,7 +497,7 @@ public static class PrototypeSceneSetup
                 SerializedProperty size = serializedFollow.FindProperty("orthographicSize");
                 if (offset != null) offset.vector3Value = new Vector3(0f, 10f, -10f);
                 if (pitch != null) pitch.floatValue = 45f;
-                if (size != null) size.floatValue = 8.3f;
+                if (size != null) size.floatValue = 5.2f;
                 serializedFollow.ApplyModifiedPropertiesWithoutUndo();
                 follow.Target = player.transform;
             }
@@ -675,7 +675,7 @@ public static class PrototypeSceneSetup
         if (camera != null)
         {
             camera.orthographic = true;
-            camera.orthographicSize = 6.8f;
+            camera.orthographicSize = 5.2f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.035f, 0.045f, 0.055f);
 
@@ -688,7 +688,7 @@ public static class PrototypeSceneSetup
                 SerializedProperty size = followData.FindProperty("orthographicSize");
                 if (offset != null) offset.vector3Value = new Vector3(0f, 9f, -9f);
                 if (pitch != null) pitch.floatValue = 45f;
-                if (size != null) size.floatValue = 6.8f;
+                if (size != null) size.floatValue = 5.2f;
                 followData.ApplyModifiedPropertiesWithoutUndo();
 
                 if (playerObject != null)

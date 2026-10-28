@@ -11,7 +11,7 @@ public sealed class IsometricCameraFollow : MonoBehaviour
     [SerializeField] private Vector3 offset = new Vector3(0f, 12f, -12f);
     [SerializeField, Min(0f)] private float smoothTime = 0.12f;
     [SerializeField, Range(20f, 70f)] private float pitch = 45f;
-    [SerializeField, Min(1f)] private float orthographicSize = 10f;
+    [SerializeField, Min(1f)] private float orthographicSize = 5.2f;
 
     private Vector3 positionVelocity;
     private Camera attachedCamera;
