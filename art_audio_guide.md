@@ -1,0 +1,25 @@
+# ART AND AUDIO GUIDE
+
+## Visual direction
+Weathered, intimate, monumental, melancholic and uncanny. Materials: limestone, wet slate, dark timber, tarnished brass, black iron, worn leather and faded cloth. Accent light: candle amber, dawn gold and spectral blue; use crimson sparingly for danger. Avoid scenes so dark that player, enemies, paths and hazards blend together.
+
+## Character requirements
+Readable silhouette from the elevated camera; distinct head, torso, limbs and weapon. Clothing and armor should reflect role and region. Production character assets need suitable mesh topology, materials, rig, animations, scale and correct import settings. Concept art alone is not a game-ready model.
+
+## Environment workflow
+1. Greybox layout and test camera readability.
+2. Establish grid and scale conventions.
+3. Build modular walls, floors, arches, stairs and props.
+4. Add collision and connector metadata.
+5. Test navigation and combat spaces.
+6. Apply materials, lighting and environmental storytelling.
+7. Optimize after profiling.
+
+## Animation priority
+Idle/locomotion → start/stop/turn → light attack → hit reaction → dodge → death → enemy telegraphs → interactions → boss moves. Telegraph timing is gameplay information and must remain visible from the camera.
+
+## Audio
+Wind through hollow stone, water channels, bells at varying distances, surface-specific footsteps, small domestic sounds in safe areas, sparse music, and distinctive enemy wind-up/impact cues. Use silence deliberately.
+
+## AI asset workflow
+Use image generation for references and mood boards; use a 3D tool for mesh generation; use Blender for cleanup; import into Unity and verify scale, materials, topology, rig and performance. Check export limits, terms and license before use. Record asset source and license in an asset inventory.
