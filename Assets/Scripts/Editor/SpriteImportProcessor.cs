@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Ashen.EditorTools
 {
-    /// <summary>Imports PNGs under Resources/Sprites (characters, 128px frames at 72 px/unit, pivot at the feet) and Resources/Backgrounds (32 px/unit) as crisp pixel-art sprites; Environment ground/platform are painted 256px tiles at 128 px/unit with bilinear filtering.</summary>
+    /// <summary>Imports PNGs under Resources/Sprites (characters, 128px frames at 72 px/unit, pivot at the feet) and Resources/Backgrounds (painted, 64 px/unit, bilinear) as sprites; Environment ground/platform are painted 256px tiles at 128 px/unit with bilinear filtering.</summary>
     public class SpriteImportProcessor : AssetPostprocessor
     {
         void OnPreprocessTexture()
@@ -56,6 +56,7 @@ namespace Ashen.EditorTools
                 s.spriteAlignment = (int)(sky ? SpriteAlignment.Center : SpriteAlignment.BottomCenter);
                 s.spriteMeshType = SpriteMeshType.FullRect;
             }
+            if (background) { ti.spritePixelsPerUnit = 64; ti.filterMode = FilterMode.Bilinear; }   // painted layers: 2x resolution, same world size
             ti.SetTextureSettings(s);
         }
     }
