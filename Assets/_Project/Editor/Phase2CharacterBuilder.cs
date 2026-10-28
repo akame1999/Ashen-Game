@@ -70,11 +70,11 @@ public static class Phase2CharacterBuilder
         Transform head = CreateBone("Head", neck, new Vector3(0f, 0.13f, 0f));
 
         Transform leftUpperArm = CreateBone("LeftUpperArm", chest, new Vector3(-0.28f, 0.09f, 0f));
-        Transform leftLowerArm = CreateBone("LeftLowerArm", leftUpperArm, new Vector3(-0.21f, -0.02f, 0f));
-        Transform leftHand = CreateBone("LeftHand", leftLowerArm, new Vector3(-0.19f, 0f, 0f));
+        Transform leftLowerArm = CreateBone("LeftLowerArm", leftUpperArm, new Vector3(-0.04f, -0.24f, 0f));
+        Transform leftHand = CreateBone("LeftHand", leftLowerArm, new Vector3(-0.03f, -0.22f, 0f));
         Transform rightUpperArm = CreateBone("RightUpperArm", chest, new Vector3(0.28f, 0.09f, 0f));
-        Transform rightLowerArm = CreateBone("RightLowerArm", rightUpperArm, new Vector3(0.21f, -0.02f, 0f));
-        Transform rightHand = CreateBone("RightHand", rightLowerArm, new Vector3(0.19f, 0f, 0f));
+        Transform rightLowerArm = CreateBone("RightLowerArm", rightUpperArm, new Vector3(0.04f, -0.24f, 0f));
+        Transform rightHand = CreateBone("RightHand", rightLowerArm, new Vector3(0.03f, -0.22f, 0f));
 
         Transform leftUpperLeg = CreateBone("LeftUpperLeg", hips, new Vector3(-0.13f, -0.03f, 0f));
         Transform leftLowerLeg = CreateBone("LeftLowerLeg", leftUpperLeg, new Vector3(0f, -0.31f, 0f));
@@ -94,14 +94,14 @@ public static class Phase2CharacterBuilder
         AddPart(character, "Eye_L", PrimitiveType.Sphere, head, new Vector3(-0.072f, 0.80f, 0.113f), new Vector3(0.042f, 0.04f, 0.025f), dark);
         AddPart(character, "Eye_R", PrimitiveType.Sphere, head, new Vector3(0.072f, 0.80f, 0.113f), new Vector3(0.042f, 0.04f, 0.025f), dark);
 
-        AddPart(character, "Shoulder_L", PrimitiveType.Sphere, leftUpperArm, new Vector3(-0.29f, 0.34f, 0f), new Vector3(0.19f, 0.15f, 0.19f), brass);
-        AddPart(character, "UpperArm_L", PrimitiveType.Capsule, leftUpperArm, new Vector3(-0.36f, 0.22f, 0f), new Vector3(0.125f, 0.245f, 0.125f), armor);
-        AddPart(character, "Forearm_L", PrimitiveType.Capsule, leftLowerArm, new Vector3(-0.49f, 0.015f, 0f), new Vector3(0.105f, 0.225f, 0.105f), leather);
-        AddPart(character, "Glove_L", PrimitiveType.Sphere, leftHand, new Vector3(-0.69f, -0.035f, 0.005f), new Vector3(0.105f, 0.11f, 0.105f), leather);
-        AddPart(character, "Shoulder_R", PrimitiveType.Sphere, rightUpperArm, new Vector3(0.29f, 0.34f, 0f), new Vector3(0.19f, 0.15f, 0.19f), brass);
-        AddPart(character, "UpperArm_R", PrimitiveType.Capsule, rightUpperArm, new Vector3(0.36f, 0.22f, 0f), new Vector3(0.125f, 0.245f, 0.125f), armor);
-        AddPart(character, "Forearm_R", PrimitiveType.Capsule, rightLowerArm, new Vector3(0.49f, 0.015f, 0f), new Vector3(0.105f, 0.225f, 0.105f), leather);
-        AddPart(character, "Glove_R", PrimitiveType.Sphere, rightHand, new Vector3(0.69f, -0.035f, 0.005f), new Vector3(0.105f, 0.11f, 0.105f), leather);
+        AddPart(character, "Shoulder_L", PrimitiveType.Sphere, leftUpperArm, new Vector3(-0.27f, 0.36f, 0f), new Vector3(0.20f, 0.16f, 0.20f), brass);
+        AddPart(character, "UpperArm_L", PrimitiveType.Capsule, leftUpperArm, new Vector3(-0.31f, 0.20f, 0f), new Vector3(0.14f, 0.23f, 0.14f), armor);
+        AddPart(character, "Forearm_L", PrimitiveType.Capsule, leftLowerArm, new Vector3(-0.34f, -0.025f, 0f), new Vector3(0.12f, 0.22f, 0.12f), leather);
+        AddPart(character, "Glove_L", PrimitiveType.Sphere, leftHand, new Vector3(-0.35f, -0.19f, 0.005f), new Vector3(0.12f, 0.12f, 0.12f), leather);
+        AddPart(character, "Shoulder_R", PrimitiveType.Sphere, rightUpperArm, new Vector3(0.27f, 0.36f, 0f), new Vector3(0.20f, 0.16f, 0.20f), brass);
+        AddPart(character, "UpperArm_R", PrimitiveType.Capsule, rightUpperArm, new Vector3(0.31f, 0.20f, 0f), new Vector3(0.14f, 0.23f, 0.14f), armor);
+        AddPart(character, "Forearm_R", PrimitiveType.Capsule, rightLowerArm, new Vector3(0.34f, -0.025f, 0f), new Vector3(0.12f, 0.22f, 0.12f), leather);
+        AddPart(character, "Glove_R", PrimitiveType.Sphere, rightHand, new Vector3(0.35f, -0.19f, 0.005f), new Vector3(0.12f, 0.12f, 0.12f), leather);
 
         AddPart(character, "Thigh_L", PrimitiveType.Capsule, leftUpperLeg, new Vector3(-0.13f, -0.28f, 0f), new Vector3(0.15f, 0.27f, 0.15f), leather);
         AddPart(character, "Shin_L", PrimitiveType.Capsule, leftLowerLeg, new Vector3(-0.13f, -0.56f, 0f), new Vector3(0.12f, 0.27f, 0.12f), armor);
