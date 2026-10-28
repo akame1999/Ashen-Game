@@ -44,7 +44,7 @@ public static class GraphicsUpgradeSetup
         GameObject oldGrid = GameObject.Find("ArenaGrid");
         if (oldGrid != null) oldGrid.SetActive(false);
         GameObject previous = GameObject.Find(RootName);
-        if (previous != null) DestroyImmediate(previous);
+        if (previous != null) UnityEngine.Object.DestroyImmediate(previous);
 
         GameObject root = new GameObject(RootName);
         BuildPaving(root.transform, stoneA, stoneB, stoneC, grout);
@@ -338,10 +338,19 @@ public static class GraphicsUpgradeSetup
 
     private static Type FindType(string fullName)
     {
+        // Prefer the package assemblies explicitly. Unity 6 emits UAC0005 for
+        // AppDomain.GetAssemblies because reloads may leave unloaded assemblies behind.
         Type t = Type.GetType(fullName + ", Unity.RenderPipelines.Core.Runtime", false) ??
                  Type.GetType(fullName + ", Unity.RenderPipelines.Universal.Runtime", false);
         if (t != null) return t;
-        foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies()) { t = assembly.GetType(fullName, false); if (t != null) return t; }
+
+        // TypeCache is the Unity-supported way to discover loaded script types.
+        foreach (Type candidate in TypeCache.GetTypesDerivedFrom<UnityEngine.Object>())
+        {
+            if (candidate != null && string.Equals(candidate.FullName, fullName, StringComparison.Ordinal))
+                return candidate;
+        }
+
         return null;
     }
 
