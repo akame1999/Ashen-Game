@@ -18,15 +18,15 @@ public sealed class PlayerLocomotionAnimator : MonoBehaviour
     [SerializeField] private Transform rightLeg;
 
     [Header("Gait")]
-    [SerializeField, Min(0.1f)] private float walkCyclesPerSecond = 1.7f;
-    [SerializeField, Min(0.1f)] private float runCyclesPerSecond = 2.6f;
-    [SerializeField, Range(0f, 60f)] private float walkLegSwing = 30f;
-    [SerializeField, Range(0f, 70f)] private float runLegSwing = 43f;
-    [SerializeField, Range(0f, 20f)] private float walkLean = 5f;
-    [SerializeField, Range(0f, 25f)] private float runLean = 11f;
-    [SerializeField, Min(0f)] private float walkBounceHeight = 0.055f;
-    [SerializeField, Min(0f)] private float runBounceHeight = 0.11f;
-    [SerializeField, Min(0f)] private float stateBlendSpeed = 8f;
+    [SerializeField, Min(0.1f)] private float walkCyclesPerSecond = 2.0f;
+    [SerializeField, Min(0.1f)] private float runCyclesPerSecond = 3.1f;
+    [SerializeField, Range(0f, 60f)] private float walkLegSwing = 46f;
+    [SerializeField, Range(0f, 70f)] private float runLegSwing = 62f;
+    [SerializeField, Range(0f, 20f)] private float walkLean = 8f;
+    [SerializeField, Range(0f, 25f)] private float runLean = 15f;
+    [SerializeField, Min(0f)] private float walkBounceHeight = 0.08f;
+    [SerializeField, Min(0f)] private float runBounceHeight = 0.15f;
+    [SerializeField, Min(0f)] private float stateBlendSpeed = 10f;
 
     private bool isMoving;
     private bool isRunning;
