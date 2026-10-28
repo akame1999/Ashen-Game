@@ -666,24 +666,99 @@ public static class PrototypeSceneSetup
         }
 
         Camera camera = Camera.main;
+        if (camera == null)
+        {
+            GameObject cameraObject = GameObject.Find("IsometricCamera");
+            if (cameraObject != null)
+                camera = cameraObject.GetComponent<Camera>();
+        }
         if (camera != null)
         {
+            camera.orthographic = true;
+            camera.orthographicSize = 6.8f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.035f, 0.045f, 0.055f);
+
+            IsometricCameraFollow follow = camera.GetComponent<IsometricCameraFollow>();
+            if (follow != null)
+            {
+                SerializedObject followData = new SerializedObject(follow);
+                SerializedProperty offset = followData.FindProperty("offset");
+                SerializedProperty pitch = followData.FindProperty("pitch");
+                SerializedProperty size = followData.FindProperty("orthographicSize");
+                if (offset != null) offset.vector3Value = new Vector3(0f, 9f, -9f);
+                if (pitch != null) pitch.floatValue = 45f;
+                if (size != null) size.floatValue = 6.8f;
+                followData.ApplyModifiedPropertiesWithoutUndo();
+
+                if (playerObject != null)
+                    follow.Target = playerObject.transform;
+            }
         }
 
         Scene scene = SceneManager.GetActiveScene();
+        Shader supportedShader = FindSupportedPrototypeShader();
+        int repairedShaderCount = 0;
+        foreach (GameObject rootObject in scene.GetRootGameObjects())
+        {
+            foreach (Renderer renderer in rootObject.GetComponentsInChildren<Renderer>(true))
+            {
+                Material[] materials = renderer.sharedMaterials;
+                bool rendererChanged = false;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    Material material = materials[i];
+                    if (material == null || supportedShader == null)
+                        continue;
+
+                    if (material.shader == null ||
+                        material.shader.name == "Hidden/InternalErrorShader" ||
+                        !material.shader.isSupported)
+                    {
+                        material.shader = supportedShader;
+                        EditorUtility.SetDirty(material);
+                        repairedShaderCount++;
+                        rendererChanged = true;
+                    }
+                }
+
+                if (rendererChanged)
+                {
+                    renderer.sharedMaterials = materials;
+                    EditorUtility.SetDirty(renderer);
+                }
+            }
+        }
+
         EditorSceneManager.MarkSceneDirty(scene);
         if (!string.IsNullOrEmpty(scene.path))
             EditorSceneManager.SaveScene(scene);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
+        Debug.Log("[Prototype Repair] Repaired " + repairedShaderCount + " invalid scene material shader(s).");
         EditorUtility.DisplayDialog(
-            "Prototype Materials Repaired",
-            "Reassigned supported URP materials to the floor, walls, mannequin, enemy and grid.\n\n" +
-            "Magenta error-shader visuals should now be replaced by the intended prototype colors. Press Play to check.",
+            "Prototype Materials and Framing Repaired",
+            "Reassigned prototype materials, replaced invalid scene shaders when possible, and tightened camera framing.\\n\\n" +
+            "Shader repairs: " + repairedShaderCount + ". Press Play to check. If magenta remains, inspect Console and the URP package status.",
             "OK");
+    }
+
+    private static Shader FindSupportedPrototypeShader()
+    {
+        foreach (string shaderName in new[]
+        {
+            "Universal Render Pipeline/Lit",
+            "Universal Render Pipeline/Simple Lit",
+            "Universal Render Pipeline/Unlit",
+            "Standard"
+        })
+        {
+            Shader shader = Shader.Find(shaderName);
+            if (shader != null && shader.isSupported)
+                return shader;
+        }
+        return null;
     }
 
     private static void AssignMaterial(string objectName, Material material)
