@@ -7,6 +7,8 @@ namespace Ashen.EditorTools
     /// <summary>Imports PNGs under Resources/Sprites (characters, 128px frames at 72 px/unit, pivot at the feet) and Resources/Backgrounds (painted, 64 px/unit, bilinear) as sprites; Props are painted at 128 px/unit (bilinear); Environment ground/platform are painted 256px tiles at 128 px/unit with bilinear filtering.</summary>
     public class SpriteImportProcessor : AssetPostprocessor
     {
+        public override uint GetVersion() => 3;   // bump to force Unity to reimport sprites after importer changes
+
         void OnPreprocessTexture()
         {
             bool character = assetPath.StartsWith("Assets/Resources/Sprites/");
@@ -42,7 +44,7 @@ namespace Ashen.EditorTools
                 string n = System.IO.Path.GetFileNameWithoutExtension(assetPath);
                 bool prop = n == "checkpoint";
                 bool painted = n == "ground" || n == "platform";   // 256px painted tiles, 128 px/unit, smooth filtering
-                if (painted) { ti.spritePixelsPerUnit = 128; ti.filterMode = FilterMode.Bilinear; }
+                if (painted) { s.spritePixelsPerUnit = 128; s.filterMode = FilterMode.Bilinear; }
                 s.spriteAlignment = (int)(prop ? SpriteAlignment.BottomCenter : SpriteAlignment.Center);
                 s.spriteMeshType = SpriteMeshType.FullRect;
                 // 9-slice borders (L,B,R,T in px): keep the mossy lip on top, tile everything else
@@ -56,8 +58,9 @@ namespace Ashen.EditorTools
                 s.spriteAlignment = (int)(sky ? SpriteAlignment.Center : SpriteAlignment.BottomCenter);
                 s.spriteMeshType = SpriteMeshType.FullRect;
             }
-            if (props) { ti.spritePixelsPerUnit = 128; ti.filterMode = FilterMode.Bilinear; }   // painted props: 4x resolution, same world size
-            if (background) { ti.spritePixelsPerUnit = 64; ti.filterMode = FilterMode.Bilinear; }   // painted layers: 2x resolution, same world size
+            // NOTE: ppu and filter must be set on `s` (TextureImporterSettings), otherwise SetTextureSettings below overwrites them.
+            if (props)      { s.spritePixelsPerUnit = 128; s.filterMode = FilterMode.Bilinear; }   // painted props: 4x resolution, same world size
+            if (background) { s.spritePixelsPerUnit = 64;  s.filterMode = FilterMode.Bilinear; }   // painted layers: 2x resolution, same world size
             ti.SetTextureSettings(s);
         }
     }
