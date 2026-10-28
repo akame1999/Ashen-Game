@@ -374,6 +374,129 @@ public static class PrototypeSceneSetup
             Object.DestroyImmediate(collider);
     }
 
+    [MenuItem("Tools/Code Lyoko/Repair Prototype Materials", true)]
+    private static bool ValidateRepairPrototypeMaterials()
+    {
+        return !EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling;
+    }
+
+    [MenuItem("Tools/Code Lyoko/Repair Prototype Materials")]
+    public static void RepairPrototypeMaterials()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling)
+            return;
+
+        EnsureFolder("Assets", "_Project");
+        EnsureFolder(Root, "Materials");
+
+        Material ground = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeGround.mat", new Color(0.115f, 0.145f, 0.16f));
+        Material wall = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeWalls.mat", new Color(0.30f, 0.19f, 0.12f));
+        Material player = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypePlayer.mat", new Color(0.55f, 0.20f, 0.075f));
+        Material armor = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeArmor.mat", new Color(0.13f, 0.09f, 0.075f));
+        Material skin = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeSkin.mat", new Color(0.62f, 0.43f, 0.29f));
+        Material details = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeDetails.mat", new Color(0.035f, 0.025f, 0.02f));
+        Material enemy = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeEnemy.mat", new Color(0.48f, 0.075f, 0.055f));
+        Material enemyDetails = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeEnemyDetails.mat", new Color(1f, 0.48f, 0.08f));
+        Material grid = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeGrid.mat", new Color(0.20f, 0.27f, 0.29f));
+        Material boundary = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeBoundary.mat", new Color(0.90f, 0.40f, 0.10f));
+
+        AssignMaterial("TestFloor", ground);
+        AssignMaterial("Wall_North", wall);
+        AssignMaterial("Wall_South", wall);
+        AssignMaterial("Wall_East", wall);
+        AssignMaterial("Wall_West", wall);
+
+        GameObject gridRoot = GameObject.Find("ArenaGrid");
+        if (gridRoot != null)
+        {
+            foreach (Renderer renderer in gridRoot.GetComponentsInChildren<Renderer>())
+            {
+                if (renderer.gameObject.name.StartsWith("Boundary_"))
+                    renderer.sharedMaterial = boundary;
+                else
+                    renderer.sharedMaterial = grid;
+                EditorUtility.SetDirty(renderer);
+            }
+        }
+
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject == null)
+            playerObject = GameObject.Find("Player");
+        if (playerObject != null)
+        {
+            foreach (Renderer renderer in playerObject.GetComponentsInChildren<Renderer>(true))
+            {
+                string objectName = renderer.gameObject.name;
+                if (objectName == "Head")
+                    renderer.sharedMaterial = skin;
+                else if (objectName.StartsWith("Eye_"))
+                    renderer.sharedMaterial = details;
+                else if (objectName.Contains("Arm") || objectName.Contains("Leg") || objectName == "Belt")
+                    renderer.sharedMaterial = armor;
+                else if (objectName == "Torso" || objectName == "Player" || objectName == "Capsule")
+                    renderer.sharedMaterial = player;
+                EditorUtility.SetDirty(renderer);
+            }
+        }
+
+        GameObject enemyObject = GameObject.Find("TrainingEnemy");
+        if (enemyObject != null)
+        {
+            foreach (Renderer renderer in enemyObject.GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer.gameObject.name.StartsWith("Eye_"))
+                    renderer.sharedMaterial = enemyDetails;
+                else
+                    renderer.sharedMaterial = enemy;
+                EditorUtility.SetDirty(renderer);
+            }
+        }
+
+        Camera camera = Camera.main;
+        if (camera != null)
+        {
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.035f, 0.045f, 0.055f);
+        }
+
+        Scene scene = SceneManager.GetActiveScene();
+        EditorSceneManager.MarkSceneDirty(scene);
+        if (!string.IsNullOrEmpty(scene.path))
+            EditorSceneManager.SaveScene(scene);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        EditorUtility.DisplayDialog(
+            "Prototype Materials Repaired",
+            "Reassigned supported URP materials to the floor, walls, mannequin, enemy and grid.\n\n" +
+            "Magenta error-shader visuals should now be replaced by the intended prototype colors. Press Play to check.",
+            "OK");
+    }
+
+    private static void AssignMaterial(string objectName, Material material)
+    {
+        GameObject target = GameObject.Find(objectName);
+        if (target == null)
+            return;
+
+        Renderer renderer = target.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.sharedMaterial = material;
+            EditorUtility.SetDirty(renderer);
+        }
+    }
+
     [MenuItem("Tools/Code Lyoko/Setup Combat Prototype", true)]
     private static bool ValidateSetupCombatPrototype()
     {
@@ -612,21 +735,29 @@ public static class PrototypeSceneSetup
 
     private static Material CreateOrLoadMaterial(string path, Color color)
     {
+        Shader shader = FindPrototypeShader();
         Material existing = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (existing != null)
         {
+            // Old prototype materials may have retained an unsupported shader, which renders magenta.
+            if (shader != null &&
+                (existing.shader == null ||
+                 existing.shader.name == "Hidden/InternalErrorShader" ||
+                 !existing.shader.isSupported ||
+                 (shader.name.StartsWith("Universal Render Pipeline/") &&
+                  !existing.shader.name.StartsWith("Universal Render Pipeline/"))))
+            {
+                existing.shader = shader;
+            }
+
             SetMaterialColor(existing, color);
             EditorUtility.SetDirty(existing);
             return existing;
         }
 
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null)
-            shader = Shader.Find("Standard");
-
         if (shader == null)
         {
-            Debug.LogWarning("No compatible shader found; using Unity's default primitive material.");
+            Debug.LogWarning("No supported shader was found. Check that Universal Render Pipeline is installed and active.");
             return null;
         }
 
@@ -634,6 +765,26 @@ public static class PrototypeSceneSetup
         SetMaterialColor(material, color);
         AssetDatabase.CreateAsset(material, path);
         return material;
+    }
+
+    private static Shader FindPrototypeShader()
+    {
+        string[] candidates =
+        {
+            "Universal Render Pipeline/Lit",
+            "Universal Render Pipeline/Simple Lit",
+            "Universal Render Pipeline/Unlit",
+            "Standard"
+        };
+
+        foreach (string candidate in candidates)
+        {
+            Shader shader = Shader.Find(candidate);
+            if (shader != null && shader.isSupported)
+                return shader;
+        }
+
+        return null;
     }
 
     private static void SetMaterialColor(Material material, Color color)
