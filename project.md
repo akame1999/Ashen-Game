@@ -58,11 +58,17 @@ AI roles are suggestions, not guarantees. No AI should claim a feature is tested
 - [ ] Run automated structural validation and complete manual test matrix.
 **Done when:** movement is predictable, camera stays readable, and player cannot walk through blockers. Only mark accepted after local playtest passes.
 
-### Phase 2 — Character foundation
-- [~] Primitive mannequin and procedural placeholder gait exists.
-- [ ] Import one legally usable character model; verify scale, materials, rig and animation.
-- [ ] Add authored idle, walk/run, turn, and stop animations.
-**Done when:** character runs in the test scene on the intended machine.
+### Phase 2 — Rigged character and locomotion animations
+**Owner:** ChatGPT builds the editor pipeline; human runs generation and visual tests in Unity.
+**Implementation delivered as an editor generator; local asset generation and acceptance tests pending.** See `phase2_test_plan.md`.
+- [x] Generate original Veyr Wanderer skinned mesh parts with a bone hierarchy and Generic Avatar.
+- [x] Generate Animator Controller and keyframed Idle/Walk/Run/Attack clips.
+- [x] Connect movement/combat input to Animator parameters.
+- [x] Add structural rig/controller/clip validation.
+- [ ] Generate character assets in local Unity and inspect mesh bindings/materials.
+- [ ] Verify idle, walk, run and attack in Play mode, foot placement and no Console errors.
+- [ ] Decide whether to import a dedicated Humanoid rig and retargetable animation library after the generic rig passes.
+**Done when:** Phase 2 tests pass on the target machine and the character animates cleanly in the arena.
 
 ### Phase 3 — Combat prototype
 - [~] Prototype health, melee, dodge, telegraphed enemy, HUD and placeholder hit feedback are implemented.

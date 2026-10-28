@@ -25,9 +25,18 @@ public sealed class CombatHitFeedback : MonoBehaviour
     {
         health = GetComponent<CombatHealth>();
 
-        visualRoot = transform.Find("PlayerVisualRoot");
+        visualRoot = transform.Find("VeyrWanderer");
+        if (visualRoot == null)
+            visualRoot = transform.Find("PlayerVisualRoot");
         if (visualRoot == null)
             visualRoot = transform.Find("EnemyVisual");
+
+        if (visualRoot == null)
+        {
+            Animator childAnimator = GetComponentInChildren<Animator>();
+            if (childAnimator != null && childAnimator.transform != transform)
+                visualRoot = childAnimator.transform;
+        }
 
         if (visualRoot == null)
         {

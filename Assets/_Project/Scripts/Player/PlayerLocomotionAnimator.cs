@@ -43,6 +43,13 @@ public sealed class PlayerLocomotionAnimator : MonoBehaviour
     private Quaternion leftLegBaseRotation;
     private Quaternion rightLegBaseRotation;
     private bool basePoseCached;
+    [Header("Animator Controller bridge")]
+    [SerializeField] private Animator characterAnimator;
+    [SerializeField, Min(0f)] private float animatorDamping = 0.10f;
+    private bool hasMoveSpeedParameter;
+    private bool hasAttackTriggerParameter;
+    private static readonly int MoveSpeedHash = Animator.StringToHash("MoveSpeed");
+    private static readonly int AttackHash = Animator.StringToHash("Attack");
     private float attackTimeRemaining;
     [SerializeField, Min(0.05f)] private float attackAnimationDuration = 0.24f;
     [SerializeField, Range(0f, 150f)] private float attackArmSwingDegrees = 112f;
@@ -66,19 +73,57 @@ public sealed class PlayerLocomotionAnimator : MonoBehaviour
         CacheBasePose();
     }
 
+    public Animator CharacterAnimator
+    {
+        get => characterAnimator;
+        set
+        {
+            characterAnimator = value;
+            CacheAnimatorParameters();
+        }
+    }
+
     public void SetMovementState(bool moving, bool running)
     {
         isMoving = moving;
         isRunning = moving && running;
+        if (characterAnimator != null && hasMoveSpeedParameter)
+        {
+            float speedValue = !moving ? 0f : (running ? 1f : 0.5f);
+            characterAnimator.SetFloat(MoveSpeedHash, speedValue, animatorDamping, Time.deltaTime);
+        }
     }
 
     public void TriggerAttack()
     {
         attackTimeRemaining = attackAnimationDuration;
+        if (characterAnimator != null && hasAttackTriggerParameter)
+        {
+            characterAnimator.ResetTrigger(AttackHash);
+            characterAnimator.SetTrigger(AttackHash);
+        }
+    }
+
+    private void CacheAnimatorParameters()
+    {
+        hasMoveSpeedParameter = false;
+        hasAttackTriggerParameter = false;
+        if (characterAnimator == null) return;
+
+        foreach (AnimatorControllerParameter parameter in characterAnimator.parameters)
+        {
+            if (parameter.nameHash == MoveSpeedHash && parameter.type == AnimatorControllerParameterType.Float)
+                hasMoveSpeedParameter = true;
+            else if (parameter.nameHash == AttackHash && parameter.type == AnimatorControllerParameterType.Trigger)
+                hasAttackTriggerParameter = true;
+        }
     }
 
     private void Awake()
     {
+        if (characterAnimator == null)
+            characterAnimator = GetComponentInChildren<Animator>();
+        CacheAnimatorParameters();
         CacheBasePose();
     }
 

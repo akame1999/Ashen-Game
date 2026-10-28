@@ -2,36 +2,34 @@
 
 Unity editor: `6000.6.7f1`; template: Universal 3D (URP).
 
-## Phase 1: prepare and validate
+## Phase 1 — Camera and movement
 1. Open `Assets/_Project/Scenes/Prototype_Scene.unity`.
-2. Wait for scripts to compile. Fix all red Console errors before testing.
+2. Wait for scripts to compile and resolve red Console errors.
 3. Select **Tools → Code Lyoko → Setup Phase 1 Prototype**.
-4. Select **Tools → Code Lyoko → Validate Phase 1 Prototype**. Read the full `[Phase 1 ...]` report in the Console; fix any errors.
-5. Press Play and click the Game view. Press F1 to show the debug overlay.
+4. Select **Tools → Code Lyoko → Validate Phase 1 Prototype**.
+5. Press Play, click Game view, use WASD/arrows, Shift to run, and F1 for diagnostics.
+6. Record results in `phase1_test_plan.md`.
 
-## Phase 1 controls and acceptance
-- WASD / arrows: camera-relative move
-- Shift: run
-- F1: toggle diagnostics
-- Movement should accelerate and decelerate, turn toward the direction of travel, and collide with boundary walls.
-- Camera should remain orthographic and follow the Player.
-- The debug overlay reports input, speed, grounded state, player position and camera assignment.
+## Phase 2 — Rigged character and animations
+1. Open the prototype scene and wait for scripts to compile.
+2. Select **Tools → Code Lyoko → Phase 2 → Build Rigged Character and Animations**.
+3. Unity creates an original stylized skinned character, bone hierarchy, Generic Avatar, prefab, materials, meshes, Animator Controller and keyframed Idle/Walk/Run/Attack clips under `Assets/_Project/Characters/VeyrWanderer/`.
+4. Select **Tools → Code Lyoko → Phase 2 → Validate Character Rig** and read the `[Phase 2 ...]` Console report.
+5. Press Play. WASD/arrows walk, Shift runs, J/left click attacks if combat setup is present.
+6. Record results in `phase2_test_plan.md`.
 
-Use `phase1_test_plan.md` to run and record the manual checks. Do not mark Phase 1 complete until those checks pass on the target machine.
+The generated model is an original stylized prototype, not a high-detail production hero. Its body/armor sections use SkinnedMeshRenderers weighted to a Generic bone hierarchy, with authored keyframed animation clips. It is not yet a Humanoid Avatar for broad retargeting. Replace or refine it later with a high-detail model and properly licensed animation assets if required.
 
-## Combat test (later milestone)
-1. Select **Tools → Code Lyoko → Setup Combat Prototype**.
-2. Press Play and click the Game view.
-3. J or left click: attack; Space: dodge; WASD/arrows: move; Shift: run.
-
-The combat scene is still a prototype using simple range checks and placeholder visuals. It is separate from Phase 1's movement acceptance criteria.
+## Combat prototype
+Select **Tools → Code Lyoko → Setup Combat Prototype** to add the training enemy, health, melee, dodge and HUD. Controls: WASD/arrows move; Shift run; J/left click attack; Space dodge.
 
 ## Troubleshooting
-- If any material appears magenta, stop Play mode and select **Tools → Code Lyoko → Repair Prototype Materials**.
-- If Unity reports Missing (Mono Script), stop Play mode, wait for compilation, then inspect the Player hierarchy and Console before running the setup tool again.
-- If Package Manager reports a certificate error, do not disable SSL verification; investigate the approved proxy/CA configuration separately.
+- If materials appear magenta, stop Play mode and select **Tools → Code Lyoko → Repair Prototype Materials**.
+- If scene-edit menus are disabled, stop Play mode and wait for script compilation.
+- If validation finds missing scripts/assets, fix the Console report before retrying the builder.
+- Do not disable SSL verification to work around Package Manager certificate issues.
 
 ## Repository hygiene
 Commit `Assets/`, generated `.meta` files, `Packages/manifest.json`, `Packages/packages-lock.json`, and `ProjectSettings/`. Do not commit Unity's `Library/`, `Temp/`, `Logs/`, build outputs or local IDE files.
 
-The title is a working title matching an existing franchise. Choose an original title and keep game world, characters, branding and assets original before public/commercial release.
+The project title is a working title matching an existing franchise. Choose an original title and keep the game world, characters, branding and assets original before public/commercial release.

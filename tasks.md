@@ -22,12 +22,15 @@ Use [ ] for not started, [~] for implemented/in progress, [x] only after the acc
 - [ ] Run `Tools → Code Lyoko → Validate Phase 1 Prototype` and fix every failure.
 **Acceptance:** predictable movement, useful camera framing, no escape through blockers; all manual tests pass. Do not mark complete before local Unity verification.
 
-## M2 — Character foundation
-- [~] Primitive mannequin and procedural placeholder gait.
-- [ ] Import one original or properly licensed rigged character.
-- [ ] Verify scale, materials, rig, and animation controller.
-- [ ] Add authored idle, walk/run, turn and stop clips.
-**Acceptance:** character locomotion plays cleanly and is readable in-game.
+## M2 — Rigged character and animation
+- [~] Add Phase 2 editor generator for an original skinned character, bone hierarchy and Generic Avatar.
+- [~] Generate Animator Controller and keyframed Idle/Walk/Run/Attack clips on demand.
+- [~] Bridge movement/combat input to Animator parameters with root motion disabled.
+- [~] Add structural validation and `phase2_test_plan.md`.
+- [ ] Run build command locally and verify prefab, mesh bindings, Avatar and controller.
+- [ ] Playtest all clips, floor contact, collision and hit feedback.
+- [ ] Consider an imported Humanoid character and retargeted clips after the Generic rig works.
+**Acceptance:** skinned model animates idle/walk/run/attack without missing references or new Console errors; local tests pass.
 
 ## M3 — Combat prototype
 - [~] Prototype health, melee, dodge, telegraphed enemy, HUD and placeholder feedback.
