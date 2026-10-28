@@ -16,6 +16,209 @@ public static class PrototypeSceneSetup
     private const string MaterialsFolder = Root + "/Materials";
     private const string ScenePath = ScenesFolder + "/Prototype_Scene.unity";
 
+    [MenuItem("Tools/Code Lyoko/Setup Phase 1 Prototype", true)]
+    private static bool ValidateSetupPhaseOnePrototype()
+    {
+        return CanRunEditorSceneOperation();
+    }
+
+    [MenuItem("Tools/Code Lyoko/Setup Phase 1 Prototype")]
+    public static void SetupPhaseOnePrototype()
+    {
+        if (!CanRunEditorSceneOperation())
+            return;
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+            player = GameObject.Find("Player");
+
+        if (player == null)
+        {
+            EditorUtility.DisplayDialog("Player Not Found",
+                "Open Assets/_Project/Scenes/Prototype_Scene.unity first, then run this command.", "OK");
+            return;
+        }
+
+        CharacterController controller = player.GetComponent<CharacterController>();
+        if (controller == null)
+            controller = player.AddComponent<CharacterController>();
+        controller.height = 2f;
+        controller.radius = 0.45f;
+        controller.center = Vector3.zero;
+        controller.stepOffset = 0.3f;
+        controller.slopeLimit = 45f;
+
+        IsometricPlayerController movement = player.GetComponent<IsometricPlayerController>();
+        if (movement == null)
+            movement = player.AddComponent<IsometricPlayerController>();
+        if (Camera.main != null)
+            movement.MovementCamera = Camera.main.transform;
+
+        if (player.GetComponent<PrototypeDebugOverlay>() == null)
+            player.AddComponent<PrototypeDebugOverlay>();
+
+        Camera camera = Camera.main;
+        if (camera == null)
+        {
+            GameObject cameraObject = GameObject.Find("IsometricCamera");
+            if (cameraObject != null)
+                camera = cameraObject.GetComponent<Camera>();
+        }
+
+        if (camera != null)
+        {
+            camera.orthographic = true;
+            IsometricCameraFollow follow = camera.GetComponent<IsometricCameraFollow>();
+            if (follow == null)
+                follow = camera.gameObject.AddComponent<IsometricCameraFollow>();
+            follow.Target = player.transform;
+        }
+
+        Scene scene = SceneManager.GetActiveScene();
+        EditorSceneManager.MarkSceneDirty(scene);
+        if (!string.IsNullOrEmpty(scene.path))
+            EditorSceneManager.SaveScene(scene);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        Debug.Log("Phase 1 setup applied. Use Tools > Code Lyoko > Validate Phase 1 Prototype to check scene references.");
+        EditorUtility.DisplayDialog(
+            "Phase 1 Setup Complete",
+            "Movement, CharacterController tuning, camera follow and F1 diagnostics are configured.\n\n" +
+            "Press Play, click Game view, use WASD/arrows, hold Shift to run, and press F1 to show movement diagnostics.",
+            "OK");
+    }
+
+    [MenuItem("Tools/Code Lyoko/Validate Phase 1 Prototype", true)]
+    private static bool ValidateValidatePhaseOnePrototype()
+    {
+        return !EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling;
+    }
+
+    [MenuItem("Tools/Code Lyoko/Validate Phase 1 Prototype")]
+    public static void ValidatePhaseOnePrototype()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling)
+            return;
+
+        List<string> passed = new List<string>();
+        List<string> failed = new List<string>();
+
+        Scene scene = SceneManager.GetActiveScene();
+        if (scene.IsValid() && !string.IsNullOrEmpty(scene.path))
+            passed.Add("Active scene is saved: " + scene.path);
+        else
+            failed.Add("Active scene is not saved.");
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null) player = GameObject.Find("Player");
+        if (player == null)
+        {
+            failed.Add("Player object not found.");
+        }
+        else
+        {
+            passed.Add("Player object found.");
+            if (player.GetComponent<CharacterController>() != null)
+                passed.Add("CharacterController found.");
+            else
+                failed.Add("Player is missing CharacterController.");
+
+            if (player.GetComponent<IsometricPlayerController>() != null)
+                passed.Add("IsometricPlayerController found.");
+            else
+                failed.Add("Player is missing IsometricPlayerController.");
+
+            if (player.GetComponent<PlayerLocomotionAnimator>() != null)
+                passed.Add("PlayerLocomotionAnimator found.");
+            else
+                failed.Add("Player is missing PlayerLocomotionAnimator.");
+
+            if (player.GetComponent<PrototypeDebugOverlay>() != null)
+                passed.Add("F1 debug overlay attached.");
+            else
+                failed.Add("Player is missing PrototypeDebugOverlay. Run Setup Phase 1 Prototype.");
+
+            int missingScripts = CountMissingScripts(player);
+            if (missingScripts == 0)
+                passed.Add("No missing scripts on Player hierarchy.");
+            else
+                failed.Add("Player hierarchy contains " + missingScripts + " missing script(s).");
+        }
+
+        GameObject floor = GameObject.Find("TestFloor");
+        if (floor != null && floor.GetComponent<Collider>() != null)
+            passed.Add("Test floor and collider found.");
+        else
+            failed.Add("TestFloor or its collider is missing.");
+
+        foreach (string wallName in new[] { "Wall_North", "Wall_South", "Wall_East", "Wall_West" })
+        {
+            GameObject wall = GameObject.Find(wallName);
+            if (wall != null && wall.GetComponent<Collider>() != null)
+                passed.Add(wallName + " collider found.");
+            else
+                failed.Add(wallName + " or its collider is missing.");
+        }
+
+        Camera camera = Camera.main;
+        if (camera == null)
+        {
+            failed.Add("No MainCamera is tagged.");
+        }
+        else
+        {
+            if (camera.orthographic)
+                passed.Add("Camera is orthographic.");
+            else
+                failed.Add("Camera is not orthographic.");
+
+            IsometricCameraFollow follow = camera.GetComponent<IsometricCameraFollow>();
+            if (follow != null && player != null && follow.Target == player.transform)
+                passed.Add("Camera follow target is assigned to Player.");
+            else
+                failed.Add("Camera follow component/target is missing or incorrect.");
+        }
+
+        int sceneMissingScripts = CountMissingScripts(scene);
+        if (sceneMissingScripts == 0)
+            passed.Add("No missing scripts in the active scene.");
+        else
+            failed.Add("Active scene contains " + sceneMissingScripts + " missing script(s).");
+
+        foreach (string message in passed)
+            Debug.Log("[Phase 1 PASS] " + message);
+        foreach (string message in failed)
+            Debug.LogError("[Phase 1 CHECK] " + message);
+
+        string report = "Checks passed: " + passed.Count + "\nChecks needing attention: " + failed.Count +
+                        "\n\nFull report is in the Console.\n\n" +
+                        (failed.Count == 0
+                            ? "Scene structure looks ready for manual playtesting. This does not prove gameplay behavior."
+                            : "Run Setup Phase 1 Prototype, fix the listed issues, then validate again.");
+        EditorUtility.DisplayDialog("Phase 1 Validation", report, "OK");
+    }
+
+    private static int CountMissingScripts(GameObject root)
+    {
+        int missing = 0;
+        foreach (Component component in root.GetComponents<Component>())
+            if (component == null) missing++;
+
+        foreach (Transform child in root.transform)
+            missing += CountMissingScripts(child.gameObject);
+
+        return missing;
+    }
+
+    private static int CountMissingScripts(Scene scene)
+    {
+        int missing = 0;
+        foreach (GameObject root in scene.GetRootGameObjects())
+            missing += CountMissingScripts(root);
+        return missing;
+    }
+
     [MenuItem("Tools/Code Lyoko/Create Prototype Scene", true)]
     private static bool ValidateCreatePrototypeScene()
     {
@@ -532,6 +735,9 @@ public static class PrototypeSceneSetup
         if (player.GetComponent<CombatHitFeedback>() == null)
             player.AddComponent<CombatHitFeedback>();
 
+        if (player.GetComponent<PrototypeDebugOverlay>() == null)
+            player.AddComponent<PrototypeDebugOverlay>();
+
         PlayerMeleeCombat combat = player.GetComponent<PlayerMeleeCombat>();
         if (combat == null)
             combat = player.AddComponent<PlayerMeleeCombat>();
@@ -631,6 +837,7 @@ public static class PrototypeSceneSetup
 
         BuildHumanoidVisual(player, bodyMaterial, armorMaterial, skinMaterial, detailMaterial);
         player.AddComponent<IsometricPlayerController>();
+        player.AddComponent<PrototypeDebugOverlay>();
         return player;
     }
 

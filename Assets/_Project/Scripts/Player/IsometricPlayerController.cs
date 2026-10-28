@@ -5,14 +5,18 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Camera-relative movement for the isometric prototype.
-/// Movement and collision stay on the CharacterController root; visuals animate separately.
+/// CharacterController owns collision; visual animation is driven by PlayerLocomotionAnimator.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public sealed class IsometricPlayerController : MonoBehaviour
 {
-    [Header("Movement")]
+    [Header("Movement speeds")]
     [SerializeField, Min(0.1f)] private float walkSpeed = 3f;
     [SerializeField, Min(0.1f)] private float runSpeed = 5f;
+
+    [Header("Movement response")]
+    [SerializeField, Min(0.1f)] private float acceleration = 18f;
+    [SerializeField, Min(0.1f)] private float deceleration = 24f;
     [SerializeField, Min(1f)] private float turnSpeedDegrees = 720f;
     [SerializeField] private float gravity = -25f;
 
@@ -22,6 +26,21 @@ public sealed class IsometricPlayerController : MonoBehaviour
 
     private CharacterController characterController;
     private float verticalVelocity;
+    private Vector3 horizontalVelocity;
+    private Vector2 latestInput;
+    private bool latestRunInput;
+
+    public Transform MovementCamera
+    {
+        get => movementCamera;
+        set => movementCamera = value;
+    }
+
+    public Vector2 CurrentInput => latestInput;
+    public Vector3 HorizontalVelocity => horizontalVelocity;
+    public float CurrentHorizontalSpeed => new Vector3(horizontalVelocity.x, 0f, horizontalVelocity.z).magnitude;
+    public bool IsGrounded => characterController != null && characterController.isGrounded;
+    public bool IsRunning => latestRunInput && CurrentHorizontalSpeed > walkSpeed * 0.9f;
 
     private void Awake()
     {
@@ -37,12 +56,12 @@ public sealed class IsometricPlayerController : MonoBehaviour
     private void Update()
     {
         Vector2 input = ReadMovementInput();
-        Vector3 moveDirection = BuildCameraRelativeDirection(input);
-        bool hasMovementInput = input.sqrMagnitude > 0.001f && moveDirection.sqrMagnitude > 0.001f;
-        bool isRunning = hasMovementInput && ReadRunInput();
-        float currentSpeed = isRunning ? runSpeed : walkSpeed;
+        latestInput = input;
+        bool hasInput = input.sqrMagnitude > 0.001f;
+        latestRunInput = hasInput && ReadRunInput();
 
-        if (hasMovementInput)
+        Vector3 moveDirection = BuildCameraRelativeDirection(input);
+        if (hasInput && moveDirection.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
             transform.rotation = Quaternion.RotateTowards(
@@ -51,17 +70,37 @@ public sealed class IsometricPlayerController : MonoBehaviour
                 turnSpeedDegrees * Time.deltaTime);
         }
 
+        float targetSpeed = latestRunInput ? runSpeed : walkSpeed;
+        Vector3 targetHorizontalVelocity = hasInput ? moveDirection * targetSpeed : Vector3.zero;
+        float response = hasInput ? acceleration : deceleration;
+        horizontalVelocity = Vector3.MoveTowards(
+            horizontalVelocity,
+            targetHorizontalVelocity,
+            response * Time.deltaTime);
+
         if (characterController.isGrounded && verticalVelocity < 0f)
             verticalVelocity = -2f;
 
         verticalVelocity += gravity * Time.deltaTime;
 
-        Vector3 velocity = moveDirection * currentSpeed;
+        Vector3 velocity = horizontalVelocity;
         velocity.y = verticalVelocity;
-        characterController.Move(velocity * Time.deltaTime);
+        CollisionFlags collisionFlags = characterController.Move(velocity * Time.deltaTime);
+
+        // Do not keep pushing into a wall when the controller has hit a horizontal obstacle.
+        if ((collisionFlags & CollisionFlags.Sides) != 0)
+        {
+            Vector3 actualHorizontal = characterController.velocity;
+            actualHorizontal.y = 0f;
+            if (actualHorizontal.sqrMagnitude < 0.0001f)
+                horizontalVelocity = Vector3.zero;
+        }
 
         if (locomotionAnimator != null)
-            locomotionAnimator.SetMovementState(hasMovementInput, isRunning);
+        {
+            bool visualIsMoving = CurrentHorizontalSpeed > 0.12f;
+            locomotionAnimator.SetMovementState(visualIsMoving, IsRunning);
+        }
     }
 
     private Vector3 BuildCameraRelativeDirection(Vector2 input)

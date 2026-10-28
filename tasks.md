@@ -1,35 +1,42 @@
 # TASKS AND MILESTONES
 
-Use [ ] for not started, [~] for in progress, [x] for verified complete. Do not mark tasks complete until tested.
+Use [ ] for not started, [~] for implemented/in progress, [x] only after the acceptance criteria have been tested. Code being on GitHub does not mean Unity runtime behavior is verified.
 
 ## M0 — Repository baseline
-- [ ] Confirm Unity version and add README/setup instructions.
-- [ ] Configure Unity .gitignore and Git LFS policy if needed.
-- [ ] Confirm documentation and no secrets/build outputs.
-**Acceptance:** clean clone opens in Unity.
+- [~] Unity URP project opened locally (editor: `6000.6.7f1`).
+- [~] Documentation, scripts and core Unity folders present in GitHub.
+- [ ] Fresh clone opens without missing files/packages or compile errors.
+**Acceptance:** clean clone opens in Unity with no missing script references.
 
-## M1 — Camera and movement
-- [ ] Create greybox scene and floor/walls.
-- [ ] Implement camera follow and isometric framing.
-- [ ] Implement camera-relative movement and collision.
-- [ ] Test corners, walls, slopes and camera bounds.
-**Acceptance:** predictable movement without wall clipping.
+## M1 — Camera and movement (Phase 1 implementation delivered; manual tests pending)
+- [~] Greybox scene with floor, walls and player.
+- [~] Orthographic isometric follow camera.
+- [~] Camera-relative WASD/arrow movement and turning.
+- [~] Acceleration and deceleration tuning added.
+- [~] CharacterController collision and boundary wall colliders.
+- [~] F1 movement diagnostics overlay.
+- [~] Editor setup and validation commands added.
+- [ ] Verify cardinal and diagonal movement, walk/run transition, release/deceleration.
+- [ ] Test all four walls and corners for collision/leak-through.
+- [ ] Verify camera follow, framing and no unexpected wall clipping.
+- [ ] Run `Tools → Code Lyoko → Validate Phase 1 Prototype` and fix every failure.
+**Acceptance:** predictable movement, useful camera framing, no escape through blockers; all manual tests pass. Do not mark complete before local Unity verification.
 
-## M2 — Character
-- [ ] Import one licensed character.
-- [ ] Verify scale, materials, rig and animation controller.
-- [ ] Add idle, locomotion and turning.
-**Acceptance:** animation follows movement without broken references.
+## M2 — Character foundation
+- [~] Primitive mannequin and procedural placeholder gait.
+- [ ] Import one original or properly licensed rigged character.
+- [ ] Verify scale, materials, rig, and animation controller.
+- [ ] Add authored idle, walk/run, turn and stop clips.
+**Acceptance:** character locomotion plays cleanly and is readable in-game.
 
-## M3 — Combat
-- [ ] Add health and stamina.
-- [ ] Add one attack, dodge and hit reaction.
-- [ ] Add one enemy with telegraphed attack.
-- [ ] Test damage timing and defeat/reset.
-**Acceptance:** repeatable fair fight.
+## M3 — Combat prototype
+- [~] Prototype health, melee, dodge, telegraphed enemy, HUD and placeholder feedback.
+- [ ] Test damage range/facing, cooldown, dodge invulnerability, repeat hits and defeat/reset.
+- [ ] Tune stamina, attack timing, enemy recovery and hit feedback.
+**Acceptance:** repeatable fair fight; no unintended repeated hit from one attack.
 
 ## M4 — Dungeon generation
-- [ ] Create 5–8 room greyboxes and connectors.
+- [ ] Create 5–8 greybox room prefabs and connectors.
 - [ ] Generate connected graph from seed.
 - [ ] Validate entrance-to-exit path.
 - [ ] Place prefabs and verify no connector mismatch.

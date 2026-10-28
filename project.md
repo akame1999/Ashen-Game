@@ -6,7 +6,7 @@
 Create an original 3D dark-fantasy, single-player action RPG for PC with an elevated isometric camera, deliberate stamina-aware combat, exploration, meaningful quests, and replayable procedural dungeons. Take broad inspiration from challenging action RPGs, but build original characters, world, art, and mechanics.
 
 ## Target and tools
-- Engine: Unity 6 LTS (or another supported LTS version; pin the chosen version in the repo).
+- Engine: Unity 6.6 Update, editor version `6000.6.7f1` currently in use.
 - Rendering: Universal Render Pipeline (URP).
 - Code: C#.
 - Art: Blender; AI-assisted concept and 3D tools where licensing/export permits.
@@ -39,35 +39,35 @@ AI roles are suggestions, not guarantees. No AI should claim a feature is tested
 ## Milestones and task ownership
 
 ### Phase 0 — Repository and project baseline
-**Owner:** Human; ChatGPT can guide.  
-- [ ] Confirm project title is a working title and establish original IP direction.
-- [ ] Keep the 13 Markdown files at repository root.
-- [ ] Create Unity URP project using the chosen Unity version.
-- [ ] Add Unity `.gitignore`; track `Assets/`, `Packages/manifest.json`, `Packages/packages-lock.json`, and `ProjectSettings/`.
-- [ ] Add README with setup/version notes.
+**Owner:** Human; ChatGPT can guide.
+- [~] Unity URP project opened locally and docs/scripts are in GitHub.
+- [ ] Fresh-clone validation and package/network error cleanup.
 **Done when:** a clean clone opens in Unity without missing packages or committed cache/build files.
 
 ### Phase 1 — Camera and movement prototype
-**Owner:** Human integrates/tests; ChatGPT drafts C#; Claude reviews.  
-- [ ] Create a greybox test scene with floor, walls, and a capsule player.
-- [ ] Configure an orthographic or carefully tuned perspective isometric camera.
-- [ ] Implement camera-relative movement, acceleration/deceleration, and collision.
-- [ ] Add camera follow and bounds; avoid clipping through walls.
-- [ ] Choose one input approach and document it.
-**Done when:** movement feels predictable, camera stays readable, and player cannot walk through blockers.
+**Owner:** Human integrates/tests; ChatGPT drafts C#; Claude reviews.
+**Implementation delivered; local acceptance tests still pending.** See `phase1_test_plan.md`.
+- [x] Greybox test scene with floor, perimeter walls and player.
+- [x] Orthographic isometric follow camera.
+- [x] Camera-relative WASD/arrow movement and rotation toward travel direction.
+- [x] Acceleration/deceleration and separate walk/run speeds.
+- [x] CharacterController collision with boundary colliders.
+- [x] F1 diagnostics overlay for input, speed, grounded state, position and camera follow.
+- [x] One-click setup and validation editor commands.
+- [ ] Test behavior at corners, walls, different frame rates, and with keyboard focus in Game view.
+- [ ] Run automated structural validation and complete manual test matrix.
+**Done when:** movement is predictable, camera stays readable, and player cannot walk through blockers. Only mark accepted after local playtest passes.
 
 ### Phase 2 — Character foundation
-- [ ] Replace capsule only after movement is stable.
+- [~] Primitive mannequin and procedural placeholder gait exists.
 - [ ] Import one legally usable character model; verify scale, materials, rig and animation.
-- [ ] Add idle, walk/run, turn, and stop animations.
-- [ ] Ensure animation state matches movement without foot sliding severe enough to distract.
+- [ ] Add authored idle, walk/run, turn, and stop animations.
 **Done when:** character runs in the test scene on the intended machine.
 
 ### Phase 3 — Combat prototype
-- [ ] Define health, stamina, hit detection, damage, hit reaction, dodge and recovery.
-- [ ] Add one test enemy with telegraphed attacks and a defeat state.
-- [ ] Tune lock-on/targeting only if the design needs it.
-- [ ] Test hit timing, invulnerability windows, and stamina costs.
+- [~] Prototype health, melee, dodge, telegraphed enemy, HUD and placeholder hit feedback are implemented.
+- [ ] Test hit timing, ranges, invulnerability windows and defeat/reset.
+- [ ] Tune balance and stamina before productionizing.
 **Done when:** player can reliably fight and defeat one enemy; no repeated hits from a single attack unless intended.
 
 ### Phase 4 — Modular dungeon and generation
@@ -107,7 +107,8 @@ AI roles are suggestions, not guarantees. No AI should claim a feature is tested
 5. Integrate in Unity, compile, playtest and fix issues.
 6. Update docs/task status and commit a small verified change.
 
-## First actions
-1. Verify repository contains these docs and no accidental secrets.
-2. Create/open the Unity URP project and commit the clean baseline.
-3. Build only the camera + movement prototype. Do not begin combat or mass asset generation until it passes tests.
+## Next steps
+1. Pull latest `main` into local project and wait for script compilation.
+2. Open `Prototype_Scene.unity`; run `Setup Phase 1 Prototype`.
+3. Run `Validate Phase 1 Prototype`; review Console.
+4. Press Play and complete `phase1_test_plan.md` before expanding the world.

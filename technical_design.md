@@ -1,7 +1,7 @@
 # TECHNICAL DESIGN
 
 ## Target stack
-Unity 6 LTS (pin version), URP, C#, Blender, Git/GitHub. PC-first, single-player, offline-first. Keep dependencies minimal and record package decisions.
+Unity 6.6 Update (`6000.6.7f1` currently used), URP, C#, Blender, Git/GitHub. PC-first, single-player, offline-first. Keep dependencies minimal and record package decisions.
 
 ## Suggested Unity layout
 ```
@@ -12,8 +12,15 @@ Assets/_Project/
   Scenes/{Bootstrap,MainMenu,Prologue}
   Scripts/{Core,Player,Camera,Combat,Enemies,Interaction,Inventory,Quests,Dungeons,Dialogue,SaveSystem,UI}
   ScriptableObjects/{Items,Enemies,Weapons,Quests,DungeonRooms,DungeonEncounters}
-Documentation/
 ```
+
+## Phase 1 architecture
+- `IsometricPlayerController`: camera-relative input, facing, acceleration/deceleration, walk/run, gravity and CharacterController collision.
+- `IsometricCameraFollow`: orthographic follow camera and fixed elevated framing.
+- `PlayerLocomotionAnimator`: visual-only placeholder gait; must not own gameplay movement.
+- `PrototypeDebugOverlay`: F1 runtime diagnostics for input, horizontal speed, grounded state, position and camera follow.
+- `PrototypeSceneSetup`: editor menus to create/repair/setup/validate the greybox and add combat test objects.
+- `phase1_test_plan.md`: repeatable manual acceptance test matrix.
 
 ## Architecture principles
 - One component, one clear responsibility.
@@ -43,4 +50,4 @@ Persist only what the vertical slice needs: checkpoint, player state, quest choi
 Reproduce → capture full error → identify responsible component → make one focused change → compile → test original case and edge cases → commit when verified.
 
 ## Performance and safety
-Measure before optimizing. Use sensible texture sizes, modular assets and simple lighting initially. Never commit credentials. Audit licenses for models, textures, fonts, sounds and plugins. Do not extract copyrighted game assets without permission.
+Measure before optimizing. Use sensible texture sizes, modular assets and simple lighting initially. Never commit credentials. Audit licenses for models, textures, fonts, sounds and plugins. Do not commit Unity's Library/Temp/Logs or local IDE files. Do not extract copyrighted game assets without permission.
