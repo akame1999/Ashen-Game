@@ -31,11 +31,16 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
     private float dodgeCooldownRemaining;
     private float dodgeRemaining;
     private Vector3 dodgeDirection;
+    private PlayerLocomotionAnimator locomotionAnimator;
+    private TrailRenderer dodgeTrail;
+    private Material dodgeTrailMaterial;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
         health = GetComponent<CombatHealth>();
+        locomotionAnimator = GetComponent<PlayerLocomotionAnimator>();
+        SetupDodgeTrail();
     }
 
     private void Update()
@@ -48,6 +53,8 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
             float delta = Mathf.Min(Time.deltaTime, dodgeRemaining);
             characterController.Move(dodgeDirection * (dodgeDistance / Mathf.Max(0.05f, dodgeDuration)) * delta);
             dodgeRemaining -= delta;
+            if (dodgeRemaining <= 0f && dodgeTrail != null)
+                dodgeTrail.emitting = false;
         }
 
         if (ReadDodgePressed())
@@ -63,6 +70,8 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
             return;
 
         attackCooldownRemaining = attackCooldown;
+        if (locomotionAnimator != null)
+            locomotionAnimator.TriggerAttack();
         ShowSlashArc();
 
         Vector3 origin = transform.position + Vector3.up * 0.85f + transform.forward * 0.7f;
@@ -118,6 +127,84 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
         dodgeRemaining = dodgeDuration;
         dodgeCooldownRemaining = dodgeCooldown;
         health.GrantInvulnerability(dodgeInvulnerability);
+
+        if (dodgeTrail != null)
+        {
+            dodgeTrail.Clear();
+            dodgeTrail.emitting = true;
+        }
+    }
+
+    private void SetupDodgeTrail()
+    {
+        Transform visualRoot = transform.Find("PlayerVisualRoot");
+        if (visualRoot == null && transform.childCount > 0)
+            visualRoot = transform.GetChild(0);
+
+        if (visualRoot == null)
+            return;
+
+        dodgeTrail = visualRoot.GetComponent<TrailRenderer>();
+        if (dodgeTrail == null)
+            dodgeTrail = visualRoot.gameObject.AddComponent<TrailRenderer>();
+
+        dodgeTrail.time = 0.22f;
+        dodgeTrail.minVertexDistance = 0.08f;
+        dodgeTrail.startWidth = 0.32f;
+        dodgeTrail.endWidth = 0f;
+        dodgeTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        dodgeTrail.receiveShadows = false;
+        dodgeTrail.alignment = LineAlignment.View;
+        dodgeTrail.textureMode = LineTextureMode.Stretch;
+        dodgeTrail.autodestruct = false;
+
+        AnimationCurve width = new AnimationCurve(
+            new Keyframe(0f, 1f),
+            new Keyframe(1f, 0f));
+        dodgeTrail.widthCurve = width;
+
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(
+            new[]
+            {
+                new GradientColorKey(new Color(0.25f, 0.9f, 1f), 0f),
+                new GradientColorKey(new Color(0.1f, 0.45f, 1f), 1f)
+            },
+            new[]
+            {
+                new GradientAlphaKey(0.8f, 0f),
+                new GradientAlphaKey(0f, 1f)
+            });
+        dodgeTrail.colorGradient = gradient;
+
+        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (shader == null)
+            shader = Shader.Find("Sprites/Default");
+
+        if (shader != null)
+        {
+            if (dodgeTrailMaterial == null)
+            {
+                dodgeTrailMaterial = new Material(shader);
+                dodgeTrailMaterial.name = "Runtime_DodgeTrail_Material";
+                dodgeTrailMaterial.hideFlags = HideFlags.HideAndDontSave;
+            }
+            dodgeTrail.material = dodgeTrailMaterial;
+        }
+
+        dodgeTrail.emitting = false;
+        dodgeTrail.enabled = true;
+    }
+
+    private void OnDestroy()
+    {
+        if (dodgeTrailMaterial != null)
+        {
+            if (Application.isPlaying)
+                Destroy(dodgeTrailMaterial);
+            else
+                DestroyImmediate(dodgeTrailMaterial);
+        }
     }
 
     private void ShowSlashArc()

@@ -19,7 +19,7 @@ Controls:
 - J or left mouse: melee attack
 - Space: dodge (brief invulnerability)
 
-The training enemy approaches, telegraphs attacks by flashing orange, strikes, and recovers. The temporary HUD displays player/enemy health.
+The training enemy approaches, telegraphs attacks by flashing orange, strikes, and recovers. The temporary HUD displays player/enemy health. Hit reactions squash and shake the visual model briefly; player attacks animate the right arm; dodges leave a short cyan afterimage trail.
 
 ## Current animation stage
 The temporary mannequin consists of primitive meshes. Procedural animation swings arms and legs with different walk/run stride and cadence, plus body bounce and torso lean. This validates the animation system but is not a finished character. Replace the primitives with an original, properly rigged model and licensed authored animation clips later.

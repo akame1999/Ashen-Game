@@ -529,6 +529,8 @@ public static class PrototypeSceneSetup
         CombatHealth playerHealth = player.GetComponent<CombatHealth>();
         if (playerHealth == null)
             playerHealth = player.AddComponent<CombatHealth>();
+        if (player.GetComponent<CombatHitFeedback>() == null)
+            player.AddComponent<CombatHitFeedback>();
 
         PlayerMeleeCombat combat = player.GetComponent<PlayerMeleeCombat>();
         if (combat == null)
@@ -575,6 +577,8 @@ public static class PrototypeSceneSetup
         CombatHealth enemyHealth = enemy.GetComponent<CombatHealth>();
         if (enemyHealth == null)
             enemyHealth = enemy.AddComponent<CombatHealth>();
+        if (enemy.GetComponent<CombatHitFeedback>() == null)
+            enemy.AddComponent<CombatHitFeedback>();
         TrainingEnemyAI enemyAI = enemy.GetComponent<TrainingEnemyAI>();
         if (enemyAI == null)
             enemyAI = enemy.AddComponent<TrainingEnemyAI>();

@@ -43,6 +43,9 @@ public sealed class PlayerLocomotionAnimator : MonoBehaviour
     private Quaternion leftLegBaseRotation;
     private Quaternion rightLegBaseRotation;
     private bool basePoseCached;
+    private float attackTimeRemaining;
+    [SerializeField, Min(0.05f)] private float attackAnimationDuration = 0.24f;
+    [SerializeField, Range(0f, 150f)] private float attackArmSwingDegrees = 112f;
 
     public void ConfigureRig(
         Transform root,
@@ -69,6 +72,11 @@ public sealed class PlayerLocomotionAnimator : MonoBehaviour
         isRunning = moving && running;
     }
 
+    public void TriggerAttack()
+    {
+        attackTimeRemaining = attackAnimationDuration;
+    }
+
     private void Awake()
     {
         CacheBasePose();
@@ -86,6 +94,14 @@ public sealed class PlayerLocomotionAnimator : MonoBehaviour
             gaitPhase += Time.deltaTime * cadence * Mathf.PI * 2f;
 
         float swingDegrees = isRunning ? runLegSwing : walkLegSwing;
+        float attackWeight = 0f;
+        if (attackTimeRemaining > 0f)
+        {
+            attackTimeRemaining = Mathf.Max(0f, attackTimeRemaining - Time.deltaTime);
+            float progress = 1f - attackTimeRemaining / Mathf.Max(0.05f, attackAnimationDuration);
+            attackWeight = Mathf.Sin(progress * Mathf.PI);
+        }
+        float attackArmSwing = -attackArmSwingDegrees * attackWeight;
         float swingRadians = Mathf.Sin(gaitPhase) * swingDegrees * Mathf.Deg2Rad * movementBlend;
         float oppositeSwingRadians = -swingRadians;
         float leanDegrees = isRunning ? runLean : walkLean;
@@ -121,9 +137,11 @@ public sealed class PlayerLocomotionAnimator : MonoBehaviour
             rightLeg.localRotation = rightLegBaseRotation * Quaternion.Euler(oppositeSwingRadians * Mathf.Rad2Deg, 0f, 0f);
 
         if (leftArm != null)
-            leftArm.localRotation = leftArmBaseRotation * Quaternion.Euler(oppositeSwingRadians * Mathf.Rad2Deg * 0.68f, 0f, -4f * movementBlend);
+            leftArm.localRotation = leftArmBaseRotation * Quaternion.Euler(
+                oppositeSwingRadians * Mathf.Rad2Deg * 0.68f + 16f * attackWeight, 0f, -4f * movementBlend);
         if (rightArm != null)
-            rightArm.localRotation = rightArmBaseRotation * Quaternion.Euler(swingRadians * Mathf.Rad2Deg * 0.68f, 0f, 4f * movementBlend);
+            rightArm.localRotation = rightArmBaseRotation * Quaternion.Euler(
+                swingRadians * Mathf.Rad2Deg * 0.68f + attackArmSwing, 0f, 4f * movementBlend);
     }
 
     private void CacheBasePose()

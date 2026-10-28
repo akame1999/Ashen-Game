@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -16,6 +17,7 @@ public sealed class CombatHealth : MonoBehaviour
     public float CurrentHealth => currentHealth;
     public bool IsDefeated => defeated;
     public bool IsInvulnerable => invulnerabilityRemaining > 0f;
+    public event Action<float> DamageTaken;
 
     private void Awake()
     {
@@ -36,6 +38,7 @@ public sealed class CombatHealth : MonoBehaviour
             return false;
 
         currentHealth = Mathf.Max(0f, currentHealth - amount);
+        DamageTaken?.Invoke(amount);
         if (currentHealth <= 0f)
         {
             defeated = true;
