@@ -1,20 +1,23 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Creates a disposable greybox scene for the first movement milestone.
-/// Menu: Tools > Code Lyoko > Create Prototype Scene.
+/// Builds the greybox movement scene and creates a replaceable locomotion Animator Blend Tree.
+/// Menus: Tools > Code Lyoko > Create Prototype Scene / Setup Player Locomotion Animations.
 /// </summary>
 public static class PrototypeSceneSetup
 {
     private const string Root = "Assets/_Project";
     private const string ScenesFolder = Root + "/Scenes";
     private const string MaterialsFolder = Root + "/Materials";
+    private const string AnimationsFolder = Root + "/Animations";
     private const string ScenePath = ScenesFolder + "/Prototype_Scene.unity";
+    private const string AnimatorControllerPath = AnimationsFolder + "/Player_Locomotion.controller";
 
     [MenuItem("Tools/Code Lyoko/Create Prototype Scene")]
     public static void CreatePrototypeScene()
@@ -22,6 +25,9 @@ public static class PrototypeSceneSetup
         EnsureFolder("Assets", "_Project");
         EnsureFolder(Root, "Scenes");
         EnsureFolder(Root, "Materials");
+        EnsureFolder(Root, "Animations");
+
+        AnimatorController locomotionController = CreateOrUpdateLocomotionAssets();
 
         Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -54,21 +60,7 @@ public static class PrototypeSceneSetup
         CreateWall("Wall_West", new Vector3(-halfExtent, wallHeight / 2f, 0f),
             new Vector3(wallThickness, wallHeight, halfExtent * 2f), wallMaterial);
 
-        GameObject player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        player.name = "Player";
-        player.tag = "Player";
-        player.transform.position = new Vector3(0f, 1f, 0f);
-        player.GetComponent<Renderer>().sharedMaterial = playerMaterial;
-        Object.DestroyImmediate(player.GetComponent<CapsuleCollider>());
-
-        CharacterController controller = player.AddComponent<CharacterController>();
-        controller.height = 2f;
-        controller.radius = 0.45f;
-        controller.center = Vector3.zero;
-        controller.stepOffset = 0.3f;
-        controller.slopeLimit = 45f;
-
-        player.AddComponent<IsometricPlayerController>();
+        GameObject player = CreatePlayer(playerMaterial, locomotionController);
 
         GameObject cameraObject = new GameObject("IsometricCamera");
         cameraObject.tag = "MainCamera";
@@ -113,12 +105,236 @@ public static class PrototypeSceneSetup
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("Prototype scene created: " + ScenePath +
-                  ". Press Play and move with WASD or the arrow keys.");
+                  ". Press Play; use WASD/arrows to walk and hold Shift to run.");
         EditorUtility.DisplayDialog(
             "Prototype Scene Created",
-            "Created a greybox arena with a player capsule, camera-follow, perimeter walls and lighting.\n\n" +
-            "Open the Game tab and press Play. Move with WASD or the arrow keys.",
+            "Created the greybox arena and configured a locomotion Blend Tree.\n\n" +
+            "Open the Game tab and press Play. WASD or arrow keys move; hold Shift to run.\n" +
+            "The capsule uses placeholder squash/bob clips that can later be replaced with character animations.",
             "OK");
+    }
+
+    [MenuItem("Tools/Code Lyoko/Setup Player Locomotion Animations")]
+    public static void SetupPlayerLocomotionAnimations()
+    {
+        EnsureFolder("Assets", "_Project");
+        EnsureFolder(Root, "Animations");
+
+        AnimatorController locomotionController = CreateOrUpdateLocomotionAssets();
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+            player = GameObject.Find("Player");
+
+        if (player == null)
+        {
+            EditorUtility.DisplayDialog(
+                "Player Not Found",
+                "Open Prototype_Scene.unity first, then run this command again.",
+                "OK");
+            return;
+        }
+
+        Transform visualTransform = player.transform.Find("PlayerVisual");
+        if (visualTransform == null)
+        {
+            Renderer oldRenderer = player.GetComponent<Renderer>();
+            Material existingMaterial = oldRenderer != null ? oldRenderer.sharedMaterial : null;
+
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            visual.name = "PlayerVisual";
+            visual.transform.SetParent(player.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.identity;
+            visual.transform.localScale = Vector3.one;
+
+            Renderer visualRenderer = visual.GetComponent<Renderer>();
+            if (existingMaterial != null)
+                visualRenderer.sharedMaterial = existingMaterial;
+
+            Collider visualCollider = visual.GetComponent<Collider>();
+            if (visualCollider != null)
+                Object.DestroyImmediate(visualCollider);
+
+            if (oldRenderer != null)
+                Object.DestroyImmediate(oldRenderer);
+            MeshFilter oldMeshFilter = player.GetComponent<MeshFilter>();
+            if (oldMeshFilter != null)
+                Object.DestroyImmediate(oldMeshFilter);
+
+            visualTransform = visual.transform;
+        }
+
+        Animator animator = visualTransform.GetComponent<Animator>();
+        if (animator == null)
+            animator = visualTransform.gameObject.AddComponent<Animator>();
+
+        animator.runtimeAnimatorController = locomotionController;
+        animator.applyRootMotion = false;
+        animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+
+        PlayerLocomotionAnimator locomotion = player.GetComponent<PlayerLocomotionAnimator>();
+        if (locomotion == null)
+            locomotion = player.AddComponent<PlayerLocomotionAnimator>();
+        locomotion.CharacterAnimator = animator;
+
+        IsometricPlayerController movement = player.GetComponent<IsometricPlayerController>();
+        if (movement == null)
+            movement = player.AddComponent<IsometricPlayerController>();
+
+        Scene scene = SceneManager.GetActiveScene();
+        EditorSceneManager.MarkSceneDirty(scene);
+        if (!string.IsNullOrEmpty(scene.path))
+            EditorSceneManager.SaveScene(scene);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        EditorUtility.DisplayDialog(
+            "Locomotion Animations Configured",
+            "The Player now has an Animator Blend Tree with Idle, Walk and Run placeholder clips.\n\n" +
+            "WASD/arrows = walk; hold Shift = run. These capsule animations are placeholders; replace the clips when importing a rigged character.",
+            "OK");
+    }
+
+    private static GameObject CreatePlayer(Material playerMaterial, AnimatorController locomotionController)
+    {
+        GameObject player = new GameObject("Player");
+        player.tag = "Player";
+        player.transform.position = new Vector3(0f, 1f, 0f);
+
+        GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        visual.name = "PlayerVisual";
+        visual.transform.SetParent(player.transform, false);
+        visual.transform.localPosition = Vector3.zero;
+        visual.transform.localRotation = Quaternion.identity;
+        visual.transform.localScale = Vector3.one;
+        visual.GetComponent<Renderer>().sharedMaterial = playerMaterial;
+        Collider visualCollider = visual.GetComponent<Collider>();
+        if (visualCollider != null)
+            Object.DestroyImmediate(visualCollider);
+
+        Animator animator = visual.AddComponent<Animator>();
+        animator.runtimeAnimatorController = locomotionController;
+        animator.applyRootMotion = false;
+        animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+
+        CharacterController controller = player.AddComponent<CharacterController>();
+        controller.height = 2f;
+        controller.radius = 0.45f;
+        controller.center = Vector3.zero;
+        controller.stepOffset = 0.3f;
+        controller.slopeLimit = 45f;
+
+        PlayerLocomotionAnimator locomotion = player.AddComponent<PlayerLocomotionAnimator>();
+        locomotion.CharacterAnimator = animator;
+        player.AddComponent<IsometricPlayerController>();
+        return player;
+    }
+
+    private static AnimatorController CreateOrUpdateLocomotionAssets()
+    {
+        AnimationClip idleClip = CreateOrUpdateClip(
+            AnimationsFolder + "/Player_Idle.anim", "Player_Idle", 1.6f, 0.012f, 1.008f);
+        AnimationClip walkClip = CreateOrUpdateClip(
+            AnimationsFolder + "/Player_Walk.anim", "Player_Walk", 0.52f, 0.045f, 0.98f);
+        AnimationClip runClip = CreateOrUpdateClip(
+            AnimationsFolder + "/Player_Run.anim", "Player_Run", 0.38f, 0.075f, 0.955f);
+
+        AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(AnimatorControllerPath);
+        if (controller == null)
+            controller = AnimatorController.CreateAnimatorControllerAtPath(AnimatorControllerPath);
+
+        bool hasMoveSpeed = false;
+        foreach (AnimatorControllerParameter parameter in controller.parameters)
+        {
+            if (parameter.name == "MoveSpeed" && parameter.type == AnimatorControllerParameterType.Float)
+            {
+                hasMoveSpeed = true;
+                break;
+            }
+        }
+        if (!hasMoveSpeed)
+            controller.AddParameter("MoveSpeed", AnimatorControllerParameterType.Float);
+
+        AnimatorStateMachine stateMachine = controller.layers[0].stateMachine;
+        AnimatorState locomotionState = null;
+        foreach (ChildAnimatorState childState in stateMachine.states)
+        {
+            if (childState.state.name == "Locomotion")
+            {
+                locomotionState = childState.state;
+                break;
+            }
+        }
+        if (locomotionState == null)
+            locomotionState = stateMachine.AddState("Locomotion");
+
+        BlendTree tree = locomotionState.motion as BlendTree;
+        if (tree == null)
+        {
+            tree = new BlendTree
+            {
+                name = "Locomotion Blend Tree",
+                blendType = BlendTreeType.Simple1D,
+                blendParameter = "MoveSpeed",
+                useAutomaticThresholds = false
+            };
+            AssetDatabase.AddObjectToAsset(tree, controller);
+        }
+
+        tree.blendType = BlendTreeType.Simple1D;
+        tree.blendParameter = "MoveSpeed";
+        tree.useAutomaticThresholds = false;
+        tree.children = new[]
+        {
+            new ChildMotion { motion = idleClip, threshold = 0f, timeScale = 1f },
+            new ChildMotion { motion = walkClip, threshold = 0.5f, timeScale = 1f },
+            new ChildMotion { motion = runClip, threshold = 1f, timeScale = 1f }
+        };
+        locomotionState.motion = tree;
+        EditorUtility.SetDirty(tree);
+        EditorUtility.SetDirty(controller);
+        AssetDatabase.SaveAssets();
+        return controller;
+    }
+
+    private static AnimationClip CreateOrUpdateClip(
+        string path, string clipName, float cycleSeconds, float bobHeight, float squashScale)
+    {
+        AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
+        if (clip == null)
+        {
+            clip = new AnimationClip { name = clipName, frameRate = 30f };
+            AssetDatabase.CreateAsset(clip, path);
+        }
+
+        clip.ClearCurves();
+        float mid = cycleSeconds * 0.5f;
+        float quarter = cycleSeconds * 0.25f;
+        float threeQuarter = cycleSeconds * 0.75f;
+
+        clip.SetCurve(string.Empty, typeof(Transform), "localPosition.y",
+            new AnimationCurve(
+                new Keyframe(0f, 0f),
+                new Keyframe(quarter, bobHeight),
+                new Keyframe(mid, 0f),
+                new Keyframe(threeQuarter, bobHeight * 0.2f),
+                new Keyframe(cycleSeconds, 0f)));
+
+        clip.SetCurve(string.Empty, typeof(Transform), "localScale.y",
+            new AnimationCurve(
+                new Keyframe(0f, 1f),
+                new Keyframe(quarter, squashScale),
+                new Keyframe(mid, 1f),
+                new Keyframe(threeQuarter, 0.992f),
+                new Keyframe(cycleSeconds, 1f)));
+
+        AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
+        settings.loopTime = true;
+        settings.loopBlend = false;
+        AnimationUtility.SetAnimationClipSettings(clip, settings);
+        clip.wrapMode = WrapMode.Loop;
+        EditorUtility.SetDirty(clip);
+        return clip;
     }
 
     private static void CreateWall(string objectName, Vector3 position, Vector3 scale, Material material)
@@ -158,6 +374,9 @@ public static class PrototypeSceneSetup
 
     private static void SetMaterialColor(Material material, Color color)
     {
+        if (material == null)
+            return;
+
         if (material.HasProperty("_BaseColor"))
             material.SetColor("_BaseColor", color);
         if (material.HasProperty("_Color"))
