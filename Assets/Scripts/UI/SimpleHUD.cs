@@ -11,11 +11,22 @@ namespace Ashen.UI
         public PlayerController2D player;
         public Transform respawnPoint;
         Texture2D _px;
+        bool _paused;
 
         void Awake() { _px = Texture2D.whiteTexture; }
 
+        void OnDisable() { SetPaused(false); }   // never leave the game frozen
+
+        void SetPaused(bool value)
+        {
+            _paused = value;
+            Time.timeScale = value ? 0f : 1f;
+        }
+
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.Escape)) SetPaused(!_paused);
+
             if (Input.GetKeyDown(KeyCode.F9)) SaveGame.Clear();   // wipe save; takes effect next Play
 
             if (player != null && player.Health.IsDead && Input.GetKeyDown(KeyCode.R))
@@ -33,11 +44,28 @@ namespace Ashen.UI
 
             DrawBoss();
 
+            if (_paused) DrawPause();
+
             if (player.Health.IsDead)
             {
                 var style = new GUIStyle(GUI.skin.label) { fontSize = 40, alignment = TextAnchor.MiddleCenter };
                 GUI.Label(new Rect(0, Screen.height / 2f - 40, Screen.width, 80), "YOU DIED  -  press R", style);
             }
+        }
+
+        void DrawPause()
+        {
+            GUI.color = new Color(0, 0, 0, 0.7f);
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _px);
+            GUI.color = Color.white;
+
+            var title = new GUIStyle(GUI.skin.label) { fontSize = 48, alignment = TextAnchor.MiddleCenter };
+            GUI.Label(new Rect(0, Screen.height * 0.25f, Screen.width, 80), "PAUSED", title);
+
+            var body = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.UpperCenter };
+            GUI.Label(new Rect(0, Screen.height * 0.25f + 90f, Screen.width, 200),
+                "Move: A / D     Jump: Space     Attack: J     Dash: Shift / K\n" +
+                "Respawn: R     Wipe save: F9\n\nEsc to resume", body);
         }
 
         void DrawBoss()

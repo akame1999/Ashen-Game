@@ -17,6 +17,7 @@ Souls-like combat (stamina, dodge i-frames, telegraphed enemy attacks) with metr
 | Dash (i-frames) | Left Shift or K |
 | Respawn | R |
 | Wipe save (checkpoint + boss) | F9 |
+| Pause / resume | Esc |
 
 ## Layout
 - `Assets/Scripts/Player` player controller (coyote time, jump buffer, dash, attack, stamina)
