@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace Ashen.EditorTools
 {
-    /// <summary>Imports PNGs under Resources/Sprites (characters, 128px frames at 72 px/unit, pivot at the feet) and Resources/Backgrounds (painted, 64 px/unit, bilinear) as sprites; Props are painted at 128 px/unit (bilinear); Environment ground/platform are painted 256px tiles at 128 px/unit with bilinear filtering.</summary>
+    /// <summary>Imports PNGs under Resources/Sprites (characters, 192x128 frames at 72 px/unit, pivot at the feet) and Resources/Backgrounds (painted, 64 px/unit, bilinear) as sprites; Props are painted at 128 px/unit (bilinear); Environment ground/platform are painted 256px tiles at 128 px/unit with bilinear filtering.</summary>
     public class SpriteImportProcessor : AssetPostprocessor
     {
-        public override uint GetVersion() => 3;   // bump to force Unity to reimport sprites after importer changes
+        public override uint GetVersion() => 4;   // bump to force Unity to reimport sprites after importer changes
 
         void OnPreprocessTexture()
         {
@@ -30,7 +30,8 @@ namespace Ashen.EditorTools
             if (character)
             {
                 s.spriteAlignment = (int)SpriteAlignment.Custom;
-                s.spritePivot = new Vector2(0.375f, 0f); // character centre is x=48 of 128, feet on the bottom row
+                s.spritePivot = new Vector2(80f / 192f, 0f); // frames are 192x128 (see Tools/import_character_art.py): torso anchor at x=80, feet on the bottom row
+                s.filterMode = FilterMode.Bilinear;       // painted character art
             }
             else if (props)
             {
