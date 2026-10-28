@@ -125,6 +125,10 @@ public static class PrototypeSceneSetup
             return;
         }
 
+        // Clear stale Missing (Mono Script) components left by earlier prototype iterations.
+        // In particular, this keeps a broken old animation component from lingering on the Player.
+        GameObjectUtility.RemoveMonoBehavioursWithMissingScript(player);
+
         EnsureFolder("Assets", "_Project");
         EnsureFolder(Root, "Materials");
 
