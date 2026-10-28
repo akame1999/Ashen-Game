@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Ashen.EditorTools
 {
-    /// <summary>Imports PNGs under Resources/Sprites (characters, 128px frames at 72 px/unit, pivot at the feet) and Resources/Backgrounds (32 px/unit) as crisp pixel-art sprites.</summary>
+    /// <summary>Imports PNGs under Resources/Sprites (characters, 128px frames at 72 px/unit, pivot at the feet) and Resources/Backgrounds (32 px/unit) as crisp pixel-art sprites; Environment ground/platform are painted 256px tiles at 128 px/unit with bilinear filtering.</summary>
     public class SpriteImportProcessor : AssetPostprocessor
     {
         void OnPreprocessTexture()
@@ -41,11 +41,13 @@ namespace Ashen.EditorTools
             {
                 string n = System.IO.Path.GetFileNameWithoutExtension(assetPath);
                 bool prop = n == "checkpoint";
+                bool painted = n == "ground" || n == "platform";   // 256px painted tiles, 128 px/unit, smooth filtering
+                if (painted) { ti.spritePixelsPerUnit = 128; ti.filterMode = FilterMode.Bilinear; }
                 s.spriteAlignment = (int)(prop ? SpriteAlignment.BottomCenter : SpriteAlignment.Center);
                 s.spriteMeshType = SpriteMeshType.FullRect;
                 // 9-slice borders (L,B,R,T in px): keep the mossy lip on top, tile everything else
-                if (n == "ground") ti.spriteBorder = new Vector4(0, 0, 0, 10);
-                else if (n == "platform") ti.spriteBorder = new Vector4(0, 6, 0, 10);
+                if (n == "ground") ti.spriteBorder = new Vector4(0, 0, 0, 40);
+                else if (n == "platform") ti.spriteBorder = new Vector4(0, 24, 0, 40);
                 ti.wrapMode = TextureWrapMode.Repeat;
             }
             else

@@ -26,7 +26,7 @@ Souls-like combat (stamina, dodge i-frames, telegraphed enemy attacks) with metr
 - `Assets/Scripts/UI` temporary HUD
 - `Assets/Scripts/Editor` one-click starter scene builder
 
-Art is generated pixel art in a dark-fantasy style (`Tools/generate_sprites.py` (128px characters, 72 px/unit), `Tools/generate_backgrounds.py`, `Tools/generate_props.py` (torches with flicker + glow, hanging chains, ruins, gravestones), `Tools/generate_environment.py` (mossy stone ground/platform tiles + checkpoint pillar, 32 px/unit, 9-sliced), shared grading in `Tools/stylize.py`: rim light, glowing eyes, dithered fog, atmospheric perspective); replace the PNGs under `Assets/Resources/` with real art any time.
+Art is generated pixel art in a dark-fantasy style (`Tools/generate_sprites.py` (128px characters, 72 px/unit), `Tools/generate_backgrounds.py`, `Tools/generate_props.py` (torches with flicker + glow, hanging chains, ruins, gravestones), `Tools/generate_environment_painted.py` (painterly lit stone ground/platform tiles, 256px at 128 px/unit, 9-sliced; needs numpy) and `Tools/generate_environment.py` (checkpoint pillar, pixel art), shared grading in `Tools/stylize.py`: rim light, glowing eyes, dithered fog, atmospheric perspective); replace the PNGs under `Assets/Resources/` with real art any time.
 
 ## Roadmap
 Boss fight (first boss, the Hollow Warden, done: enrage phase + health bar; more bosses/arena gates planned), skill tree/items, interconnected rooms with ability gates, full save/load (checkpoint + boss state persist via PlayerPrefs; touch a pillar to set respawn), parallax + 2D lighting, animation and audio.
