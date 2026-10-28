@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Camera-relative movement for the isometric prototype.
-/// A separate PlayerLocomotionAnimator drives the character's Animator Blend Tree.
+/// Movement and collision stay on the CharacterController root; visuals animate separately.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public sealed class IsometricPlayerController : MonoBehaviour
