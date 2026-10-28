@@ -23,7 +23,7 @@ Souls-like combat (stamina, dodge i-frames, telegraphed enemy attacks) with metr
 - `Assets/Scripts/Player` player controller (coyote time, jump buffer, dash, attack, stamina)
 - `Assets/Scripts/Combat` Health + shared melee hit check
 - `Assets/Scripts/Enemies` state-machine enemy (patrol, chase, wind-up, strike, recover) + `BossEncounter` (boss health bar, enrage phase at 50% HP)
-- `Assets/Scripts/Core` camera follow, parallax, sprite animator, checkpoints, save/load (PlayerPrefs), torch flicker, placeholder sprites
+- `Assets/Scripts/Core` camera follow (+ hit shake), parallax, sprite animator, checkpoints, save/load (PlayerPrefs), torch flicker, placeholder sprites
 - `Assets/Scripts/UI` temporary HUD
 - `Assets/Scripts/Editor` one-click starter scene builder
 

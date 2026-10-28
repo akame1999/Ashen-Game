@@ -1,4 +1,5 @@
 using System;
+using Ashen.Core;
 using UnityEngine;
 
 namespace Ashen.Combat
@@ -33,6 +34,7 @@ namespace Ashen.Combat
             var rb = GetComponent<Rigidbody2D>();
             if (rb != null) rb.linearVelocity = dir * knockback;
 
+            CameraFollow.Shake(team == 0 ? 0.25f : 0.1f, team == 0 ? 0.25f : 0.12f);   // player hits shake harder
             Damaged?.Invoke(dir);
             if (Current <= 0)
             {
