@@ -1,29 +1,25 @@
 # Code Lyoko — Unity Prototype
 
-This repository contains the game design documents and the first Unity movement prototype. The title is a working title; it refers to an existing franchise name, so select an original title before public/commercial release.
+Unity editor: `6000.6.7f1`; template: Universal 3D (URP).
 
-## Unity editor
-- Editor version: `6000.6.7f1`
-- Template: Universal 3D (URP)
-- First milestone: isometric camera + player movement in a collision-bounded greybox arena.
+## Start the prototype
+1. Open `Assets/_Project/Scenes/Prototype_Scene.unity`.
+2. Wait for scripts to compile.
+3. Run **Tools → Code Lyoko → Setup Combat Prototype**.
+4. Press Play and click the Game view.
 
-## Play and upgrade the prototype
-1. Open the project and wait for scripts to compile.
-2. Open `Assets/_Project/Scenes/Prototype_Scene.unity`.
-3. Select **Tools → Code Lyoko → Upgrade Player Locomotion Placeholder** to replace the old single capsule with a stylized primitive mannequin. Or select **Tools → Code Lyoko → Create Prototype Scene** to rebuild the greybox from scratch.
-4. Press Play and click the Game view. Use WASD or arrow keys to walk; hold Shift to run.
-5. Check that the camera follows the player and the perimeter walls block movement.
+## Controls
+- WASD / arrows: move
+- Shift: run
+- J or left mouse button: melee attack
+- Space: dodge (brief invulnerability)
 
-## Current animation stage
-The temporary mannequin consists of simple primitive meshes. The movement script animates arm and leg pivots in opposite phases, changes the stride and cadence for running, and adds visible torso lean and body bounce. This is a prototype to verify movement/animation state wiring, not a finished character asset or authored humanoid animation clip.
+## Combat prototype
+- Player health and dodge invulnerability
+- Short-range directional melee attack and temporary slash arc
+- Training enemy that approaches, visibly telegraphs its attack by flashing orange, hits, and recovers
+- Temporary on-screen health HUD
 
-When a licensed rigged character is imported, replace the primitive mannequin and use a real Animator Controller with suitable idle, walk, run, turn, dodge and combat clips. Keep root motion disabled while the CharacterController remains responsible for player movement.
+This is a gameplay greybox, not production combat. It uses primitive visuals, simple range checks, and a temporary OnGUI HUD. Attack timings, damage and enemy behavior must be playtested and tuned. The movement/animation remains procedural until a rigged character and licensed animation clips are imported.
 
-## Source layout
-- `Assets/_Project/Scripts/Player/IsometricPlayerController.cs`: camera-relative movement, facing direction, walk/run speed, gravity and collision.
-- `Assets/_Project/Scripts/Player/PlayerLocomotionAnimator.cs`: visible procedural mannequin gait.
-- `Assets/_Project/Scripts/Camera/IsometricCameraFollow.cs`: orthographic isometric follow camera.
-- `Assets/_Project/Editor/PrototypeSceneSetup.cs`: generates the greybox scene and upgrades the placeholder mannequin.
-- `Assets/_Project/Materials/`: placeholder URP materials.
-
-Commit `Assets/`, generated `.meta` files, `Packages/manifest.json`, `Packages/packages-lock.json`, and `ProjectSettings/`. Do not commit Unity's `Library/`, `Temp/`, `Logs/`, build outputs or local IDE files.
+The title is a working title; it refers to an existing franchise name. Use an original title and original IP before public/commercial release.

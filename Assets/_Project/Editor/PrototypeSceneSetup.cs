@@ -374,6 +374,120 @@ public static class PrototypeSceneSetup
             Object.DestroyImmediate(collider);
     }
 
+    [MenuItem("Tools/Code Lyoko/Setup Combat Prototype", true)]
+    private static bool ValidateSetupCombatPrototype()
+    {
+        return !EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling;
+    }
+
+    [MenuItem("Tools/Code Lyoko/Setup Combat Prototype")]
+    public static void SetupCombatPrototype()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling)
+            return;
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+            player = GameObject.Find("Player");
+
+        if (player == null)
+        {
+            EditorUtility.DisplayDialog("Player Not Found",
+                "Open Prototype_Scene.unity first, then run this command again.", "OK");
+            return;
+        }
+
+        EnsureFolder("Assets", "_Project");
+        EnsureFolder(Root, "Materials");
+
+        Material enemyMaterial = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeEnemy.mat", new Color(0.55f, 0.12f, 0.085f));
+
+        CombatHealth playerHealth = player.GetComponent<CombatHealth>();
+        if (playerHealth == null)
+            playerHealth = player.AddComponent<CombatHealth>();
+
+        PlayerMeleeCombat combat = player.GetComponent<PlayerMeleeCombat>();
+        if (combat == null)
+            combat = player.AddComponent<PlayerMeleeCombat>();
+
+        CombatTestHUD hud = player.GetComponent<CombatTestHUD>();
+        if (hud == null)
+            hud = player.AddComponent<CombatTestHUD>();
+
+        GameObject enemy = GameObject.Find("TrainingEnemy");
+        if (enemy == null)
+        {
+            enemy = new GameObject("TrainingEnemy");
+            enemy.transform.position = player.transform.position + new Vector3(0f, 0f, 5.5f);
+            enemy.transform.rotation = Quaternion.identity;
+
+            CharacterController enemyController = enemy.AddComponent<CharacterController>();
+            enemyController.height = 2f;
+            enemyController.radius = 0.42f;
+            enemyController.center = Vector3.zero;
+            enemyController.stepOffset = 0.25f;
+            enemyController.slopeLimit = 45f;
+
+            GameObject enemyVisual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            enemyVisual.name = "EnemyVisual";
+            enemyVisual.transform.SetParent(enemy.transform, false);
+            enemyVisual.transform.localPosition = Vector3.zero;
+            enemyVisual.transform.localRotation = Quaternion.identity;
+            enemyVisual.transform.localScale = new Vector3(0.88f, 0.95f, 0.88f);
+            Renderer enemyRenderer = enemyVisual.GetComponent<Renderer>();
+            if (enemyRenderer != null)
+                enemyRenderer.sharedMaterial = enemyMaterial;
+            Collider enemyCollider = enemyVisual.GetComponent<Collider>();
+            if (enemyCollider != null)
+                Object.DestroyImmediate(enemyCollider);
+
+            // Distinctive, simple eyes help identify the enemy in the elevated camera.
+            Material eyeMaterial = CreateOrLoadMaterial(
+                MaterialsFolder + "/PrototypeEnemyDetails.mat", new Color(0.95f, 0.56f, 0.16f));
+            CreateEnemyEye(enemyVisual.transform, "Eye_L", new Vector3(-0.095f, 0.48f, 0.265f), eyeMaterial);
+            CreateEnemyEye(enemyVisual.transform, "Eye_R", new Vector3(0.095f, 0.48f, 0.265f), eyeMaterial);
+        }
+
+        CombatHealth enemyHealth = enemy.GetComponent<CombatHealth>();
+        if (enemyHealth == null)
+            enemyHealth = enemy.AddComponent<CombatHealth>();
+        TrainingEnemyAI enemyAI = enemy.GetComponent<TrainingEnemyAI>();
+        if (enemyAI == null)
+            enemyAI = enemy.AddComponent<TrainingEnemyAI>();
+        enemyAI.SetTarget(player.transform);
+
+        Scene scene = SceneManager.GetActiveScene();
+        EditorSceneManager.MarkSceneDirty(scene);
+        if (!string.IsNullOrEmpty(scene.path))
+            EditorSceneManager.SaveScene(scene);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        EditorUtility.DisplayDialog(
+            "Combat Prototype Ready",
+            "Added player health, melee attack, dodge, an enemy that approaches and telegraphs attacks, and a combat HUD.\n\n" +
+            "Play: J or left-click = attack; Space = dodge; WASD/arrows = move; hold Shift = run.\n" +
+            "Defeat the training enemy by attacking it, and dodge its telegraphed strikes.",
+            "OK");
+    }
+
+    private static void CreateEnemyEye(Transform parent, string objectName, Vector3 localPosition, Material material)
+    {
+        GameObject eye = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        eye.name = objectName;
+        eye.transform.SetParent(parent, false);
+        eye.transform.localPosition = localPosition;
+        eye.transform.localScale = new Vector3(0.065f, 0.065f, 0.035f);
+        Renderer renderer = eye.GetComponent<Renderer>();
+        if (renderer != null)
+            renderer.sharedMaterial = material;
+        Collider collider = eye.GetComponent<Collider>();
+        if (collider != null)
+            Object.DestroyImmediate(collider);
+    }
+
     private static GameObject CreatePlayer(
         Material bodyMaterial, Material armorMaterial, Material skinMaterial, Material detailMaterial)
     {
