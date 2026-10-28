@@ -168,6 +168,182 @@ public static class PrototypeSceneSetup
             "OK");
     }
 
+    [MenuItem("Tools/Code Lyoko/Improve Prototype Arena Visibility")]
+    public static void ImprovePrototypeArenaVisibility()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+            player = GameObject.Find("Player");
+
+        if (player == null)
+        {
+            EditorUtility.DisplayDialog(
+                "Player Not Found",
+                "Open Prototype_Scene.unity first, then run this command again.",
+                "OK");
+            return;
+        }
+
+        EnsureFolder("Assets", "_Project");
+        EnsureFolder(Root, "Materials");
+
+        Material ground = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeGround.mat", new Color(0.115f, 0.145f, 0.16f));
+        Material wall = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeWalls.mat", new Color(0.30f, 0.19f, 0.12f));
+        Material grid = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeGrid.mat", new Color(0.27f, 0.31f, 0.32f));
+        Material boundary = CreateOrLoadMaterial(
+            MaterialsFolder + "/PrototypeBoundary.mat", new Color(0.72f, 0.36f, 0.12f));
+
+        GameObject floor = GameObject.Find("TestFloor");
+        if (floor != null)
+        {
+            floor.transform.position = Vector3.zero;
+            floor.transform.localScale = new Vector3(1.8f, 1f, 1.8f);
+            Renderer renderer = floor.GetComponent<Renderer>();
+            if (renderer != null)
+                renderer.sharedMaterial = ground;
+        }
+
+        const float halfExtent = 9f;
+        const float wallHeight = 2.8f;
+        const float wallThickness = 0.8f;
+        SetWall("Wall_North", new Vector3(0f, wallHeight / 2f, halfExtent),
+            new Vector3(halfExtent * 2f, wallHeight, wallThickness), wall);
+        SetWall("Wall_South", new Vector3(0f, wallHeight / 2f, -halfExtent),
+            new Vector3(halfExtent * 2f, wallHeight, wallThickness), wall);
+        SetWall("Wall_East", new Vector3(halfExtent, wallHeight / 2f, 0f),
+            new Vector3(wallThickness, wallHeight, halfExtent * 2f), wall);
+        SetWall("Wall_West", new Vector3(-halfExtent, wallHeight / 2f, 0f),
+            new Vector3(wallThickness, wallHeight, halfExtent * 2f), wall);
+
+        GameObject oldGrid = GameObject.Find("ArenaGrid");
+        if (oldGrid != null)
+            Object.DestroyImmediate(oldGrid);
+
+        GameObject gridRoot = new GameObject("ArenaGrid");
+        // Draw subtle floor divisions to make camera/player movement perceptible.
+        for (int coordinate = -6; coordinate <= 6; coordinate += 3)
+        {
+            CreateStrip(gridRoot.transform, "Grid_X_" + coordinate,
+                new Vector3(0f, 0.018f, coordinate), new Vector3(17.0f, 0.018f, 0.035f), grid);
+            CreateStrip(gridRoot.transform, "Grid_Z_" + coordinate,
+                new Vector3(coordinate, 0.019f, 0f), new Vector3(0.035f, 0.018f, 17.0f), grid);
+        }
+
+        // Warm inner boundary markings help distinguish the playable area from the walls.
+        const float line = 8.25f;
+        const float boundaryLength = 16.5f;
+        CreateStrip(gridRoot.transform, "Boundary_North",
+            new Vector3(0f, 0.03f, line), new Vector3(boundaryLength, 0.025f, 0.10f), boundary);
+        CreateStrip(gridRoot.transform, "Boundary_South",
+            new Vector3(0f, 0.03f, -line), new Vector3(boundaryLength, 0.025f, 0.10f), boundary);
+        CreateStrip(gridRoot.transform, "Boundary_East",
+            new Vector3(line, 0.03f, 0f), new Vector3(0.10f, 0.025f, boundaryLength), boundary);
+        CreateStrip(gridRoot.transform, "Boundary_West",
+            new Vector3(-line, 0.03f, 0f), new Vector3(0.10f, 0.025f, boundaryLength), boundary);
+
+        Camera camera = Camera.main;
+        if (camera == null)
+        {
+            GameObject cameraObject = GameObject.Find("IsometricCamera");
+            if (cameraObject != null)
+                camera = cameraObject.GetComponent<Camera>();
+        }
+
+        if (camera != null)
+        {
+            camera.orthographic = true;
+            camera.orthographicSize = 8.3f;
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.035f, 0.045f, 0.055f);
+            camera.transform.position = player.transform.position + new Vector3(0f, 10f, -10f);
+            camera.transform.rotation = Quaternion.Euler(45f, 0f, 0f);
+
+            IsometricCameraFollow follow = camera.GetComponent<IsometricCameraFollow>();
+            if (follow != null)
+            {
+                SerializedObject serializedFollow = new SerializedObject(follow);
+                SerializedProperty offset = serializedFollow.FindProperty("offset");
+                SerializedProperty pitch = serializedFollow.FindProperty("pitch");
+                SerializedProperty size = serializedFollow.FindProperty("orthographicSize");
+                if (offset != null) offset.vector3Value = new Vector3(0f, 10f, -10f);
+                if (pitch != null) pitch.floatValue = 45f;
+                if (size != null) size.floatValue = 8.3f;
+                serializedFollow.ApplyModifiedPropertiesWithoutUndo();
+                follow.Target = player.transform;
+            }
+        }
+
+        PlayerLocomotionAnimator locomotion = player.GetComponent<PlayerLocomotionAnimator>();
+        if (locomotion != null)
+        {
+            SerializedObject serializedLocomotion = new SerializedObject(locomotion);
+            SetFloat(serializedLocomotion, "walkCyclesPerSecond", 2.0f);
+            SetFloat(serializedLocomotion, "runCyclesPerSecond", 3.1f);
+            SetFloat(serializedLocomotion, "walkLegSwing", 46f);
+            SetFloat(serializedLocomotion, "runLegSwing", 62f);
+            SetFloat(serializedLocomotion, "walkLean", 8f);
+            SetFloat(serializedLocomotion, "runLean", 15f);
+            SetFloat(serializedLocomotion, "walkBounceHeight", 0.08f);
+            SetFloat(serializedLocomotion, "runBounceHeight", 0.15f);
+            SetFloat(serializedLocomotion, "stateBlendSpeed", 10f);
+            serializedLocomotion.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        EditorUtility.DisplayDialog(
+            "Prototype Arena Improved",
+            "Updated the arena framing, contrast, floor grid and boundary markings. Increased walk/run motion for easier visual testing.\n\n" +
+            "Press Play, move with WASD or arrow keys, then hold Shift to run.",
+            "OK");
+    }
+
+    private static void SetFloat(SerializedObject serializedObject, string propertyName, float value)
+    {
+        SerializedProperty property = serializedObject.FindProperty(propertyName);
+        if (property != null)
+            property.floatValue = value;
+    }
+
+    private static void SetWall(string objectName, Vector3 position, Vector3 scale, Material material)
+    {
+        GameObject wall = GameObject.Find(objectName);
+        if (wall == null)
+        {
+            wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = objectName;
+        }
+
+        wall.transform.position = position;
+        wall.transform.localScale = scale;
+        Renderer renderer = wall.GetComponent<Renderer>();
+        if (renderer != null)
+            renderer.sharedMaterial = material;
+    }
+
+    private static void CreateStrip(
+        Transform parent, string objectName, Vector3 position, Vector3 scale, Material material)
+    {
+        GameObject strip = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        strip.name = objectName;
+        strip.transform.SetParent(parent, false);
+        strip.transform.localPosition = position;
+        strip.transform.localScale = scale;
+        Renderer renderer = strip.GetComponent<Renderer>();
+        if (renderer != null)
+            renderer.sharedMaterial = material;
+
+        Collider collider = strip.GetComponent<Collider>();
+        if (collider != null)
+            Object.DestroyImmediate(collider);
+    }
+
     private static GameObject CreatePlayer(
         Material bodyMaterial, Material armorMaterial, Material skinMaterial, Material detailMaterial)
     {
