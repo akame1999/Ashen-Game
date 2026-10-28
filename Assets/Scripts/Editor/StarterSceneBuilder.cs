@@ -40,9 +40,9 @@ namespace Ashen.EditorTools
             Layer(bg, "Mid",  "Backgrounds/mid",  -10, 0.75f, 0.6f, -4.5f, false);
             Layer(bg, "Near", "Backgrounds/near", -5,  0.45f, 0.4f, -4.5f, false);
 
-            Ground("Floor", new Vector2(0, -1), new Vector2(40, 2), "Environment/ground");
-            Ground("WallL", new Vector2(-20, 4), new Vector2(2, 12));
-            Ground("WallR", new Vector2(20, 4), new Vector2(2, 12));
+            Ground("Floor", new Vector2(0, -4), new Vector2(40, 8), "Environment/ground");   // top at y=0, deep enough to fill the screen below
+            Wall("WallL", new Vector2(-20, 4), new Vector2(2, 12));
+            Wall("WallR", new Vector2(20, 4), new Vector2(2, 12));
             Ground("PlatformA", new Vector2(-6, 2.3f), new Vector2(5, 1f), "Environment/platform");
             Ground("PlatformB", new Vector2(5, 4.3f), new Vector2(5, 1f), "Environment/platform");
 
@@ -164,6 +164,14 @@ namespace Ashen.EditorTools
             if (tile != null) col.size = size;
         }
 
+        // Invisible level boundary (collider only). The camera is clamped to the level (see CameraFollow), so no art is needed.
+        static void Wall(string name, Vector2 pos, Vector2 size)
+        {
+            var go = new GameObject(name);
+            go.transform.position = pos;
+            go.AddComponent<BoxCollider2D>().size = size;
+        }
+
         // Root = physics (collider, rigidbody, health). Child "Visual" = sprite, feet aligned to the collider bottom.
         static GameObject Actor(string name, Vector2 pos, Vector2 colliderSize)
         {
@@ -208,14 +216,32 @@ namespace Ashen.EditorTools
             }
             sr.sortingOrder = 1;
 
-            // Flame in the brazier, lit while this is the active checkpoint (see Checkpoint.cs)
+            // Flame in the brazier, lit while this is the active checkpoint (see Checkpoint.cs).
+            // Uses the painted flame frames + soft glow; falls back to a plain square only if the sprites are missing.
             var flame = new GameObject("Flame");
             flame.transform.SetParent(go.transform, false);
-            flame.transform.localPosition = new Vector3(0, pillar != null ? 1.1f : 1.6f, 0);
-            flame.transform.localScale = new Vector3(0.35f, 0.5f, 1f);
             var fsr = flame.AddComponent<SpriteRenderer>();
-            fsr.sprite = Placeholder.Square(new Color(1f, 0.6f, 0.15f));
             fsr.sortingOrder = 2;
+            var flameSprite = Resources.Load<Sprite>("Props/flame_0");
+            if (flameSprite != null)
+            {
+                flame.transform.localPosition = new Vector3(0, pillar != null ? 0.95f : 1.4f, -0.1f);
+                fsr.sprite = flameSprite;
+                var glow = new GameObject("Glow");
+                glow.transform.SetParent(flame.transform, false);
+                glow.transform.localPosition = new Vector3(0, 0.4f, 0.1f);
+                var gsr = glow.AddComponent<SpriteRenderer>();
+                gsr.sprite = Resources.Load<Sprite>("Props/glow");
+                gsr.sortingOrder = 1;
+                var fl = flame.AddComponent<TorchFlicker>();
+                fl.flame = fsr; fl.glow = gsr; fl.glowScale = 3.5f;
+            }
+            else
+            {
+                flame.transform.localPosition = new Vector3(0, pillar != null ? 1.1f : 1.6f, 0);
+                flame.transform.localScale = new Vector3(0.35f, 0.5f, 1f);
+                fsr.sprite = Placeholder.Square(new Color(1f, 0.6f, 0.15f));
+            }
         }
 
         // Big husk with more health, a longer reach and an enrage phase (see BossEncounter).
