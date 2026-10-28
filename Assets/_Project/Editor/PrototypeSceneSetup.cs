@@ -16,9 +16,17 @@ public static class PrototypeSceneSetup
     private const string MaterialsFolder = Root + "/Materials";
     private const string ScenePath = ScenesFolder + "/Prototype_Scene.unity";
 
+    [MenuItem("Tools/Code Lyoko/Create Prototype Scene", true)]
+    private static bool ValidateCreatePrototypeScene()
+    {
+        return CanRunEditorSceneOperation();
+    }
+
     [MenuItem("Tools/Code Lyoko/Create Prototype Scene")]
     public static void CreatePrototypeScene()
     {
+        if (!CanRunEditorSceneOperation())
+            return;
         EnsureFolder("Assets", "_Project");
         EnsureFolder(Root, "Scenes");
         EnsureFolder(Root, "Materials");
@@ -109,9 +117,17 @@ public static class PrototypeSceneSetup
             "OK");
     }
 
+    [MenuItem("Tools/Code Lyoko/Upgrade Player Locomotion Placeholder", true)]
+    private static bool ValidateUpgradePlayerLocomotionPlaceholder()
+    {
+        return CanRunEditorSceneOperation();
+    }
+
     [MenuItem("Tools/Code Lyoko/Upgrade Player Locomotion Placeholder")]
     public static void UpgradePlayerLocomotionPlaceholder()
     {
+        if (!CanRunEditorSceneOperation())
+            return;
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player == null)
             player = GameObject.Find("Player");
@@ -168,9 +184,17 @@ public static class PrototypeSceneSetup
             "OK");
     }
 
+    [MenuItem("Tools/Code Lyoko/Improve Prototype Arena Visibility", true)]
+    private static bool ValidateImprovePrototypeArenaVisibility()
+    {
+        return CanRunEditorSceneOperation();
+    }
+
     [MenuItem("Tools/Code Lyoko/Improve Prototype Arena Visibility")]
     public static void ImprovePrototypeArenaVisibility()
     {
+        if (!CanRunEditorSceneOperation())
+            return;
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player == null)
             player = GameObject.Find("Player");
@@ -302,6 +326,12 @@ public static class PrototypeSceneSetup
             "Updated the arena framing, contrast, floor grid and boundary markings. Increased walk/run motion for easier visual testing.\n\n" +
             "Press Play, move with WASD or arrow keys, then hold Shift to run.",
             "OK");
+    }
+
+    private static bool CanRunEditorSceneOperation()
+    {
+        // These commands create/delete objects and write scene/assets; Unity forbids that while playing.
+        return !EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling;
     }
 
     private static void SetFloat(SerializedObject serializedObject, string propertyName, float value)
