@@ -478,16 +478,44 @@ public static class Phase2CharacterBuilder
 
     private static AnimatorController CreateController(AnimationClip idle, AnimationClip walk, AnimationClip run, AnimationClip attack)
     {
+        if (idle == null || walk == null || run == null || attack == null)
+            throw new InvalidOperationException("Phase 2 could not create all four animation clips.");
+
+        // Replace the controller deterministically so stale sub-assets/transitions cannot accumulate.
         if (AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath) != null)
             AssetDatabase.DeleteAsset(ControllerPath);
 
         AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
+        if (controller == null)
+            throw new InvalidOperationException("Unity failed to create Animator Controller at " + ControllerPath);
+
         controller.AddParameter("MoveSpeed", AnimatorControllerParameterType.Float);
         controller.AddParameter("Attack", AnimatorControllerParameterType.Trigger);
 
+        if (controller.layers == null || controller.layers.Length == 0 || controller.layers[0].stateMachine == null)
+            throw new InvalidOperationException("The generated Animator Controller has no base state machine.");
+
         AnimatorStateMachine machine = controller.layers[0].stateMachine;
-        AnimatorState locomotion = machine.defaultState;
-        locomotion.name = "Locomotion";
+
+        // Unity versions/templates can produce a controller whose state machine has no default state.
+        // Never dereference machine.defaultState until we confirm it exists.
+        AnimatorState locomotion = null;
+        foreach (ChildAnimatorState child in machine.states)
+        {
+            if (child.state != null &&
+                (child.state.name == "Locomotion" || child.state == machine.defaultState))
+            {
+                locomotion = child.state;
+                break;
+            }
+        }
+
+        if (locomotion == null)
+            locomotion = machine.AddState("Locomotion", new Vector3(80f, 70f, 0f));
+        else
+            locomotion.name = "Locomotion";
+
+        machine.defaultState = locomotion;
 
         BlendTree tree = new BlendTree
         {
@@ -502,11 +530,13 @@ public static class Phase2CharacterBuilder
             new ChildMotion { motion = walk, threshold = 0.5f, timeScale = 1f },
             new ChildMotion { motion = run, threshold = 1f, timeScale = 1f }
         };
+
         AssetDatabase.AddObjectToAsset(tree, controller);
         locomotion.motion = tree;
 
         AnimatorState attackState = machine.AddState("Attack", new Vector3(330f, 70f, 0f));
         attackState.motion = attack;
+
         AnimatorStateTransition enterAttack = machine.AddAnyStateTransition(attackState);
         enterAttack.AddCondition(AnimatorConditionMode.If, 0f, "Attack");
         enterAttack.hasExitTime = false;
@@ -520,9 +550,16 @@ public static class Phase2CharacterBuilder
         exitAttack.duration = 0.08f;
         exitAttack.hasFixedDuration = true;
 
+        EditorUtility.SetDirty(machine);
         EditorUtility.SetDirty(controller);
         AssetDatabase.SaveAssets();
-        return controller;
+        AssetDatabase.Refresh();
+
+        AnimatorController savedController = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+        if (savedController == null)
+            throw new InvalidOperationException("Animator Controller was not saved correctly at " + ControllerPath);
+
+        return savedController;
     }
 
     private static Material CreateMaterial(string path, Color color)
