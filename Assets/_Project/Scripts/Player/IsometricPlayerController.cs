@@ -28,6 +28,10 @@ public sealed class IsometricPlayerController : MonoBehaviour
     private float verticalVelocity;
     private Vector3 horizontalVelocity;
     private Vector2 latestInput;
+    private CombatHealth combatHealth;
+    private Vector3 dodgeDirection;
+    private float dodgeDistancePerSecond;
+    private float dodgeTimeRemaining;
     private bool latestRunInput;
 
     public Transform MovementCamera
@@ -41,10 +45,25 @@ public sealed class IsometricPlayerController : MonoBehaviour
     public float CurrentHorizontalSpeed => new Vector3(horizontalVelocity.x, 0f, horizontalVelocity.z).magnitude;
     public bool IsGrounded => characterController != null && characterController.isGrounded;
     public bool IsRunning => latestRunInput && CurrentHorizontalSpeed > walkSpeed * 0.9f;
+    public bool IsDodging => dodgeTimeRemaining > 0f;
+
+    /// <summary>Requests a dodge; Update applies it through the same CharacterController.Move as gravity.</summary>
+    public bool BeginDodge(Vector3 direction, float distance, float duration)
+    {
+        if (IsDodging || distance <= 0f || duration <= 0f || direction.sqrMagnitude < 0.001f)
+            return false;
+
+        dodgeDirection = direction.normalized;
+        dodgeDistancePerSecond = distance / duration;
+        dodgeTimeRemaining = duration;
+        horizontalVelocity = Vector3.zero;
+        return true;
+    }
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
+        combatHealth = GetComponent<CombatHealth>();
 
         if (movementCamera == null && Camera.main != null)
             movementCamera = Camera.main.transform;
@@ -55,6 +74,22 @@ public sealed class IsometricPlayerController : MonoBehaviour
 
     private void Update()
     {
+        float dt = Time.deltaTime;
+        if (combatHealth != null && combatHealth.IsDefeated)
+        {
+            latestInput = Vector2.zero;
+            latestRunInput = false;
+            horizontalVelocity = Vector3.zero;
+            dodgeTimeRemaining = 0f;
+            if (characterController.isGrounded && verticalVelocity < 0f)
+                verticalVelocity = -2f;
+            verticalVelocity += gravity * dt;
+            characterController.Move(Vector3.up * (verticalVelocity * dt));
+            if (locomotionAnimator != null)
+                locomotionAnimator.SetMovementState(false, false);
+            return;
+        }
+
         Vector2 input = ReadMovementInput();
         latestInput = input;
         bool hasInput = input.sqrMagnitude > 0.001f;
@@ -67,7 +102,7 @@ public sealed class IsometricPlayerController : MonoBehaviour
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,
                 targetRotation,
-                turnSpeedDegrees * Time.deltaTime);
+                turnSpeedDegrees * dt);
         }
 
         float targetSpeed = latestRunInput ? runSpeed : walkSpeed;
@@ -76,30 +111,45 @@ public sealed class IsometricPlayerController : MonoBehaviour
         horizontalVelocity = Vector3.MoveTowards(
             horizontalVelocity,
             targetHorizontalVelocity,
-            response * Time.deltaTime);
+            response * dt);
 
         if (characterController.isGrounded && verticalVelocity < 0f)
             verticalVelocity = -2f;
+        verticalVelocity += gravity * dt;
 
-        verticalVelocity += gravity * Time.deltaTime;
+        bool wasDodging = dodgeTimeRemaining > 0f;
+        Vector3 displacement;
+        if (wasDodging)
+        {
+            float activeDodgeDelta = Mathf.Min(dt, dodgeTimeRemaining);
+            displacement = dodgeDirection * dodgeDistancePerSecond * activeDodgeDelta;
+            dodgeTimeRemaining = Mathf.Max(0f, dodgeTimeRemaining - dt);
+        }
+        else
+        {
+            displacement = horizontalVelocity * dt;
+        }
+        displacement.y = verticalVelocity * dt;
 
-        Vector3 velocity = horizontalVelocity;
-        velocity.y = verticalVelocity;
-        CollisionFlags collisionFlags = characterController.Move(velocity * Time.deltaTime);
+        CollisionFlags collisionFlags = characterController.Move(displacement);
 
-        // Do not keep pushing into a wall when the controller has hit a horizontal obstacle.
+        // Cancel a dodge that hits a wall; all movement still goes through one Move call per frame.
         if ((collisionFlags & CollisionFlags.Sides) != 0)
         {
             Vector3 actualHorizontal = characterController.velocity;
             actualHorizontal.y = 0f;
-            if (actualHorizontal.sqrMagnitude < 0.0001f)
+            if (actualHorizontal.sqrMagnitude < 0.0001f || wasDodging)
+            {
                 horizontalVelocity = Vector3.zero;
+                if (wasDodging)
+                    dodgeTimeRemaining = 0f;
+            }
         }
 
         if (locomotionAnimator != null)
         {
-            bool visualIsMoving = CurrentHorizontalSpeed > 0.12f;
-            locomotionAnimator.SetMovementState(visualIsMoving, IsRunning);
+            bool visualIsMoving = !wasDodging && CurrentHorizontalSpeed > 0.12f;
+            locomotionAnimator.SetMovementState(visualIsMoving, !wasDodging && IsRunning);
         }
     }
 

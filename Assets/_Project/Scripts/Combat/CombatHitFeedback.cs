@@ -17,6 +17,7 @@ public sealed class CombatHitFeedback : MonoBehaviour
     private Transform visualRoot;
     private Quaternion baseRotation;
     private Vector3 baseScale;
+    private Vector3 baseLocalPosition;
     private float timeRemaining;
     private float elapsed;
     private bool hasVisual;
@@ -57,6 +58,7 @@ public sealed class CombatHitFeedback : MonoBehaviour
         {
             baseRotation = visualRoot.localRotation;
             baseScale = visualRoot.localScale;
+            baseLocalPosition = visualRoot.localPosition;
             hasVisual = true;
         }
 
@@ -95,10 +97,14 @@ public sealed class CombatHitFeedback : MonoBehaviour
                 baseScale.y * compress,
                 baseScale.z * stretch);
 
+            // The visual pivot is not at the feet; counter-translate during squash to reduce floating.
+            visualRoot.localPosition = baseLocalPosition + Vector3.down * (0.95f * (1f - compress));
+
             if (timeRemaining <= 0f)
             {
                 visualRoot.localRotation = baseRotation;
                 visualRoot.localScale = baseScale;
+                visualRoot.localPosition = baseLocalPosition;
             }
         }
     }

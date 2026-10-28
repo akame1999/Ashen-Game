@@ -25,6 +25,8 @@
 | GFX-10 | Compare runtime responsiveness | No unacceptable slowdown from added lights/renderers | Not tested |
 | GFX-11 | Run validation command | At least 49 tiles, four pillar sets, four braziers, rune, floor/wall colliders and camera detected | Not tested |
 | GFX-12 | Run setup a second time | No duplicate root or double set of decorations | Not tested |
+| GFX-13 | Reopen Unity after graphics setup | GlobalVisualVolume references a saved profile with persisted overrides | Not tested |
+| GFX-14 | Walk into environment props | Pillars and brazier structure block movement; paving/rubble remain decorative | Not tested |
 
 ## Acceptance criteria
 - All tests are run and failures documented/fixed.

@@ -26,12 +26,14 @@
 | P2-04 | Walk forward/back/left/right | Walk clip moves arms and legs in opposing phases | Not tested |
 | P2-05 | Hold Shift while moving | Run clip has visibly faster cadence and longer stride | Not tested |
 | P2-06 | Release movement | Blend Tree returns to idle smoothly | Not tested |
-| P2-07 | Press J or left-click near training enemy | Attack clip plays and returns to locomotion | Not tested |
-| P2-08 | Inspect feet and floor | Feet remain close to the floor; no major hover/sink | Not tested |
+| P2-07 | Press J or left-click near training enemy | Attack pose plays; damage occurs near the strike window (~0.16 seconds after input); returns to locomotion | Not tested |
+| P2-08 | Inspect feet and floor | Feet remain close to the floor; hips do not drop below bind-pose height | Not tested |
 | P2-09 | Move against all arena walls | CharacterController collision still works; visual rig does not move gameplay root | Not tested |
 | P2-10 | Receive an enemy hit | Character visual reacts without detaching parts | Not tested |
 | P2-11 | Exit and re-enter Play mode twice | No duplicate visual prefab and no new Console errors | Not tested |
 | P2-12 | Reopen scene and validate again | Character prefab/controller/clips remain assigned | Not tested |
+| P2-13 | Dodge while moving or near a wall | One CharacterController.Move per frame; dodge respects collision and does not accumulate falling velocity | Not tested |
+| P2-14 | Defeat the player | Movement input no longer moves the player after health reaches zero | Not tested |
 
 ## Acceptance criteria
 - Structural validation passes.

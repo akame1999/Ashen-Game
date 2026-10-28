@@ -359,9 +359,10 @@ public static class Phase2CharacterBuilder
         AddCurve(clip, HeadPath, "localEulerAnglesRaw.y",
             new Keyframe(0f, -1f), new Keyframe(0.5f, 1.5f), new Keyframe(1f, -1f),
             new Keyframe(1.5f, 0.5f), new Keyframe(2f, -1f));
+        // Curves store absolute local values; generated Hips bind Y is +0.06.
         AddCurve(clip, HipsPath, "m_LocalPosition.y",
-            new Keyframe(0f, -0.10f), new Keyframe(0.5f, -0.085f), new Keyframe(1f, -0.10f),
-            new Keyframe(1.5f, -0.09f), new Keyframe(2f, -0.10f));
+            new Keyframe(0f, 0.06f), new Keyframe(0.5f, 0.075f), new Keyframe(1f, 0.06f),
+            new Keyframe(1.5f, 0.068f), new Keyframe(2f, 0.06f));
         SaveClip(clip);
         return clip;
     }
@@ -398,6 +399,26 @@ public static class Phase2CharacterBuilder
         AddCurve(clip, LeftUpperArmPath, "localEulerAnglesRaw.x",
             new Keyframe(0f, 0f), new Keyframe(0.09f, 12f), new Keyframe(0.17f, 28f),
             new Keyframe(0.28f, 8f), new Keyframe(duration, 0f));
+
+        // Attack is a whole-body Animator state, so explicitly key the lower body too.
+        AddCurve(clip, HipsPath, "m_LocalPosition.y",
+            new Keyframe(0f, 0.06f), new Keyframe(0.12f, 0.075f),
+            new Keyframe(0.28f, 0.06f), new Keyframe(duration, 0.06f));
+        AddCurve(clip, HipsPath, "localEulerAnglesRaw.y",
+            new Keyframe(0f, 0f), new Keyframe(0.12f, -8f),
+            new Keyframe(0.24f, 5f), new Keyframe(duration, 0f));
+        AddCurve(clip, LeftUpperLegPath, "localEulerAnglesRaw.x",
+            new Keyframe(0f, 0f), new Keyframe(0.12f, -4f),
+            new Keyframe(0.26f, 2f), new Keyframe(duration, 0f));
+        AddCurve(clip, RightUpperLegPath, "localEulerAnglesRaw.x",
+            new Keyframe(0f, 0f), new Keyframe(0.12f, 4f),
+            new Keyframe(0.26f, -2f), new Keyframe(duration, 0f));
+        AddCurve(clip, LeftLowerLegPath, "localEulerAnglesRaw.x",
+            new Keyframe(0f, 0f), new Keyframe(0.12f, 3f),
+            new Keyframe(0.26f, 0f), new Keyframe(duration, 0f));
+        AddCurve(clip, RightLowerLegPath, "localEulerAnglesRaw.x",
+            new Keyframe(0f, 0f), new Keyframe(0.12f, -3f),
+            new Keyframe(0.26f, 0f), new Keyframe(duration, 0f));
         SaveClip(clip);
         return clip;
     }
@@ -430,9 +451,10 @@ public static class Phase2CharacterBuilder
         AddCurve(clip, HipsPath, "localEulerAnglesRaw.y",
             new Keyframe(0f, -3f), new Keyframe(q, 2f), new Keyframe(h, 3f),
             new Keyframe(tq, -2f), new Keyframe(duration, -3f));
+        // Keep the locomotion bob centered around the Hips bind pose (+0.06 local Y).
         AddCurve(clip, HipsPath, "m_LocalPosition.y",
-            new Keyframe(0f, -0.10f), new Keyframe(q, -0.065f), new Keyframe(h, -0.10f),
-            new Keyframe(tq, -0.065f), new Keyframe(duration, -0.10f));
+            new Keyframe(0f, 0.06f), new Keyframe(q, 0.092f), new Keyframe(h, 0.06f),
+            new Keyframe(tq, 0.092f), new Keyframe(duration, 0.06f));
     }
 
     private static AnimationClip PrepareClip(string fileName, string clipName, float duration, bool loop)

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
@@ -10,11 +11,13 @@ using UnityEngine.InputSystem;
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(CombatHealth))]
+[RequireComponent(typeof(IsometricPlayerController))]
 public sealed class PlayerMeleeCombat : MonoBehaviour
 {
     [Header("Melee")]
     [SerializeField, Min(0f)] private float attackDamage = 25f;
     [SerializeField, Min(0.1f)] private float attackCooldown = 0.55f;
+    [SerializeField, Min(0f)] private float attackImpactDelay = 0.16f;
     [SerializeField, Min(0.5f)] private float attackRange = 2.25f;
     [SerializeField, Range(20f, 180f)] private float attackArcDegrees = 115f;
     [SerializeField, Min(0.1f)] private float attackRadius = 1.25f;
@@ -25,20 +28,19 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
     [SerializeField, Min(0f)] private float dodgeCooldown = 0.75f;
     [SerializeField, Min(0f)] private float dodgeInvulnerability = 0.28f;
 
-    private CharacterController characterController;
     private CombatHealth health;
+    private IsometricPlayerController movementController;
     private float attackCooldownRemaining;
     private float dodgeCooldownRemaining;
     private float dodgeRemaining;
-    private Vector3 dodgeDirection;
     private PlayerLocomotionAnimator locomotionAnimator;
     private TrailRenderer dodgeTrail;
     private Material dodgeTrailMaterial;
 
     private void Awake()
     {
-        characterController = GetComponent<CharacterController>();
         health = GetComponent<CombatHealth>();
+        movementController = GetComponent<IsometricPlayerController>();
         locomotionAnimator = GetComponent<PlayerLocomotionAnimator>();
         SetupDodgeTrail();
     }
@@ -50,9 +52,7 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
 
         if (dodgeRemaining > 0f)
         {
-            float delta = Mathf.Min(Time.deltaTime, dodgeRemaining);
-            characterController.Move(dodgeDirection * (dodgeDistance / Mathf.Max(0.05f, dodgeDuration)) * delta);
-            dodgeRemaining -= delta;
+            dodgeRemaining = Mathf.Max(0f, dodgeRemaining - Time.deltaTime);
             if (dodgeRemaining <= 0f && dodgeTrail != null)
                 dodgeTrail.emitting = false;
         }
@@ -66,14 +66,34 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
 
     private void TryAttack()
     {
-        if (attackCooldownRemaining > 0f || dodgeRemaining > 0f || health.IsDefeated)
+        if (attackCooldownRemaining > 0f || dodgeRemaining > 0f ||
+            (movementController != null && movementController.IsDodging) ||
+            health == null || health.IsDefeated)
             return;
 
         attackCooldownRemaining = attackCooldown;
         if (locomotionAnimator != null)
             locomotionAnimator.TriggerAttack();
-        ShowSlashArc();
 
+        // Resolve hit detection at the authored strike moment instead of button-down.
+        StartCoroutine(ResolveAttackAfterDelay());
+    }
+
+    private IEnumerator ResolveAttackAfterDelay()
+    {
+        if (attackImpactDelay > 0f)
+            yield return new WaitForSeconds(attackImpactDelay);
+
+        if (!isActiveAndEnabled || health == null || health.IsDefeated ||
+            dodgeRemaining > 0f || (movementController != null && movementController.IsDodging))
+            yield break;
+
+        ShowSlashArc();
+        ResolveAttackHit();
+    }
+
+    private void ResolveAttackHit()
+    {
         Vector3 origin = transform.position + Vector3.up * 0.85f + transform.forward * 0.7f;
         Collider[] hits = Physics.OverlapSphere(origin, attackRadius, ~0, QueryTriggerInteraction.Ignore);
         HashSet<CombatHealth> damaged = new HashSet<CombatHealth>();
@@ -123,7 +143,9 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
         if (direction.sqrMagnitude < 0.001f)
             direction = transform.forward;
 
-        dodgeDirection = direction.normalized;
+        if (movementController == null || !movementController.BeginDodge(direction, dodgeDistance, dodgeDuration))
+            return;
+
         dodgeRemaining = dodgeDuration;
         dodgeCooldownRemaining = dodgeCooldown;
         health.GrantInvulnerability(dodgeInvulnerability);
@@ -224,7 +246,9 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
         {
             Material material = new Material(shader);
             material.color = new Color(1f, 0.58f, 0.16f, 0.95f);
+            material.hideFlags = HideFlags.HideAndDontSave;
             line.material = material;
+            Destroy(material, 0.14f);
         }
 
         Vector3 center = transform.position + Vector3.up * 0.9f + transform.forward * 0.65f;

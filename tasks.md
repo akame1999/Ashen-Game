@@ -71,3 +71,15 @@ Use [ ] for not started, [~] for implemented/in progress, [x] only after the acc
 - [ ] Profile performance.
 - [ ] Audit accessibility, save migration and licenses.
 **Acceptance:** release checklist signed off.
+
+
+## Audit fixes committed for local verification
+- [x] Keep Idle/Walk/Run/Attack Hips curves near the generated +0.06 local bind pose.
+- [x] Key the lower body during the whole-body Attack state.
+- [x] Embed URP Volume overrides as persistent profile sub-assets; save, reload and count persisted components.
+- [x] Time melee hit detection near the strike pose and centralize dodge movement into one CharacterController.Move call.
+- [x] Stop movement after player defeat and compensate the hit-feedback squash near the foot contact point.
+- [x] Lower paving details to the floor surface and add colliders to pillar/brazier structures.
+- [x] Remove the unused SampleScene from the default build scene list.
+- [ ] Pull, compile and test all changes in Unity 6.6.
+- [ ] Regenerate and commit the character/graphics assets after local tests pass; verify a clean clone.

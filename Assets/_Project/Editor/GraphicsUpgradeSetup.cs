@@ -118,22 +118,22 @@ public static class GraphicsUpgradeSetup
         {
             float px = (x - 3) * spacing, pz = (z - 3) * spacing;
             Create(root, "FloorTile_" + x + "_" + z, PrimitiveType.Cube,
-                new Vector3(px, .025f, pz), new Vector3(slab, .075f + (float)rng.NextDouble() * .025f, slab),
+                new Vector3(px, -.03f, pz), new Vector3(slab, .075f + (float)rng.NextDouble() * .025f, slab),
                 mats[(x * 3 + z * 5 + rng.Next(0, 3)) % mats.Length],
                 new Vector3(0f, rng.Next(0, 4) * 90f, 0f));
         }
         for (int i = -3; i <= 3; i++)
         {
             float p = i * spacing;
-            Create(root, "Grout_X_" + i, PrimitiveType.Cube, new Vector3(p, .062f, 0f), new Vector3(.035f, .006f, 16.55f), grout);
-            Create(root, "Grout_Z_" + i, PrimitiveType.Cube, new Vector3(0f, .063f, p), new Vector3(16.55f, .006f, .035f), grout);
+            Create(root, "Grout_X_" + i, PrimitiveType.Cube, new Vector3(p, .012f, 0f), new Vector3(.035f, .006f, 16.55f), grout);
+            Create(root, "Grout_Z_" + i, PrimitiveType.Cube, new Vector3(0f, .012f, p), new Vector3(16.55f, .006f, .035f), grout);
         }
         for (int i = 0; i < 17; i++)
         {
             float px = -6.6f + (float)rng.NextDouble() * 13.2f;
             float pz = -6.6f + (float)rng.NextDouble() * 13.2f;
             if (px * px + pz * pz < 3f) px += px >= 0f ? 2f : -2f;
-            Create(root, "StoneCrack_" + i, PrimitiveType.Cube, new Vector3(px, .078f, pz),
+            Create(root, "StoneCrack_" + i, PrimitiveType.Cube, new Vector3(px, .018f, pz),
                 new Vector3(.20f + (float)rng.NextDouble() * .5f, .007f, .018f), grout,
                 new Vector3(0f, (float)rng.NextDouble() * 180f, 0f));
         }
@@ -142,10 +142,10 @@ public static class GraphicsUpgradeSetup
     private static void BuildTrim(Transform root, Material mat)
     {
         const float edge = 8.45f, length = 16.8f;
-        Create(root, "PerimeterTrim_N", PrimitiveType.Cube, new Vector3(0f, .085f, edge), new Vector3(length, .09f, .16f), mat);
-        Create(root, "PerimeterTrim_S", PrimitiveType.Cube, new Vector3(0f, .085f, -edge), new Vector3(length, .09f, .16f), mat);
-        Create(root, "PerimeterTrim_E", PrimitiveType.Cube, new Vector3(edge, .085f, 0f), new Vector3(.16f, .09f, length), mat);
-        Create(root, "PerimeterTrim_W", PrimitiveType.Cube, new Vector3(-edge, .085f, 0f), new Vector3(.16f, .09f, length), mat);
+        Create(root, "PerimeterTrim_N", PrimitiveType.Cube, new Vector3(0f, .045f, edge), new Vector3(length, .09f, .16f), mat);
+        Create(root, "PerimeterTrim_S", PrimitiveType.Cube, new Vector3(0f, .045f, -edge), new Vector3(length, .09f, .16f), mat);
+        Create(root, "PerimeterTrim_E", PrimitiveType.Cube, new Vector3(edge, .045f, 0f), new Vector3(.16f, .09f, length), mat);
+        Create(root, "PerimeterTrim_W", PrimitiveType.Cube, new Vector3(-edge, .045f, 0f), new Vector3(.16f, .09f, length), mat);
     }
 
     private static void BuildPillars(Transform root, Material stone, Material trim)
@@ -154,13 +154,13 @@ public static class GraphicsUpgradeSetup
         foreach (float z in new[] { -7.75f, 7.75f })
         {
             string id = (x < 0f ? "W" : "E") + (z < 0f ? "S" : "N");
-            Create(root, "RuinedPillar_" + id + "_Base", PrimitiveType.Cube, new Vector3(x, .25f, z), new Vector3(1.18f, .46f, 1.18f), trim);
-            Create(root, "RuinedPillar_" + id + "_Shaft", PrimitiveType.Cube, new Vector3(x, 1.48f, z), new Vector3(.78f, 2.10f, .78f), stone);
-            Create(root, "RuinedPillar_" + id + "_Band", PrimitiveType.Cube, new Vector3(x, .72f, z), new Vector3(.91f, .20f, .91f), trim);
-            Create(root, "RuinedPillar_" + id + "_Capital", PrimitiveType.Cube, new Vector3(x, 2.62f, z), new Vector3(1.10f, .28f, 1.10f), trim);
+            Create(root, "RuinedPillar_" + id + "_Base", PrimitiveType.Cube, new Vector3(x, .25f, z), new Vector3(1.18f, .46f, 1.18f), trim, null, true);
+            Create(root, "RuinedPillar_" + id + "_Shaft", PrimitiveType.Cube, new Vector3(x, 1.48f, z), new Vector3(.78f, 2.10f, .78f), stone, null, true);
+            Create(root, "RuinedPillar_" + id + "_Band", PrimitiveType.Cube, new Vector3(x, .72f, z), new Vector3(.91f, .20f, .91f), trim, null, true);
+            Create(root, "RuinedPillar_" + id + "_Capital", PrimitiveType.Cube, new Vector3(x, 2.62f, z), new Vector3(1.10f, .28f, 1.10f), trim, null, true);
             Create(root, "RuinedPillar_" + id + "_BrokenTop", PrimitiveType.Cube,
                 new Vector3(x + (x < 0f ? .14f : -.12f), 2.88f, z - .08f), new Vector3(.74f, .15f, .86f),
-                stone, new Vector3(0f, 0f, x < 0f ? 8f : -6f));
+                stone, new Vector3(0f, 0f, x < 0f ? 8f : -6f), true);
         }
     }
 
@@ -171,9 +171,9 @@ public static class GraphicsUpgradeSetup
         for (int i = 0; i < positions.Length; i++)
         {
             Vector3 p = positions[i]; string id = "Brazier_" + i;
-            Create(root, id + "_Base", PrimitiveType.Cube, p + Vector3.up * .20f, new Vector3(.58f, .40f, .58f), trim);
-            Create(root, id + "_Stem", PrimitiveType.Cylinder, p + Vector3.up * .62f, new Vector3(.16f, .30f, .16f), iron);
-            Create(root, id + "_Bowl", PrimitiveType.Sphere, p + Vector3.up * .98f, new Vector3(.38f, .19f, .38f), iron);
+            Create(root, id + "_Base", PrimitiveType.Cube, p + Vector3.up * .20f, new Vector3(.58f, .40f, .58f), trim, null, true);
+            Create(root, id + "_Stem", PrimitiveType.Cylinder, p + Vector3.up * .62f, new Vector3(.16f, .30f, .16f), iron, null, true);
+            Create(root, id + "_Bowl", PrimitiveType.Sphere, p + Vector3.up * .98f, new Vector3(.38f, .19f, .38f), iron, null, true);
             Create(root, id + "_Flame", PrimitiveType.Sphere, p + Vector3.up * 1.20f, new Vector3(.16f, .27f, .16f), flame);
             GameObject go = new GameObject(id + "_Light"); go.transform.SetParent(root, false); go.transform.localPosition = p + Vector3.up * 1.35f;
             Light light = go.AddComponent<Light>(); light.type = LightType.Point; light.color = new Color(1f, .43f, .16f);
@@ -199,7 +199,7 @@ public static class GraphicsUpgradeSetup
     private static void BuildRune(Transform root, Material mat)
     {
         GameObject go = new GameObject("CentralSpectralRune"); go.transform.SetParent(root, false);
-        go.transform.localPosition = new Vector3(0f, .09f, 0f);
+        go.transform.localPosition = new Vector3(0f, .02f, 0f);
         LineRenderer line = go.AddComponent<LineRenderer>();
         line.useWorldSpace = false; line.loop = true; line.positionCount = 65; line.startWidth = .035f; line.endWidth = .035f;
         line.numCapVertices = 2; line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -212,7 +212,7 @@ public static class GraphicsUpgradeSetup
         for (int i = 0; i < 8; i++)
         {
             float angle = i * 45f; Vector3 p = Quaternion.Euler(0f, angle, 0f) * Vector3.forward * 1.23f;
-            Create(root, "RuneMark_" + i, PrimitiveType.Cube, new Vector3(p.x, .09f, p.z),
+            Create(root, "RuneMark_" + i, PrimitiveType.Cube, new Vector3(p.x, .015f, p.z),
                 new Vector3(.12f, .025f, .035f), mat, new Vector3(0f, angle, 0f));
         }
         GameObject lightObject = new GameObject("Rune_FillLight");
@@ -256,35 +256,57 @@ public static class GraphicsUpgradeSetup
         Type profileType = FindType("UnityEngine.Rendering.VolumeProfile");
         if (volumeType == null || profileType == null) { Debug.LogWarning("[Graphics Pass] Volume API unavailable; using lighting-only pass."); return false; }
 
-        ScriptableObject profile = AssetDatabase.LoadAssetAtPath<ScriptableObject>(ProfilePath);
-        if (profile == null)
+        // This owned profile is recreated with the GraphicsPassRoot so repeated setup cannot
+        // leave stale override sub-assets behind. Persist and verify every created override.
+        if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(ProfilePath) != null)
+            AssetDatabase.DeleteAsset(ProfilePath);
+        ScriptableObject profile = ScriptableObject.CreateInstance(profileType) as ScriptableObject;
+        if (profile == null) return false;
+        profile.name = "DarkFantasyPrototype";
+        AssetDatabase.CreateAsset(profile, ProfilePath);
+
+        int overrideCount = 0;
+        if (AddOverride(profile, profileType, "UnityEngine.Rendering.Universal.Bloom",
+            new Dictionary<string, object> { { "intensity", .55f }, { "threshold", 1.15f }, { "scatter", .60f } })) overrideCount++;
+        if (AddOverride(profile, profileType, "UnityEngine.Rendering.Universal.Vignette",
+            new Dictionary<string, object> { { "intensity", .23f }, { "smoothness", .60f }, { "roundness", .78f } })) overrideCount++;
+        if (AddOverride(profile, profileType, "UnityEngine.Rendering.Universal.ColorAdjustments",
+            new Dictionary<string, object> { { "postExposure", -.12f }, { "contrast", 11f }, { "saturation", -12f } })) overrideCount++;
+
+        if (overrideCount == 0)
         {
-            profile = ScriptableObject.CreateInstance(profileType) as ScriptableObject;
-            if (profile == null) return false;
-            profile.name = "DarkFantasyPrototype"; AssetDatabase.CreateAsset(profile, ProfilePath);
-        }
-        else
-        {
-            PropertyInfo prop = profileType.GetProperty("components");
-            IList list = prop != null ? prop.GetValue(profile) as IList : null;
-            if (list != null)
-            {
-                for (int i = list.Count - 1; i >= 0; i--)
-                {
-                    UnityEngine.Object obj = list[i] as UnityEngine.Object; list.RemoveAt(i);
-                    if (obj != null) UnityEngine.Object.DestroyImmediate(obj, true);
-                }
-            }
+            Debug.LogWarning("[Graphics Pass] No URP overrides available; lighting-only pass applied.");
+            AssetDatabase.SaveAssets();
+            return false;
         }
 
-        bool added = false;
-        added |= AddOverride(profile, profileType, "UnityEngine.Rendering.Universal.Bloom",
-            new Dictionary<string, object> { { "intensity", .55f }, { "threshold", 1.15f }, { "scatter", .60f } });
-        added |= AddOverride(profile, profileType, "UnityEngine.Rendering.Universal.Vignette",
-            new Dictionary<string, object> { { "intensity", .23f }, { "smoothness", .60f }, { "roundness", .78f } });
-        added |= AddOverride(profile, profileType, "UnityEngine.Rendering.Universal.ColorAdjustments",
-            new Dictionary<string, object> { { "postExposure", -.12f }, { "contrast", 11f }, { "saturation", -12f } });
-        if (!added) { Debug.LogWarning("[Graphics Pass] No URP overrides available; lighting-only pass applied."); AssetDatabase.SaveAssets(); return false; }
+        EditorUtility.SetDirty(profile);
+        AssetDatabase.SaveAssets();
+        profile = AssetDatabase.LoadAssetAtPath<ScriptableObject>(ProfilePath);
+        if (profile == null)
+        {
+            Debug.LogError("[Graphics Pass] Volume Profile did not reload from its asset path.");
+            return false;
+        }
+
+        PropertyInfo savedComponentsProperty = profileType.GetProperty("components");
+        IList savedComponents = savedComponentsProperty != null ? savedComponentsProperty.GetValue(profile) as IList : null;
+        int persistedOverrides = 0;
+        if (savedComponents != null)
+        {
+            foreach (object entry in savedComponents)
+            {
+                UnityEngine.Object componentAsset = entry as UnityEngine.Object;
+                if (componentAsset != null && AssetDatabase.GetAssetPath(componentAsset) == ProfilePath)
+                    persistedOverrides++;
+            }
+        }
+        if (persistedOverrides < overrideCount)
+        {
+            Debug.LogError("[Graphics Pass] Volume Profile persistence failed: added " + overrideCount +
+                " overrides but reloaded only " + persistedOverrides + " embedded components.");
+            return false;
+        }
 
         Transform existing = root.transform.Find("GlobalVisualVolume");
         GameObject volumeGo = existing != null ? existing.gameObject : new GameObject("GlobalVisualVolume");
@@ -310,9 +332,33 @@ public static class GraphicsUpgradeSetup
         if (type == null) { Debug.LogWarning("[Graphics Pass] Optional effect unavailable: " + typeName); return false; }
         MethodInfo add = profileType.GetMethod("Add", BindingFlags.Instance | BindingFlags.Public, null, new[] { typeof(Type), typeof(bool) }, null);
         if (add == null) return false;
-        object component = add.Invoke(profile, new object[] { type, true }); if (component == null) return false;
+        object component = add.Invoke(profile, new object[] { type, true });
+        UnityEngine.Object componentObject = component as UnityEngine.Object;
+        if (componentObject == null) return false;
+
+        string componentPath = AssetDatabase.GetAssetPath(componentObject);
+        if (string.IsNullOrEmpty(componentPath))
+        {
+            try
+            {
+                AssetDatabase.AddObjectToAsset(componentObject, profile);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("[Graphics Pass] Could not embed " + type.Name + " in Volume Profile: " + ex.Message);
+                return false;
+            }
+        }
+        if (AssetDatabase.GetAssetPath(componentObject) != AssetDatabase.GetAssetPath(profile))
+        {
+            Debug.LogError("[Graphics Pass] Override is not stored inside the Volume Profile: " + type.Name);
+            return false;
+        }
+
         foreach (var item in values) SetParameter(component, item.Key, item.Value);
-        EditorUtility.SetDirty((UnityEngine.Object)component); return true;
+        EditorUtility.SetDirty(componentObject);
+        EditorUtility.SetDirty(profile);
+        return true;
     }
 
     private static void SetParameter(object component, string name, object value)
@@ -386,12 +432,14 @@ public static class GraphicsUpgradeSetup
         Renderer r = go.GetComponent<Renderer>(); if (r != null) { r.sharedMaterial = mat; EditorUtility.SetDirty(r); }
     }
 
-    private static void Create(Transform root, string name, PrimitiveType primitive, Vector3 pos, Vector3 scale, Material mat, Vector3? rotation = null)
+    private static void Create(Transform root, string name, PrimitiveType primitive, Vector3 pos, Vector3 scale,
+        Material mat, Vector3? rotation = null, bool keepCollider = false)
     {
         GameObject go = GameObject.CreatePrimitive(primitive); go.name = name; go.transform.SetParent(root, false);
         go.transform.localPosition = pos; go.transform.localRotation = Quaternion.Euler(rotation ?? Vector3.zero); go.transform.localScale = scale;
         Renderer r = go.GetComponent<Renderer>(); if (r != null && mat != null) r.sharedMaterial = mat;
-        Collider c = go.GetComponent<Collider>(); if (c != null) UnityEngine.Object.DestroyImmediate(c);
+        Collider c = go.GetComponent<Collider>();
+        if (c != null && !keepCollider) UnityEngine.Object.DestroyImmediate(c);
     }
 
     private static void Count(Transform root, string prefix, int minimum, string label, List<string> ok, List<string> bad)
