@@ -85,7 +85,7 @@ public sealed class CombatTestHUD : MonoBehaviour
 
     private void FindEnemyHealth()
     {
-        TrainingEnemyAI enemy = FindFirstObjectByType<TrainingEnemyAI>();
+        TrainingEnemyAI enemy = FindAnyObjectByType<TrainingEnemyAI>();
         enemyHealth = enemy != null ? enemy.Health : null;
     }
 

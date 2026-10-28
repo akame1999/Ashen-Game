@@ -75,7 +75,7 @@ public sealed class PlayerMeleeCombat : MonoBehaviour
         ShowSlashArc();
 
         Vector3 origin = transform.position + Vector3.up * 0.85f + transform.forward * 0.7f;
-        Collider[] hits = Physics.OverlapSphere(origin, attackRange * 0.78f, ~0, QueryTriggerInteraction.Ignore);
+        Collider[] hits = Physics.OverlapSphere(origin, attackRadius, ~0, QueryTriggerInteraction.Ignore);
         HashSet<CombatHealth> damaged = new HashSet<CombatHealth>();
 
         foreach (Collider hit in hits)
