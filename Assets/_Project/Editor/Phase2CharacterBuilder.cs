@@ -62,55 +62,60 @@ public static class Phase2CharacterBuilder
         GameObject armature = new GameObject("Armature");
         armature.transform.SetParent(character.transform, false);
 
+        // Bone positions are kept near the actual joint centres. Mesh-part positions below
+        // are expressed in character space and converted into each bone's local space by AddPart.
         Transform rootBone = CreateBone("Root", armature.transform, Vector3.zero);
-        Transform hips = CreateBone("Hips", rootBone, new Vector3(0f, -0.10f, 0f));
-        Transform spine = CreateBone("Spine", hips, new Vector3(0f, 0.11f, 0f));
-        Transform chest = CreateBone("Chest", spine, new Vector3(0f, 0.24f, 0f));
-        Transform neck = CreateBone("Neck", chest, new Vector3(0f, 0.23f, 0f));
-        Transform head = CreateBone("Head", neck, new Vector3(0f, 0.13f, 0f));
+        Transform hips = CreateBone("Hips", rootBone, new Vector3(0f, 0.06f, 0f));
+        Transform spine = CreateBone("Spine", hips, new Vector3(0f, 0.10f, 0f));
+        Transform chest = CreateBone("Chest", spine, new Vector3(0f, 0.13f, 0f));
+        Transform neck = CreateBone("Neck", chest, new Vector3(0f, 0.18f, 0f));
+        Transform head = CreateBone("Head", neck, new Vector3(0f, 0.15f, 0f));
 
-        Transform leftUpperArm = CreateBone("LeftUpperArm", chest, new Vector3(-0.28f, 0.09f, 0f));
-        Transform leftLowerArm = CreateBone("LeftLowerArm", leftUpperArm, new Vector3(-0.04f, -0.24f, 0f));
-        Transform leftHand = CreateBone("LeftHand", leftLowerArm, new Vector3(-0.03f, -0.22f, 0f));
-        Transform rightUpperArm = CreateBone("RightUpperArm", chest, new Vector3(0.28f, 0.09f, 0f));
-        Transform rightLowerArm = CreateBone("RightLowerArm", rightUpperArm, new Vector3(0.04f, -0.24f, 0f));
-        Transform rightHand = CreateBone("RightHand", rightLowerArm, new Vector3(0.03f, -0.22f, 0f));
+        Transform leftUpperArm = CreateBone("LeftUpperArm", chest, new Vector3(-0.24f, 0.11f, 0f));
+        Transform leftLowerArm = CreateBone("LeftLowerArm", leftUpperArm, new Vector3(-0.06f, -0.22f, 0f));
+        Transform leftHand = CreateBone("LeftHand", leftLowerArm, new Vector3(-0.04f, -0.20f, 0f));
+        Transform rightUpperArm = CreateBone("RightUpperArm", chest, new Vector3(0.24f, 0.11f, 0f));
+        Transform rightLowerArm = CreateBone("RightLowerArm", rightUpperArm, new Vector3(0.06f, -0.22f, 0f));
+        Transform rightHand = CreateBone("RightHand", rightLowerArm, new Vector3(0.04f, -0.20f, 0f));
 
-        Transform leftUpperLeg = CreateBone("LeftUpperLeg", hips, new Vector3(-0.13f, -0.03f, 0f));
-        Transform leftLowerLeg = CreateBone("LeftLowerLeg", leftUpperLeg, new Vector3(0f, -0.31f, 0f));
-        Transform leftFoot = CreateBone("LeftFoot", leftLowerLeg, new Vector3(0f, -0.29f, 0.06f));
-        Transform rightUpperLeg = CreateBone("RightUpperLeg", hips, new Vector3(0.13f, -0.03f, 0f));
-        Transform rightLowerLeg = CreateBone("RightLowerLeg", rightUpperLeg, new Vector3(0f, -0.31f, 0f));
-        Transform rightFoot = CreateBone("RightFoot", rightLowerLeg, new Vector3(0f, -0.29f, 0.06f));
+        Transform leftUpperLeg = CreateBone("LeftUpperLeg", hips, new Vector3(-0.12f, -0.14f, 0f));
+        Transform leftLowerLeg = CreateBone("LeftLowerLeg", leftUpperLeg, new Vector3(0f, -0.35f, 0f));
+        Transform leftFoot = CreateBone("LeftFoot", leftLowerLeg, new Vector3(0f, -0.32f, 0.06f));
+        Transform rightUpperLeg = CreateBone("RightUpperLeg", hips, new Vector3(0.12f, -0.14f, 0f));
+        Transform rightLowerLeg = CreateBone("RightLowerLeg", rightUpperLeg, new Vector3(0f, -0.35f, 0f));
+        Transform rightFoot = CreateBone("RightFoot", rightLowerLeg, new Vector3(0f, -0.32f, 0.06f));
 
-        AddPart(character, "Pelvis", PrimitiveType.Cube, hips, new Vector3(0f, -0.08f, 0f), new Vector3(0.34f, 0.22f, 0.24f), leather);
-        AddPart(character, "Torso", PrimitiveType.Capsule, chest, new Vector3(0f, 0.23f, 0f), new Vector3(0.36f, 0.39f, 0.24f), cloth);
-        AddPart(character, "Breastplate", PrimitiveType.Cube, chest, new Vector3(0f, 0.25f, 0.045f), new Vector3(0.34f, 0.27f, 0.235f), armor);
-        AddPart(character, "ChestTrim", PrimitiveType.Cube, chest, new Vector3(0f, 0.24f, 0.168f), new Vector3(0.055f, 0.25f, 0.025f), brass);
-        AddPart(character, "BackCloak", PrimitiveType.Cube, chest, new Vector3(0f, 0.08f, -0.155f), new Vector3(0.36f, 0.44f, 0.07f), cloth);
-        AddPart(character, "Neck", PrimitiveType.Capsule, neck, new Vector3(0f, 0.56f, 0f), new Vector3(0.12f, 0.13f, 0.12f), skin);
-        AddPart(character, "Head", PrimitiveType.Sphere, head, new Vector3(0f, 0.78f, 0f), new Vector3(0.255f, 0.30f, 0.235f), skin);
-        AddPart(character, "HairCap", PrimitiveType.Sphere, head, new Vector3(0f, 0.90f, -0.025f), new Vector3(0.258f, 0.13f, 0.235f), armor);
-        AddPart(character, "Eye_L", PrimitiveType.Sphere, head, new Vector3(-0.072f, 0.80f, 0.113f), new Vector3(0.042f, 0.04f, 0.025f), dark);
-        AddPart(character, "Eye_R", PrimitiveType.Sphere, head, new Vector3(0.072f, 0.80f, 0.113f), new Vector3(0.042f, 0.04f, 0.025f), dark);
+        // Core: overlapping volumes so seams are hidden from the elevated camera.
+        AddPart(character, "Pelvis", PrimitiveType.Cube, hips, new Vector3(0f, 0.02f, 0f), new Vector3(0.34f, 0.20f, 0.24f), leather);
+        AddPart(character, "Torso", PrimitiveType.Capsule, chest, new Vector3(0f, 0.28f, 0f), new Vector3(0.34f, 0.23f, 0.23f), cloth);
+        AddPart(character, "Breastplate", PrimitiveType.Cube, chest, new Vector3(0f, 0.29f, 0.045f), new Vector3(0.33f, 0.25f, 0.235f), armor);
+        AddPart(character, "ChestTrim", PrimitiveType.Cube, chest, new Vector3(0f, 0.29f, 0.17f), new Vector3(0.055f, 0.23f, 0.025f), brass);
+        AddPart(character, "BackCloak", PrimitiveType.Cube, chest, new Vector3(0f, 0.17f, -0.145f), new Vector3(0.35f, 0.40f, 0.07f), cloth);
+        AddPart(character, "Neck", PrimitiveType.Capsule, neck, new Vector3(0f, 0.52f, 0f), new Vector3(0.11f, 0.08f, 0.11f), skin);
+        AddPart(character, "Head", PrimitiveType.Sphere, head, new Vector3(0f, 0.72f, 0f), new Vector3(0.25f, 0.28f, 0.225f), skin);
+        AddPart(character, "HairCap", PrimitiveType.Sphere, head, new Vector3(0f, 0.82f, -0.025f), new Vector3(0.255f, 0.12f, 0.225f), armor);
+        AddPart(character, "Eye_L", PrimitiveType.Sphere, head, new Vector3(-0.072f, 0.74f, 0.108f), new Vector3(0.04f, 0.04f, 0.025f), dark);
+        AddPart(character, "Eye_R", PrimitiveType.Sphere, head, new Vector3(0.072f, 0.74f, 0.108f), new Vector3(0.04f, 0.04f, 0.025f), dark);
 
-        AddPart(character, "Shoulder_L", PrimitiveType.Sphere, leftUpperArm, new Vector3(-0.27f, 0.36f, 0f), new Vector3(0.20f, 0.16f, 0.20f), brass);
-        AddPart(character, "UpperArm_L", PrimitiveType.Capsule, leftUpperArm, new Vector3(-0.31f, 0.20f, 0f), new Vector3(0.14f, 0.23f, 0.14f), armor);
-        AddPart(character, "Forearm_L", PrimitiveType.Capsule, leftLowerArm, new Vector3(-0.34f, -0.025f, 0f), new Vector3(0.12f, 0.22f, 0.12f), leather);
-        AddPart(character, "Glove_L", PrimitiveType.Sphere, leftHand, new Vector3(-0.35f, -0.19f, 0.005f), new Vector3(0.12f, 0.12f, 0.12f), leather);
-        AddPart(character, "Shoulder_R", PrimitiveType.Sphere, rightUpperArm, new Vector3(0.27f, 0.36f, 0f), new Vector3(0.20f, 0.16f, 0.20f), brass);
-        AddPart(character, "UpperArm_R", PrimitiveType.Capsule, rightUpperArm, new Vector3(0.31f, 0.20f, 0f), new Vector3(0.14f, 0.23f, 0.14f), armor);
-        AddPart(character, "Forearm_R", PrimitiveType.Capsule, rightLowerArm, new Vector3(0.34f, -0.025f, 0f), new Vector3(0.12f, 0.22f, 0.12f), leather);
-        AddPart(character, "Glove_R", PrimitiveType.Sphere, rightHand, new Vector3(0.35f, -0.19f, 0.005f), new Vector3(0.12f, 0.12f, 0.12f), leather);
+        // Arms: shoulder cap overlaps torso; upper arm, forearm and glove overlap at joints.
+        AddPart(character, "Shoulder_L", PrimitiveType.Sphere, leftUpperArm, new Vector3(-0.245f, 0.39f, 0f), new Vector3(0.18f, 0.14f, 0.18f), brass);
+        AddPart(character, "UpperArm_L", PrimitiveType.Capsule, leftUpperArm, new Vector3(-0.29f, 0.27f, 0f), new Vector3(0.12f, 0.16f, 0.12f), armor);
+        AddPart(character, "Forearm_L", PrimitiveType.Capsule, leftLowerArm, new Vector3(-0.33f, 0.07f, 0f), new Vector3(0.105f, 0.15f, 0.105f), leather);
+        AddPart(character, "Glove_L", PrimitiveType.Sphere, leftHand, new Vector3(-0.35f, -0.04f, 0.005f), new Vector3(0.105f, 0.11f, 0.105f), leather);
+        AddPart(character, "Shoulder_R", PrimitiveType.Sphere, rightUpperArm, new Vector3(0.245f, 0.39f, 0f), new Vector3(0.18f, 0.14f, 0.18f), brass);
+        AddPart(character, "UpperArm_R", PrimitiveType.Capsule, rightUpperArm, new Vector3(0.29f, 0.27f, 0f), new Vector3(0.12f, 0.16f, 0.12f), armor);
+        AddPart(character, "Forearm_R", PrimitiveType.Capsule, rightLowerArm, new Vector3(0.33f, 0.07f, 0f), new Vector3(0.105f, 0.15f, 0.105f), leather);
+        AddPart(character, "Glove_R", PrimitiveType.Sphere, rightHand, new Vector3(0.35f, -0.04f, 0.005f), new Vector3(0.105f, 0.11f, 0.105f), leather);
 
-        AddPart(character, "Thigh_L", PrimitiveType.Capsule, leftUpperLeg, new Vector3(-0.13f, -0.28f, 0f), new Vector3(0.15f, 0.27f, 0.15f), leather);
-        AddPart(character, "Shin_L", PrimitiveType.Capsule, leftLowerLeg, new Vector3(-0.13f, -0.56f, 0f), new Vector3(0.12f, 0.27f, 0.12f), armor);
-        AddPart(character, "Boot_L", PrimitiveType.Cube, leftFoot, new Vector3(-0.13f, -0.77f, 0.08f), new Vector3(0.18f, 0.12f, 0.29f), leather);
-        AddPart(character, "KneeGuard_L", PrimitiveType.Sphere, leftLowerLeg, new Vector3(-0.13f, -0.43f, 0.075f), new Vector3(0.125f, 0.12f, 0.055f), brass);
-        AddPart(character, "Thigh_R", PrimitiveType.Capsule, rightUpperLeg, new Vector3(0.13f, -0.28f, 0f), new Vector3(0.15f, 0.27f, 0.15f), leather);
-        AddPart(character, "Shin_R", PrimitiveType.Capsule, rightLowerLeg, new Vector3(0.13f, -0.56f, 0f), new Vector3(0.12f, 0.27f, 0.12f), armor);
-        AddPart(character, "Boot_R", PrimitiveType.Cube, rightFoot, new Vector3(0.13f, -0.77f, 0.08f), new Vector3(0.18f, 0.12f, 0.29f), leather);
-        AddPart(character, "KneeGuard_R", PrimitiveType.Sphere, rightLowerLeg, new Vector3(0.13f, -0.43f, 0.075f), new Vector3(0.125f, 0.12f, 0.055f), brass);
+        // Legs: upper and lower sections deliberately overlap; boots sit at the bottom.
+        AddPart(character, "Thigh_L", PrimitiveType.Capsule, leftUpperLeg, new Vector3(-0.12f, -0.24f, 0f), new Vector3(0.14f, 0.20f, 0.14f), leather);
+        AddPart(character, "Shin_L", PrimitiveType.Capsule, leftLowerLeg, new Vector3(-0.12f, -0.55f, 0f), new Vector3(0.115f, 0.19f, 0.115f), armor);
+        AddPart(character, "Boot_L", PrimitiveType.Cube, leftFoot, new Vector3(-0.12f, -0.82f, 0.08f), new Vector3(0.17f, 0.085f, 0.28f), leather);
+        AddPart(character, "KneeGuard_L", PrimitiveType.Sphere, leftLowerLeg, new Vector3(-0.12f, -0.44f, 0.08f), new Vector3(0.11f, 0.10f, 0.05f), brass);
+        AddPart(character, "Thigh_R", PrimitiveType.Capsule, rightUpperLeg, new Vector3(0.12f, -0.24f, 0f), new Vector3(0.14f, 0.20f, 0.14f), leather);
+        AddPart(character, "Shin_R", PrimitiveType.Capsule, rightLowerLeg, new Vector3(0.12f, -0.55f, 0f), new Vector3(0.115f, 0.19f, 0.115f), armor);
+        AddPart(character, "Boot_R", PrimitiveType.Cube, rightFoot, new Vector3(0.12f, -0.82f, 0.08f), new Vector3(0.17f, 0.085f, 0.28f), leather);
+        AddPart(character, "KneeGuard_R", PrimitiveType.Sphere, rightLowerLeg, new Vector3(0.12f, -0.44f, 0.08f), new Vector3(0.11f, 0.10f, 0.05f), brass);
 
         Animator animator = character.AddComponent<Animator>();
         animator.applyRootMotion = false;
@@ -140,8 +145,8 @@ public static class Phase2CharacterBuilder
                   " with bone-attached mesh parts, a Generic Avatar, and keyframed Idle/Walk/Run/Attack clips.");
         EditorUtility.DisplayDialog(
             "Phase 2 Character Built",
-            "Generated the Veyr Wanderer articulated character, Generic Avatar, Animator Controller, and Idle/Walk/Run/Attack clips.\n\n" +
-            "Attached it to Player if that object was found in the open scene. Check the Console and run Validate Character Rig.",
+            "Generated the Veyr Wanderer articulated character with corrected bone locations and overlapping limb segments, plus a Generic Avatar, Animator Controller, and Idle/Walk/Run/Attack clips.\n\n" +
+            "Attached it to Player if that object was found in the open scene. Check the character in Game view, then run Validate Character Rig.",
             "OK");
     }
 
