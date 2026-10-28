@@ -18,6 +18,7 @@ public sealed class PrototypeDebugOverlay : MonoBehaviour
     private PlayerLocomotionAnimator locomotion;
     private GUIStyle titleStyle;
     private GUIStyle textStyle;
+    private GUIStyle panelStyle;
     private Texture2D backgroundTexture;
 
     private void Awake()
@@ -45,10 +46,7 @@ public sealed class PrototypeDebugOverlay : MonoBehaviour
         const float panelHeight = 178f;
         Rect panel = new Rect(Mathf.Max(14f, Screen.width - width - 14f), 14f, width, panelHeight);
         GUI.color = Color.white;
-        GUI.Box(panel, GUIContent.none, new GUIStyle(GUI.skin.box)
-        {
-            normal = { background = backgroundTexture }
-        });
+        GUI.Box(panel, GUIContent.none, panelStyle);
 
         float x = panel.x + 12f;
         float lineY = panel.y + 10f;
@@ -106,6 +104,10 @@ public sealed class PrototypeDebugOverlay : MonoBehaviour
         {
             fontSize = 11,
             normal = { textColor = Color.white }
+        };
+        panelStyle = new GUIStyle(GUI.skin.box)
+        {
+            normal = { background = backgroundTexture }
         };
     }
 
