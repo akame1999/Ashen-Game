@@ -397,7 +397,7 @@ public static class Phase2CharacterBuilder
         const float duration = 0.42f;
         AnimationClip clip = PrepareClip("Attack.anim", "VeyrWanderer_Attack", duration, false);
         AddCurve(clip, RightUpperArmPath, "localEulerAnglesRaw.x",
-            new Keyframe(0f, 0f), new Keyframe(0.09f, -35f), new Keyframe(0.17f, -112f),
+            new Keyframe(0f, 0f), new Keyframe(0.09f, -35f), new Keyframe(0.17f, -82f),
             new Keyframe(0.28f, -38f), new Keyframe(duration, 0f));
         AddCurve(clip, RightLowerArmPath, "localEulerAnglesRaw.x",
             new Keyframe(0f, 0f), new Keyframe(0.09f, -8f), new Keyframe(0.17f, -32f),
